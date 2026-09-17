@@ -1,0 +1,14 @@
+# Polaris runtime dependencies
+#
+#   pip install -r requirements.txt
+#
+# Everything else (HTTP server, ctypes/Win32 calls, registry access) uses the
+# Python standard library. Tailwind CSS and Chart.js are vendored under
+# frontend/vendor/ so the UI needs no network access at runtime.
+
+psutil>=5.9,<8            # process + memory statistics
+pywebview>=4.4            # native desktop window (Edge WebView2 on Windows)
+
+# --- packaging only (not needed to run from source) ---
+pyinstaller>=6.0          # builds Polaris.exe via package_exe.py
+pillow>=10.0              # generates the multi-resolution app_icon.ico

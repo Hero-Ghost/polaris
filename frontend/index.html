@@ -1,0 +1,2867 @@
+<!DOCTYPE html>
+<html lang="he" dir="rtl">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Polaris | ניטור מערכת, אבחון ותחזוקת Windows</title>
+  <link rel="icon" type="image/png" href="logo.png">
+  <link rel="icon" type="image/x-icon" href="favicon.ico">
+  <link rel="shortcut icon" href="favicon.ico">
+  <link rel="apple-touch-icon" href="logo.png">
+
+  <!--
+    Chart.js is bundled locally under frontend/vendor so Polaris runs fully
+    offline. The UI itself is styled by a single hand-written stylesheet
+    (styles.css) - there is no CSS framework and no build step to run.
+  -->
+  <script src="vendor/chart.umd.js"></script>
+  <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+
+<div class="app">
+
+  <!-- ===================================================================
+       SIDEBAR - primary navigation. One destination per concern.
+       =================================================================== -->
+  <aside class="sidebar">
+
+    <div class="brand">
+      <div class="brand-text grow">
+        <div class="brand-name saiyan-brand">
+          <div class="saiyan-aura-wrap">
+            <div class="saiyan-aura-core"></div>
+            <div class="saiyan-aura-flames">
+              <span class="saiyan-flame f1"></span>
+              <span class="saiyan-flame f2"></span>
+              <span class="saiyan-flame f3"></span>
+              <span class="saiyan-flame f4"></span>
+              <span class="saiyan-flame f5"></span>
+              <span class="saiyan-flame f6"></span>
+              <span class="saiyan-flame f7"></span>
+            </div>
+            <div class="saiyan-sparks">
+              <span class="saiyan-spark s1"></span>
+              <span class="saiyan-spark s2"></span>
+              <span class="saiyan-spark s3"></span>
+              <span class="saiyan-spark s4"></span>
+              <span class="saiyan-spark s5"></span>
+            </div>
+            <span class="saiyan-text">POLARIS</span>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <nav class="nav" id="mainNav">
+
+      <!-- 1. Overview -->
+      <button class="nav-item active" data-category="overview" data-screen="overview" onclick="goToCategory('overview')">
+        <svg fill="none" stroke="currentColor" stroke-width="1.8" viewBox="0 0 24 24">
+          <path stroke-linecap="round" stroke-linejoin="round" d="M3 12h4l3 8 4-16 3 8h4"/>
+        </svg>
+        <span data-i18n="navOverview">סקירה כללית</span>
+      </button>
+
+      <div class="nav-label" data-i18n="navGroupCore">ניהול ומשאבים</div>
+
+      <!-- 2. Performance & Resources -->
+      <button class="nav-item" data-category="performance" data-screen="performance" onclick="goToCategory('performance')">
+        <svg fill="none" stroke="currentColor" stroke-width="1.8" viewBox="0 0 24 24">
+          <path stroke-linecap="round" stroke-linejoin="round" d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z"/>
+        </svg>
+        <span data-i18n="navPerformance">משאבים וביצועים</span>
+        <span class="nav-tag mono" id="navTagProcCount">0</span>
+      </button>
+
+      <!-- 3. Drives & Storage -->
+      <button class="nav-item" data-category="storage" data-screen="storage" onclick="goToCategory('storage')">
+        <svg fill="none" stroke="currentColor" stroke-width="1.8" viewBox="0 0 24 24">
+          <path stroke-linecap="round" stroke-linejoin="round" d="M4 7a8 4 0 1016 0A8 4 0 004 7zm0 0v10a8 4 0 0016 0V7M4 12a8 4 0 0016 0"/>
+        </svg>
+        <span data-i18n="navStorageGroup">כוננים ואחסון</span>
+        <span class="nav-tag hidden" id="navTagDisks">0</span>
+      </button>
+
+      <!-- 4. Maintenance & Apps -->
+      <button class="nav-item" data-category="maintenance" data-screen="maintenance" onclick="goToCategory('maintenance')">
+        <svg fill="none" stroke="currentColor" stroke-width="1.8" viewBox="0 0 24 24">
+          <path stroke-linecap="round" stroke-linejoin="round" d="M14.7 6.3a4 4 0 00-5.4 5.4L4 17v3h3l5.3-5.3a4 4 0 005.4-5.4l-2.4 2.4-2.3-2.3 2.4-2.4z"/>
+        </svg>
+        <span data-i18n="navMaintenanceGroup">תחזוקה ותוכנות</span>
+        <span class="nav-tag hidden" id="navTagUninstaller">0</span>
+      </button>
+
+      <div class="nav-label" data-i18n="navGroupDiagnostics">אבחון וחומרה</div>
+
+      <!-- 5. Diagnostics & Stability -->
+      <button class="nav-item" data-category="diagnostics" data-screen="diagnostics" onclick="goToCategory('diagnostics')">
+        <svg fill="none" stroke="currentColor" stroke-width="1.8" viewBox="0 0 24 24">
+          <path stroke-linecap="round" stroke-linejoin="round" d="M12 9v4m0 4h.01M10.3 4.3L2.6 17.5A2 2 0 004.3 20.5h15.4a2 2 0 001.7-3L13.7 4.3a2 2 0 00-3.4 0z"/>
+        </svg>
+        <span data-i18n="navDiagnosticsGroup">אבחון ויציבות</span>
+        <span class="nav-tag hidden" id="navTagCrashes">0</span>
+      </button>
+
+      <!-- 6. Hardware & Devices -->
+      <button class="nav-item" data-category="hardware" data-screen="hardware" onclick="goToCategory('hardware')">
+        <svg fill="none" stroke="currentColor" stroke-width="1.8" viewBox="0 0 24 24">
+          <rect x="7" y="7" width="10" height="10" rx="1.5"/>
+          <path stroke-linecap="round" d="M10 3v4M14 3v4M10 17v4M14 17v4M3 10h4M3 14h4M17 10h4M17 14h4"/>
+        </svg>
+        <span data-i18n="navHardwareGroup">חומרה והתקנים</span>
+        <span class="nav-tag hidden" id="navTagDevices">0</span>
+      </button>
+
+      <div class="nav-label" data-i18n="navGroupTools">התאמה</div>
+
+      <!-- 7. Tools & Settings -->
+      <button class="nav-item" data-category="settings" data-screen="settings" onclick="goToCategory('settings')">
+        <svg fill="none" stroke="currentColor" stroke-width="1.8" viewBox="0 0 24 24">
+          <circle cx="12" cy="12" r="3"/>
+          <path stroke-linecap="round" stroke-linejoin="round" d="M19.4 15a1.6 1.6 0 00.3 1.8l.1.1a2 2 0 11-2.8 2.8l-.1-.1a1.6 1.6 0 00-2.7 1.1v.3a2 2 0 11-4 0v-.2a1.6 1.6 0 00-2.8-1.1l-.1.1a2 2 0 11-2.8-2.8l.1-.1A1.6 1.6 0 004 15a2 2 0 01-2-2 2 2 0 012-2 1.6 1.6 0 001.1-2.8l-.1-.1a2 2 0 112.8-2.8l.1.1A1.6 1.6 0 009 4.6a2 2 0 012-2 2 2 0 012 2 1.6 1.6 0 002.7 1.1l.1-.1a2 2 0 112.8 2.8l-.1.1A1.6 1.6 0 0020 11a2 2 0 012 2 2 2 0 01-2 2z"/>
+        </svg>
+        <span data-i18n="navSettingsGroup">כלים והגדרות</span>
+      </button>
+
+    </nav>
+
+    <div class="sidebar-foot">
+      <div class="priv-row" id="privRow" title="">
+        <span class="priv-dot" id="privDot"></span>
+        <span id="privText" data-i18n="privChecking">בודק הרשאות...</span>
+      </div>
+      <button class="sidebar-terms-btn" onclick="openTermsModal()" title="תקנון ותנאי שימוש (EULA)">
+        <svg fill="none" stroke="currentColor" stroke-width="1.8" viewBox="0 0 24 24" style="width: 14px; height: 14px; flex-shrink: 0;">
+          <path stroke-linecap="round" stroke-linejoin="round" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"/>
+        </svg>
+        <span data-i18n="sidebarTerms">תקנון ותנאי שימוש</span>
+      </button>
+    </div>
+  </aside>
+
+  <!-- ===================================================================
+       MAIN COLUMN
+       =================================================================== -->
+  <div class="main">
+
+    <header class="topbar">
+      <div class="grow">
+        <div class="topbar-title" id="screenTitle">סקירה כללית</div>
+        <div class="topbar-sub" id="screenDesc">מצב הזיכרון והמערכת במבט אחד</div>
+      </div>
+
+      <div class="topbar-actions">
+        <div class="live-chip" id="liveChip" title="שימוש נוכחי בזיכרון פיזי">
+          <span class="pulse"></span>
+          <span class="live-chip-val mono" id="liveChipVal">--%</span>
+          <span class="live-chip-label" id="liveChipLabel">RAM</span>
+        </div>
+
+        <button class="btn btn-icon" id="btnThemeToggle" onclick="toggleTheme()" data-i18n-title="settingTheme" title="ערכת נושא">
+          <svg id="iconThemeDark" fill="none" stroke="currentColor" stroke-width="1.8" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" d="M20.4 14.9A9 9 0 119.1 3.6a7 7 0 1011.3 11.3z"/>
+          </svg>
+          <svg id="iconThemeLight" class="hidden" fill="none" stroke="currentColor" stroke-width="1.8" viewBox="0 0 24 24">
+            <circle cx="12" cy="12" r="4"/>
+            <path stroke-linecap="round" d="M12 2v2M12 20v2M4.9 4.9l1.4 1.4M17.7 17.7l1.4 1.4M2 12h2M20 12h2M4.9 19.1l1.4-1.4M17.7 6.3l1.4-1.4"/>
+          </svg>
+        </button>
+
+        <button class="btn btn-primary" id="btnOptimize" onclick="optimizeMemory()">
+          <svg fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" d="M13 10V3L4 14h7v7l9-11h-7z"/>
+          </svg>
+          <span id="txtBtnOptimize" data-i18n="btnOptimize">שחרור זיכרון</span>
+        </button>
+      </div>
+    </header>
+
+    <div class="content">
+      <div class="content-inner section-gap">
+
+        <!-- Elevation notice: several repair tools silently do nothing (or open
+             a UAC prompt of their own) unless Polaris runs as Administrator. -->
+        <div id="elevationBanner" class="banner banner-warn hidden">
+          <span class="banner-icon">&#9888;</span>
+          <div class="grow">
+            <div class="banner-title" id="elevationBannerTitle"></div>
+            <p class="banner-desc" id="elevationBannerDesc"></p>
+          </div>
+        </div>
+
+        <!-- ==============================================================
+             CATEGORY 1 - OVERVIEW
+             ============================================================== -->
+        <section class="screen active" id="screen-overview">
+          <div class="section-gap">
+            <div class="section-gap">
+
+            <!-- Health verdict + live memory, side by side -->
+            <div class="grid grid-main-side">
+
+              <div class="card">
+                <div class="card-head">
+                  <div class="row" style="gap: 14px;">
+                    <div class="score" id="healthScoreCircle">
+                      <span class="score-val" id="healthScoreVal">--</span>
+                      <span class="score-cap" data-i18n="scoreCap">ציון</span>
+                    </div>
+                    <div>
+                      <div class="card-title">
+                        <span data-i18n="diagTitle">מצב בריאות המערכת</span>
+                        <span class="badge" id="healthStatusBadge">בודק...</span>
+                      </div>
+                      <p class="card-sub" id="healthSummaryText" data-i18n="diagScanning">
+                        סורק תהליכי רקע, בריכות זיכרון קרנל ושירותי מערכת פעילים.
+                      </p>
+                    </div>
+                  </div>
+                  <div class="card-tools">
+                    <button class="btn btn-sm" onclick="runDeepDiagnosis()">
+                      <svg fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" d="M4 4v5h.6M19.9 11A8 8 0 004.6 9M20 20v-5h-.6m0 0a8 8 0 01-15.4-2M19.4 15H15"/>
+                      </svg>
+                      <span data-i18n="btnDeepScan">סריקה מחדש</span>
+                    </button>
+                  </div>
+                </div>
+
+                <div class="card-body">
+                  <div class="spread" style="align-items: flex-end; margin-bottom: 14px;">
+                    <div>
+                      <span class="eyebrow" data-i18n="physicalRamTitle">זיכרון פיזי בשימוש</span>
+                      <div class="metric-hero" id="statRamPercent">--%</div>
+                    </div>
+                    <div class="row" style="gap: 6px;">
+                      <span class="muted" style="font-size: 11.5px;" data-i18n="memoryLoad">עומס זיכרון:</span>
+                      <span id="valMemoryLoadStatus" style="font-weight: 650; font-size: 12px;">--</span>
+                    </div>
+                  </div>
+
+                  <div class="meter">
+                    <div class="meter-fill" id="ramProgressBar" style="width: 0%"></div>
+                  </div>
+
+                  <div class="grid grid-4" style="margin-top: 14px;">
+                    <div class="stat">
+                      <span class="stat-label" data-i18n="usedRam">בשימוש</span>
+                      <span class="stat-value sm ltr" id="valUsedRam">-- GB</span>
+                    </div>
+                    <div class="stat">
+                      <span class="stat-label" data-i18n="availableRam">פנוי וזמין</span>
+                      <span class="stat-value sm ltr tone-ok" id="valAvailableRam">-- GB</span>
+                    </div>
+                    <div class="stat">
+                      <span class="stat-label" data-i18n="cachedRam">מטמון (Standby)</span>
+                      <span class="stat-value sm ltr muted" id="valCachedRam">-- GB</span>
+                    </div>
+                    <div class="stat">
+                      <span class="stat-label" data-i18n="totalRam">סה"כ מותקן</span>
+                      <span class="stat-value sm ltr" id="valTotalRam">-- GB</span>
+                    </div>
+                  </div>
+                </div>
+              </div>
+
+              <!-- What needs attention: a short list, full detail lives in
+                   the memory-analysis screen. -->
+              <div class="card">
+                <div class="card-head">
+                  <div>
+                    <div class="card-title" data-i18n="attentionTitle">דורש תשומת לב</div>
+                    <p class="card-sub" data-i18n="attentionDesc">הממצאים המשמעותיים ביותר מהאבחון האחרון.</p>
+                  </div>
+                </div>
+                <div class="card-body">
+                  <div class="stack" id="overviewFindings" style="gap: 9px;">
+                    <div class="loading" data-i18n="loading">טוען...</div>
+                  </div>
+                </div>
+                <div class="card-foot">
+                  <span data-i18n="attentionFoot">פירוט מלא, בריכות קרנל והתפלגות</span>
+                  <button class="btn-link" onclick="goToScreen('memory')">
+                    <span data-i18n="attentionLink">אבחון זיכרון מלא</span> &#8592;
+                  </button>
+                </div>
+              </div>
+
+            <!-- Quick Category Hub -->
+            <div class="card">
+              <div class="card-head">
+                <div>
+                  <div class="card-title">מרכז גישה מהירה לקטגוריות</div>
+                  <p class="card-sub">מעבר מהיר לכל אחד ממוקדי הניהול והאבחון של Polaris</p>
+                </div>
+              </div>
+              <div class="card-body">
+                <div class="overview-hub-grid">
+                  <div class="overview-hub-card" onclick="goToCategory('performance')">
+                    <div class="overview-hub-icon">
+                      <svg fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z"/></svg>
+                    </div>
+                    <div class="overview-hub-info">
+                      <div class="overview-hub-title" data-i18n="catPerformanceTitle">משאבים וביצועים</div>
+                      <div class="overview-hub-desc" data-i18n="catPerformanceDesc">תהליכים פעילים, שירותים ואבחון זיכרון</div>
+                    </div>
+                    <span class="overview-hub-arrow">&#8592;</span>
+                  </div>
+
+                  <div class="overview-hub-card" onclick="goToCategory('storage')">
+                    <div class="overview-hub-icon">
+                      <svg fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M4 7a8 4 0 1016 0A8 4 0 004 7zm0 0v10a8 4 0 0016 0V7M4 12a8 4 0 0016 0"/></svg>
+                    </div>
+                    <div class="overview-hub-info">
+                      <div class="overview-hub-title" data-i18n="catStorageTitle">כוננים ואחסון</div>
+                      <div class="overview-hub-desc" data-i18n="catStorageDesc">בריאות כוננים וסייר אחסון חכם</div>
+                    </div>
+                    <span class="overview-hub-arrow">&#8592;</span>
+                  </div>
+
+                  <div class="overview-hub-card" onclick="goToCategory('maintenance')">
+                    <div class="overview-hub-icon">
+                      <svg fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M14.7 6.3a4 4 0 00-5.4 5.4L4 17v3h3l5.3-5.3a4 4 0 005.4-5.4l-2.4 2.4-2.3-2.3 2.4-2.4z"/></svg>
+                    </div>
+                    <div class="overview-hub-info">
+                      <div class="overview-hub-title" data-i18n="catMaintenanceTitle">תחזוקה ותוכנות</div>
+                      <div class="overview-hub-desc" data-i18n="catMaintenanceDesc">תיקון קבצים, הסרת תוכנות ואתחול</div>
+                    </div>
+                    <span class="overview-hub-arrow">&#8592;</span>
+                  </div>
+
+                  <div class="overview-hub-card" onclick="goToCategory('diagnostics')">
+                    <div class="overview-hub-icon">
+                      <svg fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M12 9v4m0 4h.01M10.3 4.3L2.6 17.5A2 2 0 004.3 20.5h15.4a2 2 0 001.7-3L13.7 4.3a2 2 0 00-3.4 0z"/></svg>
+                    </div>
+                    <div class="overview-hub-info">
+                      <div class="overview-hub-title" data-i18n="catDiagnosticsTitle">אבחון ויציבות</div>
+                      <div class="overview-hub-desc" data-i18n="catDiagnosticsDesc">קריסות, מסכים כחולים ויומן שגיאות</div>
+                    </div>
+                    <span class="overview-hub-arrow">&#8592;</span>
+                  </div>
+
+                  <div class="overview-hub-card" onclick="goToCategory('hardware')">
+                    <div class="overview-hub-icon">
+                      <svg fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><rect x="7" y="7" width="10" height="10" rx="1.5"/><path stroke-linecap="round" d="M10 3v4M14 3v4M10 17v4M14 17v4M3 10h4M3 14h4M17 10h4M17 14h4"/></svg>
+                    </div>
+                    <div class="overview-hub-info">
+                      <div class="overview-hub-title" data-i18n="catHardwareTitle">חומרה והתקנים</div>
+                      <div class="overview-hub-desc" data-i18n="catHardwareDesc">דרייברים, מנהל התקנים וסוללה</div>
+                    </div>
+                    <span class="overview-hub-arrow">&#8592;</span>
+                  </div>
+
+                  <div class="overview-hub-card" onclick="goToCategory('settings')">
+                    <div class="overview-hub-icon">
+                      <svg fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><circle cx="12" cy="12" r="3"/><path stroke-linecap="round" stroke-linejoin="round" d="M19.4 15a1.6 1.6 0 00.3 1.8l.1.1a2 2 0 11-2.8 2.8l-.1-.1a1.6 1.6 0 00-2.7 1.1v.3a2 2 0 11-4 0v-.2a1.6 1.6 0 00-2.8-1.1l-.1.1a2 2 0 11-2.8-2.8l.1-.1A1.6 1.6 0 004 15a2 2 0 01-2-2 2 2 0 012-2 1.6 1.6 0 001.1-2.8l-.1-.1a2 2 0 112.8-2.8l.1.1A1.6 1.6 0 009 4.6a2 2 0 012-2 2 2 0 012 2 1.6 1.6 0 002.7 1.1l.1-.1a2 2 0 112.8 2.8l-.1.1A1.6 1.6 0 0020 11a2 2 0 012 2 2 2 0 01-2 2z"/></svg>
+                    </div>
+                    <div class="overview-hub-info">
+                      <div class="overview-hub-title" data-i18n="catSettingsTitle">כלים והגדרות</div>
+                      <div class="overview-hub-desc" data-i18n="catSettingsDesc">התאמת מקלדת והגדרות תוכנה</div>
+                    </div>
+                    <span class="overview-hub-arrow">&#8592;</span>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            <!-- Top consumers -->
+            <div class="card">
+              <div class="card-head">
+                <div>
+                  <div class="card-title" data-i18n="topHogsTitle">צרכני הזיכרון הגדולים</div>
+                  <p class="card-sub" data-i18n="topHogsDesc">היישומים שתופסים את הנתח המשמעותי ביותר כרגע.</p>
+                </div>
+                <div class="card-tools">
+                  <button class="btn-link" onclick="goToScreen('processes')">
+                    <span data-i18n="topHogsLink">לכל התהליכים</span> &#8592;
+                  </button>
+                </div>
+              </div>
+              <div class="card-body">
+                <div class="grid grid-5" id="topHogsContainer">
+                  <div class="loading" data-i18n="loading">טוען...</div>
+                </div>
+              </div>
+            </div>
+
+          </div>
+          </div>
+        </section>
+
+        <!-- ==============================================================
+             CATEGORY 2 - PERFORMANCE & RESOURCES
+             ============================================================== -->
+        <section class="screen" id="screen-performance">
+          <div class="subtabs-bar">
+            <button class="subtab-btn active" data-subtab="processes" onclick="switchSubTab('performance', 'processes')">
+              <svg fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M4 6h16M4 12h16M4 18h10"/></svg>
+              <span data-i18n="navProcesses">תהליכים ושירותים</span>
+            </button>
+            <button class="subtab-btn" data-subtab="memory" onclick="switchSubTab('performance', 'memory')">
+              <svg fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M9 3v2m6-2v2M9 19v2m6-2v2M5 9H3m2 6H3m18-6h-2m2 6h-2M7 19h10a2 2 0 002-2V7a2 2 0 00-2-2H7a2 2 0 00-2 2v10a2 2 0 002 2zM9.5 9.5h5v5h-5z"/></svg>
+              <span data-i18n="navMemory">אבחון זיכרון וקרנל</span>
+            </button>
+          </div>
+
+          <div class="subtab-panel active" id="panel-processes">
+            <div class="card">
+
+            <div class="card-head">
+              <div>
+                <div class="card-title">
+                  <span data-i18n="processExplorerTitle">מנהל תהליכים ושירותי Windows</span>
+                  <span class="badge badge-mono" id="procCountBadge">0</span>
+                </div>
+                <p class="card-sub" data-i18n="processExplorerDesc">תהליכים פעילים, שיוך שירותי Windows פנימיים והקצאת משאבים.</p>
+              </div>
+              <div class="card-tools">
+                <div class="seg">
+                  <button class="seg-btn active" id="btnViewAppGrouped" onclick="setGroupedView(true)" data-i18n="btnGrouped">מרוכז באפליקציות</button>
+                  <button class="seg-btn" id="btnViewFlatPids" onclick="setGroupedView(false)" data-i18n="btnFlat">רשימת PID</button>
+                </div>
+              </div>
+            </div>
+
+            <div class="toolbar">
+              <div class="input-wrap">
+                <svg fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+                  <path stroke-linecap="round" stroke-linejoin="round" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"/>
+                </svg>
+                <input type="text" id="procSearchInput" class="input" oninput="filterProcesses()"
+                       data-i18n-ph="searchPlaceholder" placeholder="חיפוש תהליך, שירות או PID...">
+                <button id="btnClearSearch" class="input-clear hidden" onclick="clearSearch()">&#10005;</button>
+              </div>
+
+              <div class="pill-row" id="categoryFilterContainer">
+                <button class="pill active" data-category="All" onclick="setCategoryFilter('All')" data-i18n="catAll">הכל</button>
+                <button class="pill" data-category="Browsers" onclick="setCategoryFilter('Browsers')" data-i18n="catBrowsers">דפדפנים</button>
+                <button class="pill" data-category="Development" onclick="setCategoryFilter('Development')" data-i18n="catDevelopment">פיתוח</button>
+                <button class="pill" data-category="System" onclick="setCategoryFilter('System')" data-i18n="catSystem">שירותי מערכת</button>
+                <button class="pill" data-category="Apps" onclick="setCategoryFilter('Apps')" data-i18n="catApps">תוכנות</button>
+              </div>
+            </div>
+
+            <div class="table-scroll">
+              <table class="table">
+                <thead>
+                  <tr>
+                    <th data-i18n="thProcessName">שם התהליך / אפליקציה</th>
+                    <th class="num" data-i18n="thCategory">קטגוריה</th>
+                    <th class="num sortable" onclick="sortBy('rss_bytes')">
+                      <span data-i18n="thRam">זיכרון (RAM)</span><span class="sort-ind" id="sortIcon_rss_bytes">&#9660;</span>
+                    </th>
+                    <th class="num sortable" onclick="sortBy('memory_percent')">
+                      <span data-i18n="thRamPercent">% מה-RAM</span><span class="sort-ind" id="sortIcon_memory_percent"></span>
+                    </th>
+                    <th class="num sortable" onclick="sortBy('cpu_percent')">
+                      <span data-i18n="thCpu">מעבד</span><span class="sort-ind" id="sortIcon_cpu_percent"></span>
+                    </th>
+                    <th class="act" data-i18n="thActions">פעולות</th>
+                  </tr>
+                </thead>
+                <tbody id="processTableBody"></tbody>
+              </table>
+            </div>
+
+          </div>
+          </div>
+
+          <div class="subtab-panel" id="panel-memory">
+            <div class="section-gap">
+              <!-- Live timeline -->
+            <div class="card">
+              <div class="card-head">
+                <div>
+                  <div class="card-title" data-i18n="timelineTitle">היסטוריית שימוש בזיכרון</div>
+                  <p class="card-sub" data-i18n="timelineDesc">60 השניות האחרונות, דגימה כל שנייה.</p>
+                </div>
+                <div class="card-tools">
+                  <span class="row" style="gap: 6px; font-size: 11.5px;">
+                    <span class="legend-dot" style="background: #4d8df6;"></span>
+                    <span class="muted" data-i18n="legendUsed">בשימוש (GB)</span>
+                  </span>
+                  <span class="row" style="gap: 6px; font-size: 11.5px;">
+                    <span class="legend-dot" style="background: #6d7783;"></span>
+                    <span class="muted" data-i18n="legendCached">מטמון (GB)</span>
+                  </span>
+                </div>
+              </div>
+              <div class="card-body">
+                <div class="chart-box timeline"><canvas id="timelineChart"></canvas></div>
+              </div>
+            </div>
+              <div class="section-gap">
+
+            <div class="card">
+              <div class="card-head">
+                <div>
+                  <div class="card-title" data-i18n="findingsTitle">ממצאי אבחון</div>
+                  <p class="card-sub" data-i18n="findingsDesc">כל מה שהמנוע זיהה כגורם אפשרי לצריכת זיכרון גבוהה, עם המלצה לפעולה.</p>
+                </div>
+                <div class="card-tools">
+                  <button class="btn btn-sm" onclick="runDeepDiagnosis()">
+                    <svg fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+                      <path stroke-linecap="round" stroke-linejoin="round" d="M4 4v5h.6M19.9 11A8 8 0 004.6 9M20 20v-5h-.6m0 0a8 8 0 01-15.4-2M19.4 15H15"/>
+                    </svg>
+                    <span data-i18n="btnDeepScan">סריקה מחדש</span>
+                  </button>
+                </div>
+              </div>
+              <div class="card-body">
+                <div class="grid grid-2" id="findingsContainer"></div>
+              </div>
+            </div>
+
+            <div class="grid grid-2">
+
+              <!-- Kernel pools & pagefile -->
+              <div class="card">
+                <div class="card-head">
+                  <div>
+                    <div class="card-title" data-i18n="kernelTitle">קרנל, דרייברים וקובץ החלפה</div>
+                    <p class="card-sub" data-i18n="kernelDesc">זיכרון שאינו שייך לאף תהליך גלוי - כאן מתגלות דליפות דרייברים.</p>
+                  </div>
+                  <div class="card-tools"><span class="badge badge-mono">Win32 API</span></div>
+                </div>
+                <div class="card-body">
+                  <div class="kv">
+                    <div class="grow">
+                      <span class="kv-key">
+                        Non-Paged Pool
+                        <span class="badge badge-ok" id="badgeNppStatus" style="margin-inline-start: 6px;">תקין</span>
+                      </span>
+                      <span class="kv-desc" data-i18n="descNonPaged">זיכרון קבוע ב-RAM עבור דרייברים, לא ניתן להעברה לדיסק</span>
+                    </div>
+                    <span class="kv-val ltr" id="valNonPagedPool">-- MB</span>
+                  </div>
+
+                  <div class="kv">
+                    <div class="grow">
+                      <span class="kv-key">Paged Pool</span>
+                      <span class="kv-desc" data-i18n="descPaged">זיכרון מערכת הניתן להעברה לקובץ ההחלפה</span>
+                    </div>
+                    <span class="kv-val ltr" id="valPagedPool">-- MB</span>
+                  </div>
+
+                  <div class="kv">
+                    <div class="grow">
+                      <span class="kv-key">Pagefile</span>
+                      <span class="kv-desc mono ltr" id="valSwapUsed">-- / --</span>
+                    </div>
+                    <span class="kv-val ltr" id="valSwapPercent">0%</span>
+                  </div>
+                </div>
+                <div class="card-foot">
+                  <span data-i18n="driverLeakNote">ניטור דליפת דרייברים:</span>
+                  <span id="valDriverLeakStatus" class="tone-ok" style="font-weight: 650;">--</span>
+                </div>
+              </div>
+
+              <!-- Category breakdown -->
+              <div class="card">
+                <div class="card-head">
+                  <div>
+                    <div class="card-title" data-i18n="categoryDonutTitle">התפלגות זיכרון לפי קטגוריה</div>
+                    <p class="card-sub" data-i18n="categoryDonutDesc">לאן הולך הזיכרון התפוס, מקובץ לפי סוג התוכנה.</p>
+                  </div>
+                </div>
+                <div class="card-body">
+                  <div class="chart-box donut"><canvas id="categoryChart"></canvas></div>
+                  <div class="legend" id="categoryLegend" style="margin-top: 12px;"></div>
+                </div>
+              </div>
+
+            </div>
+          </div>
+            </div>
+          </div>
+        </section>
+
+        <!-- ==============================================================
+             CATEGORY 3 - DRIVES & STORAGE
+             ============================================================== -->
+        <section class="screen" id="screen-storage">
+          <div class="subtabs-bar">
+            <button class="subtab-btn active" data-subtab="disks" onclick="switchSubTab('storage', 'disks')">
+              <svg fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M4 7a8 4 0 1016 0A8 4 0 004 7zm0 0v10a8 4 0 0016 0V7M4 12a8 4 0 0016 0"/></svg>
+              <span data-i18n="navDisks">בריאות כוננים (S.M.A.R.T)</span>
+            </button>
+            <button class="subtab-btn" data-subtab="storage" onclick="switchSubTab('storage', 'storage')">
+              <svg fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M3 7v10a2 2 0 002 2h14a2 2 0 002-2V9a2 2 0 00-2-2h-6l-2-2H5a2 2 0 00-2 2z"/><path stroke-linecap="round" stroke-linejoin="round" d="M8 12h8m-8 3h5"/></svg>
+              <span data-i18n="navStorage">סייר אחסון</span>
+            </button>
+          </div>
+
+          <div class="subtab-panel active" id="panel-disks">
+            <div class="section-gap">
+
+            <div class="card">
+              <div class="card-head">
+                <div class="row" style="gap: 14px;">
+                  <div class="score" id="diskScoreBox">
+                    <span class="score-val" id="diskScoreIcon">--</span>
+                  </div>
+                  <div>
+                    <div class="card-title">
+                      <span data-i18n="disksVerdictTitle">מצב הכוננים</span>
+                      <span class="badge" id="diskOverallBadge">בודק...</span>
+                    </div>
+                    <p class="card-sub" data-i18n="disksVerdictDesc">
+                      נתוני S.M.A.R.T. שהכוננים עצמם מדווחים: בלאי, טמפרטורה, סקטורים פגומים ושעות פעילות.
+                    </p>
+                  </div>
+                </div>
+                <div class="card-tools">
+                  <button class="btn btn-sm" onclick="fetchDiskHealth(true)">
+                    <svg fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+                      <path stroke-linecap="round" stroke-linejoin="round" d="M4 4v5h.6M19.9 11A8 8 0 004.6 9M20 20v-5h-.6m0 0a8 8 0 01-15.4-2M19.4 15H15"/>
+                    </svg>
+                    <span data-i18n="btnRefresh">רענון</span>
+                  </button>
+                </div>
+              </div>
+
+              <div class="card-body hidden" id="diskFindingsWrap">
+                <div class="grid grid-2" id="diskFindings"></div>
+              </div>
+            </div>
+
+            <!-- Counters unavailable without elevation -->
+            <div class="banner banner-warn hidden" id="diskLimitedBanner">
+              <span class="banner-icon">&#9888;</span>
+              <div class="grow">
+                <div class="banner-title" data-i18n="disksLimitedTitle">נתוני S.M.A.R.T. חלקיים</div>
+                <p class="banner-desc" data-i18n="disksLimitedDesc">
+                  מוני האמינות של הכוננים (בלאי, טמפרטורה, סקטורים פגומים) דורשים הרשאות מנהל.
+                  הפעל את Polaris כמנהל כדי לראות אותם. נתוני הקיבולת מוצגים כרגיל.
+                </p>
+              </div>
+            </div>
+
+            <div class="stack" id="diskList">
+              <div class="loading" data-i18n="loading">טוען...</div>
+            </div>
+
+          </div>
+          </div>
+
+          <div class="subtab-panel" id="panel-storage">
+            <div class="section-gap">
+
+            <!-- View 1: SquirrelDisk Drive Cards & Folder Selector -->
+            <div id="storageDiskSelectionView">
+              <div class="card" style="margin-bottom: 14px;">
+                <div class="card-head">
+                  <div class="grow">
+                    <div class="card-title">
+                      <span data-i18n="storageTitle">סייר אחסון חכם</span>
+                      <span class="badge badge-accent" data-i18n="storageBadgeSquirrel">Sunburst &amp; Collector</span>
+                    </div>
+                    <p class="card-sub" data-i18n="storageSub">
+                      ניתוח שטח אחסון מהיר, תרשים Sunburst מעגלי אינטראקטיבי (DaisyDisk style), סל איסוף למחיקה (Collector), ומפת כריות Treemap.
+                    </p>
+                  </div>
+                  <div class="card-tools row" style="gap: 8px;">
+                    <button class="btn btn-secondary btn-sm" onclick="refreshStorageDrives()" title="רענן רשימת כוננים">
+                      <span>🔄 רענן כוננים</span>
+                    </button>
+                  </div>
+                </div>
+                <div class="card-body">
+                  <!-- SquirrelDisk Drive Cards Grid -->
+                  <div class="disk-cards-grid" id="storageDiskCardsGrid">
+                    <div class="text-muted text-center" style="padding: 20px;" data-i18n="loadingDrives">טוען כוננים...</div>
+                  </div>
+
+                  <!-- Custom Directory Selector Card -->
+                  <div class="custom-scan-box row" style="margin-top: 14px; gap: 10px; align-items: center; background: var(--bg-surface-alt, rgba(255,255,255,0.03)); padding: 12px; border-radius: var(--r); border: 1px dashed var(--line);">
+                    <svg fill="none" stroke="currentColor" stroke-width="1.8" viewBox="0 0 24 24" style="width: 22px; height: 22px; color: var(--accent); flex-shrink: 0;">
+                      <path stroke-linecap="round" stroke-linejoin="round" d="M3 7v10a2 2 0 002 2h14a2 2 0 002-2V9a2 2 0 00-2-2h-6l-2-2H5a2 2 0 00-2 2z"/>
+                    </svg>
+                    <div class="grow">
+                      <div style="font-weight: 600; font-size: 0.9rem;" data-i18n="storageScanCustom">סריקת תיקייה ספציפית:</div>
+                      <input type="text" class="input input-sm" id="storageCustomFolderInput" placeholder="לדוגמה: C:\Users\pc\Downloads או D:\SteamLibrary" style="margin-top: 4px; width: 100%;" />
+                    </div>
+                    <button class="btn btn-primary" onclick="startStorageCustomScan()" style="align-self: flex-end;">
+                      <span data-i18n="storageStartScan">סרוק תיקייה זו</span>
+                    </button>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            <!-- View 2: Active Scan & Analysis Hub -->
+            <div id="storageDetailView" class="hidden">
+              <!-- Control & Status Card -->
+              <div class="card">
+                <div class="card-head">
+                  <div class="grow">
+                    <div class="card-title row" style="gap: 10px; align-items: center;">
+                      <button class="btn btn-secondary btn-sm" onclick="returnToDiskSelection()" title="חזרה לרשימת הכוננים">
+                        <span>← כוננים</span>
+                      </button>
+                      <span id="storageCurrentTargetLabel">C:\</span>
+                      <span class="badge" id="storageStatusBadge" data-i18n="storageIdle">ממתין לסריקה</span>
+                    </div>
+                  </div>
+
+                  <div class="card-tools row" style="gap: 8px;">
+                    <button class="btn btn-secondary btn-sm hidden" id="btnStoragePause" onclick="toggleStoragePause()" title="השהה/המשך סריקה">
+                      <span id="txtBtnStoragePause">⏸️ השהה</span>
+                    </button>
+
+                    <button class="btn btn-secondary btn-sm hidden" id="btnStorageCancel" onclick="cancelStorageScan()" title="בטל סריקה">
+                      <span>🛑 בטל</span>
+                    </button>
+
+                    <button class="btn btn-sm btn-icon" onclick="exportStorageReport('csv')" title="ייצוא דו&quot;ח CSV" data-i18n-title="storageExportCsv">
+                      <svg fill="none" stroke="currentColor" stroke-width="1.8" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4"/>
+                      </svg>
+                    </button>
+                  </div>
+                </div>
+
+                <!-- Live Scan Progress Section -->
+                <div class="card-body" id="storageProgressSection" style="padding-top: 6px;">
+                  <div class="storage-stats-row">
+                    <div class="storage-stat-pill">
+                      <span class="pill-label" data-i18n="storageScannedFiles">קבצים:</span>
+                      <span class="pill-val mono" id="storagePillFiles">0</span>
+                    </div>
+                    <div class="storage-stat-pill">
+                      <span class="pill-label" data-i18n="storageScannedFolders">תיקיות:</span>
+                      <span class="pill-val mono" id="storagePillFolders">0</span>
+                    </div>
+                    <div class="storage-stat-pill">
+                      <span class="pill-label" data-i18n="storageScannedSize">גודל שנסרק:</span>
+                      <span class="pill-val mono" id="storagePillSize">0 B</span>
+                    </div>
+                    <div class="storage-stat-pill">
+                      <span class="pill-label" data-i18n="storageScanRate">מהירות:</span>
+                      <span class="pill-val mono" id="storagePillRate">0 קבצים/שנ'</span>
+                    </div>
+                    <div class="storage-stat-pill">
+                      <span class="pill-label" data-i18n="storageTime">זמן:</span>
+                      <span class="pill-val mono" id="storagePillTime">00:00</span>
+                    </div>
+                  </div>
+
+                  <!-- Pacman Lane Animation -->
+                  <div class="pacman-lane hidden" id="pacmanLane">
+                    <div class="pacman-track">
+                      <span class="pacman-dot"></span>
+                      <span class="pacman-dot"></span>
+                      <span class="pacman-dot"></span>
+                      <span class="pacman-dot"></span>
+                      <span class="pacman-dot"></span>
+                      <span class="pacman-dot"></span>
+                      <span class="pacman-dot"></span>
+                      <span class="pacman-dot"></span>
+                      <span class="pacman-dot"></span>
+                      <span class="pacman-dot"></span>
+                      <div class="pacman-figure" id="pacmanFigure"></div>
+                    </div>
+                    <div class="pacman-path-text mono" id="pacmanCurrentPath" title="">C:\...</div>
+                  </div>
+
+                  <!-- Multi-segment Volume Breakdown Bar -->
+                  <div class="storage-bar-wrap" id="storageBarWrap" style="margin-top: 14px;">
+                    <div class="storage-bar-legend row" style="justify-content: space-between; font-size: 0.8rem; margin-bottom: 6px;">
+                      <span class="row" style="gap: 6px;">
+                        <span class="storage-legend-dot" style="background:#268bd2;"></span>
+                        <span data-i18n="storageScannedSpace">נסרק:</span>
+                        <strong id="storageLegScanned">0 B</strong>
+                      </span>
+                      <span class="row" style="gap: 6px;">
+                        <span class="storage-legend-dot" style="background:#2ecc71;"></span>
+                        <span data-i18n="storageFreeSpace">פנוי:</span>
+                        <strong id="storageLegFree">0 B</strong>
+                      </span>
+                      <span class="row" style="gap: 6px;" title="System Volume Information, צלליות VSS ורשומות NTFS נעולות">
+                        <span class="storage-legend-dot" style="background:#e67e22;"></span>
+                        <span data-i18n="storageUnknownSpace">שטח נסתר (&lt;Unknown&gt;):</span>
+                        <strong id="storageLegUnknown">0 B</strong>
+                      </span>
+                      <span class="row" style="gap: 6px;">
+                        <span data-i18n="storageTotalDrive">סך הכונן:</span>
+                        <strong id="storageLegTotal">0 B</strong>
+                      </span>
+                    </div>
+                    <div class="storage-multi-bar" id="storageMultiBar">
+                      <div class="storage-segment seg-scanned" id="segScanned" style="width: 0%;"></div>
+                      <div class="storage-segment seg-unknown" id="segUnknown" style="width: 0%;"></div>
+                      <div class="storage-segment seg-free" id="segFree" style="width: 100%;"></div>
+                    </div>
+                  </div>
+                </div>
+              </div>
+
+              <!-- Storage Sub-tabs Navigation -->
+              <div class="tab-strip">
+                <button class="tab-btn active" id="tabBtnStorageSunburst" onclick="switchStorageTab('sunburst')">
+                  <span data-i18n="storageTabSunburst">🪐 תרשים מעגלי (Sunburst)</span>
+                </button>
+                <button class="tab-btn" id="tabBtnStorageTreemap" onclick="switchStorageTab('treemap')">
+                  <span data-i18n="storageTabTreemap">📊 עץ ומפת כריות (Treemap)</span>
+                </button>
+                <button class="tab-btn" id="tabBtnStorageTop" onclick="switchStorageTab('top')">
+                  <span data-i18n="storageTabTop">🏆 100 הקבצים הגדולים</span>
+                </button>
+                <button class="tab-btn" id="tabBtnStorageDupes" onclick="switchStorageTab('dupes')">
+                  <span data-i18n="storageTabDupes">👯 איתור כפילויות</span>
+                </button>
+                <button class="tab-btn" id="tabBtnStorageClean" onclick="switchStorageTab('clean')">
+                  <span data-i18n="storageTabClean">🧹 פעולות ניקוי מהירות</span>
+                </button>
+              </div>
+
+              <!-- ==========================================================
+                   TAB 1: SQUIRRELDISK SUNBURST + COLLECTOR (DEFAULT)
+                   ========================================================== -->
+              <div class="storage-tab-content" id="storageTabContentSunburst">
+                <div class="grid storage-sunburst-layout" style="display: grid; grid-template-columns: 1.5fr 1fr; gap: 14px;">
+                  
+                  <!-- Left: Sunburst Radial Chart Canvas -->
+                  <div class="card" style="display: flex; flex-direction: column; overflow: hidden; min-height: 520px;">
+                    <div class="card-head" style="padding: 8px 14px; background: var(--bg-surface-alt, rgba(0,0,0,0.03));">
+                      <!-- Breadcrumbs for Sunburst navigation -->
+                      <div class="storage-breadcrumbs grow" id="sunburstBreadcrumbs">
+                        <span class="breadcrumb-item active" onclick="zoomSunburstRoot()">ROOT</span>
+                      </div>
+
+                      <div class="card-tools row" style="gap: 8px;">
+                        <button class="btn btn-sm" id="btnSunburstZoomUp" onclick="zoomSunburstUp()" title="חזרה רמה אחת למעלה">
+                          <span>⬆ רמה למעלה</span>
+                        </button>
+                        <button class="btn btn-sm btn-icon" onclick="redrawSunburstChart()" title="צייר מחדש">
+                          <svg fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" d="M4 4v5h.6M19.9 11A8 8 0 004.6 9M20 20v-5h-.6m0 0a8 8 0 01-15.4-2M19.4 15H15"/>
+                          </svg>
+                        </button>
+                      </div>
+                    </div>
+
+                    <!-- Canvas Wrapper -->
+                    <div class="sunburst-canvas-wrap grow" id="sunburstCanvasWrap" style="position: relative; display: flex; align-items: center; justify-content: center; padding: 10px;">
+                      <canvas id="storageSunburstCanvas" width="540" height="540"></canvas>
+                      
+                      <!-- Center Hover / Focus Display -->
+                      <div class="sunburst-center-info" id="sunburstCenterInfo">
+                        <div class="center-folder-name" id="sunburstCenterName">בחר תיקייה</div>
+                        <div class="center-folder-size" id="sunburstCenterSize">0 B</div>
+                        <div class="center-folder-hint faint" id="sunburstCenterHint">לחץ למעבר / ריחוף לפרטים</div>
+                      </div>
+
+                      <!-- Dedicated SquirrelDisk Scanning Overlay -->
+                      <div class="storage-scanning-overlay hidden" id="storageScanningOverlay">
+                        <div class="scan-overlay-content">
+                          <div class="scan-overlay-disk-icon">
+                            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" class="scan-pulse-svg">
+                              <rect x="2" y="4" width="20" height="16" rx="3" />
+                              <circle cx="7" cy="12" r="1.5" fill="currentColor" />
+                              <line x1="12" y1="12" x2="19" y2="12" stroke-linecap="round" />
+                              <circle cx="12" cy="12" r="7" stroke-dasharray="3 3" class="scan-radar-circle" />
+                            </svg>
+                          </div>
+                          <div class="scan-overlay-title" id="scanOverlayTitle">סורק כונן...</div>
+                          <div class="scan-overlay-meter">
+                            <div class="scan-overlay-meter-bar" id="scanOverlayBar" style="width: 0%;"></div>
+                          </div>
+                          <div class="scan-overlay-stats mono" id="scanOverlayStats">מתחיל סריקה...</div>
+                          <div class="scan-overlay-path mono" id="scanOverlayPath" title="">C:\...</div>
+                          <div class="scan-overlay-actions">
+                            <button class="btn btn-sm btn-subtle" id="btnOverlayPause" onclick="toggleStoragePause()">
+                              <span id="txtOverlayPause">⏸️ השהה סריקה</span>
+                            </button>
+                            <button class="btn btn-sm btn-ghost" id="btnOverlayCancel" onclick="cancelStorageScan()">
+                              <span>🛑 ביטול סריקה</span>
+                            </button>
+                            <button class="btn btn-sm btn-subtle" onclick="returnToDiskSelection()">
+                              <span>חזרה לכוננים</span>
+                            </button>
+                          </div>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+
+                  <!-- Right: Synchronized Directory Files & Deletion Collector -->
+                  <div class="card storage-sidebar-panel" style="display: flex; flex-direction: column; min-height: 520px;">
+                    <!-- Folder Header -->
+                    <div class="card-head" style="padding: 10px 14px;">
+                      <div class="grow">
+                        <div class="card-title" style="font-size: 0.95rem;" id="sunburstCurrentDirTitle">תוכן התיקייה</div>
+                        <span class="faint mono" style="font-size: 0.8rem;" id="sunburstCurrentDirSize">0 B</span>
+                      </div>
+                      <div class="card-tools">
+                        <input type="text" class="input input-sm" id="storageFileListFilter" placeholder="סינון פריטים..." oninput="filterStorageFileList()" style="width: 120px;" />
+                      </div>
+                    </div>
+
+                    <!-- File & Folder List -->
+                    <div class="storage-fileline-wrap grow" id="storageFilelineWrap" style="overflow-y: auto; max-height: 260px; padding: 6px;">
+                      <div class="text-muted text-center" style="padding: 20px;">טוען פריטים...</div>
+                    </div>
+
+                    <!-- The SquirrelDisk Deletion Collector (Dropzone) -->
+                    <div class="storage-collector-box" id="storageCollectorBox" ondragover="onCollectorDragOver(event)" ondragleave="onCollectorDragLeave(event)" ondrop="onCollectorDrop(event)">
+                      <div class="collector-head row spread" style="align-items: center; margin-bottom: 6px;">
+                        <div class="row" style="gap: 6px; align-items: center;">
+                          <span style="font-size: 1.1rem;">🗑️</span>
+                          <span style="font-weight: 650; font-size: 0.88rem;" data-i18n="collectorTitle">סל איסוף למחיקה (Collector)</span>
+                        </div>
+                        <a href="javascript:void(0)" class="faint text-danger" id="btnCollectorClear" onclick="clearCollectorSelection()" style="font-size: 0.78rem; text-decoration: underline;" data-i18n="collectorClear">נקה בחירה</a>
+                      </div>
+
+                      <div class="collector-dropzone" id="collectorDropzone">
+                        <div class="collector-empty-msg faint" id="collectorEmptyMsg" data-i18n="collectorDropPrompt">
+                          גרור לכאן קבצים/תיקיות למחיקה או לחץ על ➕ ברשימה
+                        </div>
+                        <div class="collector-items-list hidden" id="collectorItemsList">
+                          <!-- Chips of selected items dynamically inserted here -->
+                        </div>
+                      </div>
+
+                      <!-- Collector Footer & Action Button -->
+                      <div class="collector-foot row spread" style="align-items: center; margin-top: 8px;">
+                        <div>
+                          <span class="mono" style="font-weight: 700; font-size: 0.9rem;" id="collectorTotalSize">0 B</span>
+                          <span class="faint" style="font-size: 0.78rem; margin-inline-start: 4px;" id="collectorItemsCount">(0 פריטים)</span>
+                        </div>
+                        <button class="btn btn-solid-danger btn-sm" id="btnExecuteCollectorDelete" onclick="executeCollectorDelete()" disabled>
+                          <span data-i18n="collectorBtnDelete">מחק פריטים (Recycle Bin)</span>
+                        </button>
+                      </div>
+                    </div>
+
+                  </div>
+                </div>
+              </div>
+
+            <!-- ==========================================================
+                 TAB 1: CLASSIC WINDIRSTAT (TREE + LEGEND + CUSHION TREEMAP)
+                 ========================================================== -->
+            <div class="storage-tab-content" id="storageTabContentTreemap">
+              <!-- Top Row: Tree (Left) & Extensions (Right) -->
+              <div class="grid grid-2 storage-split-top" style="gap: 12px; margin-bottom: 12px;">
+                <!-- Left: Directory Tree -->
+                <div class="card storage-pane-card">
+                  <div class="card-head" style="padding: 10px 14px;">
+                    <div class="card-title" style="font-size: 0.95rem;">
+                      <span data-i18n="storageTreeTitle">עץ התיקיות</span>
+                    </div>
+                    <div class="card-tools">
+                      <input type="text" class="input input-sm" id="storageTreeFilter" placeholder="סינון תיקייה..." oninput="filterStorageTree()" style="width: 130px;" />
+                    </div>
+                  </div>
+                  <div class="storage-tree-table-wrap" id="storageTreeWrap">
+                    <table class="data-table storage-tree-table" id="storageTreeTable">
+                      <thead>
+                        <tr>
+                          <th style="min-width: 180px;" data-i18n="storageColName">שם</th>
+                          <th style="width: 90px;" data-i18n="storageColProportion">יחס גודל</th>
+                          <th style="width: 80px;" data-i18n="storageColSize">גודל</th>
+                          <th style="width: 60px;" data-i18n="storageColFiles">קבצים</th>
+                          <th style="width: 60px;" data-i18n="storageColSubdirs">תיקיות</th>
+                          <th style="width: 38px;"></th>
+                        </tr>
+                      </thead>
+                      <tbody id="storageTreeBody">
+                        <tr><td colspan="6" class="text-muted text-center" style="padding: 24px;" data-i18n="storageNoScanYet">הפעל סריקה כדי לצפות בעץ התיקיות</td></tr>
+                      </tbody>
+                    </table>
+                  </div>
+                </div>
+
+                <!-- Right: Extension Breakdown Legend -->
+                <div class="card storage-pane-card">
+                  <div class="card-head" style="padding: 10px 14px;">
+                    <div class="card-title" style="font-size: 0.95rem;">
+                      <span data-i18n="storageExtTitle">פילוח סיומות (מקרא צבעים)</span>
+                    </div>
+                    <div class="card-tools">
+                      <span class="badge" id="storageExtCountBadge">0 סוגים</span>
+                    </div>
+                  </div>
+                  <div class="storage-ext-table-wrap" id="storageExtWrap">
+                    <table class="data-table storage-ext-table">
+                      <thead>
+                        <tr>
+                          <th style="width: 26px;"></th>
+                          <th data-i18n="storageColExt">סיומת</th>
+                          <th data-i18n="storageColSize">סך גודל</th>
+                          <th style="width: 60px;">%</th>
+                          <th style="width: 70px;" data-i18n="storageColFiles">קבצים</th>
+                        </tr>
+                      </thead>
+                      <tbody id="storageExtBody">
+                        <tr><td colspan="5" class="text-muted text-center" style="padding: 24px;" data-i18n="storageNoExts">אין נתוני סיומות עדיין</td></tr>
+                      </tbody>
+                    </table>
+                  </div>
+                </div>
+              </div>
+
+              <!-- Bottom Row: Cushion Treemap Canvas -->
+              <div class="card" style="overflow: hidden;">
+                <div class="card-head" style="padding: 8px 14px; background: var(--bg-surface-alt, rgba(0,0,0,0.03));">
+                  <!-- Breadcrumbs -->
+                  <div class="storage-breadcrumbs grow" id="storageBreadcrumbs">
+                    <span class="breadcrumb-item active" onclick="zoomStorageTreemapRoot()">ROOT</span>
+                  </div>
+
+                  <div class="card-tools row" style="gap: 8px;">
+                    <button class="btn btn-sm" id="btnStorageZoomOut" onclick="zoomStorageTreemapUp()" title="רמה אחת למעלה">
+                      <span>⬆ עלה שלב</span>
+                    </button>
+
+                    <select class="input input-sm" id="storageTreemapStyle" onchange="changeTreemapStyle()" style="width: 120px;">
+                      <option value="cushion">כריות תלת-ממד (Classic)</option>
+                      <option value="flat">שטוח (Flat)</option>
+                      <option value="pastel">פסטל רך (Pastel)</option>
+                    </select>
+
+                    <button class="btn btn-sm btn-icon" onclick="reloadStorageTreemapData()" title="רענן מפת כריות">
+                      <svg fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" d="M4 4v5h.6M19.9 11A8 8 0 004.6 9M20 20v-5h-.6m0 0a8 8 0 01-15.4-2M19.4 15H15"/>
+                      </svg>
+                    </button>
+                  </div>
+                </div>
+
+                <!-- Canvas & Tooltip Container -->
+                <div class="storage-canvas-container" id="storageCanvasContainer">
+                  <canvas id="storageTreemapCanvas" width="1000" height="460"></canvas>
+                  <div class="storage-treemap-tooltip hidden" id="storageTreemapTooltip">
+                    <div class="tooltip-title" id="ttName">filename.ext</div>
+                    <div class="tooltip-row">
+                      <span class="text-muted" data-i18n="storageColSize">גודל:</span>
+                      <strong id="ttSize">0 B</strong>
+                    </div>
+                    <div class="tooltip-row">
+                      <span class="text-muted" data-i18n="storageColPath">נתיב:</span>
+                      <span class="mono" id="ttPath" style="word-break: break-all;">C:\...</span>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            <!-- ==========================================================
+                 TAB 2: TOP LARGEST FILES
+                 ========================================================== -->
+            <div class="storage-tab-content hidden" id="storageTabContentTop">
+              <div class="card">
+                <div class="card-head">
+                  <div class="card-title">
+                    <span data-i18n="storageTopTitle">100 הקבצים הגדולים ביותר בכונן</span>
+                    <span class="badge" id="storageTopCountBadge">0</span>
+                  </div>
+                  <div class="card-tools">
+                    <input type="text" class="input input-sm" id="storageTopFilter" placeholder="חיפוש קובץ..." oninput="filterStorageTopFiles()" style="width: 180px;" />
+                  </div>
+                </div>
+                <div class="table-wrap">
+                  <table class="data-table">
+                    <thead>
+                      <tr>
+                        <th style="width: 40px;">#</th>
+                        <th data-i18n="storageColName">שם הקובץ</th>
+                        <th style="width: 90px;" data-i18n="storageColSize">גודל</th>
+                        <th style="width: 70px;">% מהכונן</th>
+                        <th data-i18n="storageColPath">נתיב מלא</th>
+                        <th style="width: 100px;">פעולות</th>
+                      </tr>
+                    </thead>
+                    <tbody id="storageTopBody">
+                      <tr><td colspan="6" class="text-muted text-center" style="padding: 24px;" data-i18n="storageNoScanYet">הפעל סריקה כדי לצפות בקבצים הגדולים</td></tr>
+                    </tbody>
+                  </table>
+                </div>
+              </div>
+            </div>
+
+            <!-- ==========================================================
+                 TAB 3: DUPLICATE FILES FINDER
+                 ========================================================== -->
+            <div class="storage-tab-content hidden" id="storageTabContentDupes">
+              <div class="card">
+                <div class="card-head">
+                  <div class="grow">
+                    <div class="card-title">
+                      <span data-i18n="storageDupesTitle">איתור קבצים כפולים (Duplicate Finder)</span>
+                      <span class="badge badge-warn hidden" id="storageDupesWasteBadge">0 B מבוזבזים</span>
+                    </div>
+                    <p class="card-sub" data-i18n="storageDupesSub">
+                      סריקה מהירה בשני שלבים: בדיקת גודל זהה, גיבוב דליל (Sparse Hash), ואימות SHA-256 מלא.
+                    </p>
+                  </div>
+                  <div class="card-tools row" style="gap: 10px;">
+                    <div class="row" style="gap: 6px; font-size: 0.85rem;">
+                      <span data-i18n="storageMinSize">גודל מינימלי:</span>
+                      <!-- &#8294;...&#8297; = LRI/PDI: keeps "5 MB" from being flipped to "MB 5" inside the RTL document. -->
+                      <select class="input input-sm ltr" id="storageDupeMinSize" style="width: 100px;">
+                        <option value="5">&#8294;5&#160;MB&#8297;</option>
+                        <option value="10" selected>&#8294;10&#160;MB&#8297;</option>
+                        <option value="50">&#8294;50&#160;MB&#8297;</option>
+                        <option value="100">&#8294;100&#160;MB&#8297;</option>
+                        <option value="500">&#8294;500&#160;MB&#8297;</option>
+                      </select>
+                    </div>
+                    <button class="btn btn-primary btn-sm" onclick="runStorageDuplicateScan()">
+                      <span data-i18n="storageBtnScanDupes">חפש כפילויות עכשיו</span>
+                    </button>
+                  </div>
+                </div>
+                <div class="card-body" id="storageDupesContainer">
+                  <div class="text-muted text-center" style="padding: 28px;" data-i18n="storageDupesPrompt">
+                    לחץ על "חפש כפילויות עכשיו" כדי למצוא קבצים זהים שתופסים שטח כפול בדיסק.
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            <!-- ==========================================================
+                 TAB 4: QUICK STORAGE CLEANUPS
+                 ========================================================== -->
+            <div class="storage-tab-content hidden" id="storageTabContentClean">
+              <div class="grid grid-2" style="gap: 14px;">
+                <!-- Recycle Bin -->
+                <div class="card">
+                  <div class="card-head">
+                    <div class="card-title">
+                      <span>🗑️ ריקון סל המחזור</span>
+                    </div>
+                  </div>
+                  <div class="card-body">
+                    <p class="card-sub" style="margin-bottom: 14px;">
+                      מחיקה מיידית וסופית של כל הקבצים הממתינים בסל המחזור של Windows לשחרור שטח.
+                    </p>
+                    <button class="btn btn-secondary" onclick="executeStorageQuickClean('empty_bin')">
+                      <span>רוקן את סל המחזור עכשיו</span>
+                    </button>
+                  </div>
+                </div>
+
+                <!-- Windows Cleanmgr -->
+                <div class="card">
+                  <div class="card-head">
+                    <div class="card-title">
+                      <span>⚙️ ניקוי הדיסק הרשמי (Cleanmgr)</span>
+                    </div>
+                  </div>
+                  <div class="card-body">
+                    <p class="card-sub" style="margin-bottom: 14px;">
+                      הפעלת כלי הניקוי המובנה של Windows להסרת קבצי Windows Update ישנים ודוחות שגיאות.
+                    </p>
+                    <button class="btn btn-secondary" onclick="executeStorageQuickClean('launch_cleanmgr')">
+                      <span>פתח את כלי הניקוי של Windows</span>
+                    </button>
+                  </div>
+                </div>
+
+                <!-- VSS Shadow Storage -->
+                <div class="card">
+                  <div class="card-head">
+                    <div class="card-title">
+                      <span>📸 שטח צלליות מערכת (Shadow Copies / VSS)</span>
+                    </div>
+                  </div>
+                  <div class="card-body">
+                    <p class="card-sub" style="margin-bottom: 14px;">
+                      בדיקת השטח שווינדוס מקצה עבור נקודות שחזור ועותקי צללית (הסבר ל-&lt;Unknown&gt; space).
+                    </p>
+                    <button class="btn btn-secondary" onclick="executeStorageQuickClean('query_vss')">
+                      <span>בדוק הקצאת שטח צלליות (VSS)</span>
+                    </button>
+                  </div>
+                </div>
+
+                <!-- Reveal Drive -->
+                <div class="card">
+                  <div class="card-head">
+                    <div class="card-title">
+                      <span>🚀 פתיחת סייר הקבצים</span>
+                    </div>
+                  </div>
+                  <div class="card-body">
+                    <p class="card-sub" style="margin-bottom: 14px;">
+                      פתיחת סייר הקבצים של Windows בנתיב הכונן הנוכחי.
+                    </p>
+                    <button class="btn btn-secondary" onclick="executeStorageQuickClean('reveal_drive')">
+                      <span>הצג את הכונן בסייר הקבצים</span>
+                    </button>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+          </div>
+          </div>
+        
+
+        
+
+        <div class="storage-ctx-menu hidden" id="storageCtxMenu">
+          <div class="ctx-item" onclick="onStorageCtxAction('reveal')">
+            <span>📁 הצג בסייר הקבצים (Explorer)</span>
+          </div>
+          <div class="ctx-item" onclick="onStorageCtxAction('open')">
+            <span>▶ פתח קובץ</span>
+          </div>
+          <div class="ctx-item" onclick="onStorageCtxAction('cmd')">
+            <span>💻 פתח שורת פקודה (CMD) כאן</span>
+          </div>
+          <div class="ctx-item" onclick="onStorageCtxAction('powershell')">
+            <span>⚡ פתח PowerShell כאן</span>
+          </div>
+          <div class="ctx-item" onclick="onStorageCtxAction('copy')">
+            <span>📋 העתק נתיב מלא</span>
+          </div>
+          <div class="ctx-divider"></div>
+          <div class="ctx-item ctx-warn" onclick="onStorageCtxAction('recycle')">
+            <span>🗑️ העבר לסל המחזור</span>
+          </div>
+          <div class="ctx-item ctx-danger" onclick="onStorageCtxAction('delete')">
+            <span>⚠️ מחק לצמיתות</span>
+          </div>
+        </div>
+      </section>
+
+        <!-- ==============================================================
+             CATEGORY 4 - MAINTENANCE & SOFTWARE
+             ============================================================== -->
+        <section class="screen" id="screen-maintenance">
+          <div class="subtabs-bar">
+            <button class="subtab-btn active" data-subtab="maintenance" onclick="switchSubTab('maintenance', 'maintenance')">
+              <svg fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M14.7 6.3a4 4 0 00-5.4 5.4L4 17v3h3l5.3-5.3a4 4 0 005.4-5.4l-2.4 2.4-2.3-2.3 2.4-2.4z"/></svg>
+              <span data-i18n="navMaintenance">תחזוקה ותיקון</span>
+            </button>
+            <button class="subtab-btn" data-subtab="uninstaller" onclick="switchSubTab('maintenance', 'uninstaller')">
+              <svg fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"/></svg>
+              <span data-i18n="navUninstaller">הסרת תוכנות ושאריות</span>
+            </button>
+            <button class="subtab-btn" data-subtab="startup" onclick="switchSubTab('maintenance', 'startup')">
+              <svg fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M12 3v9m5.7-6.7a8 8 0 11-11.4 0"/></svg>
+              <span data-i18n="navStartup">תוכנות אתחול</span>
+            </button>
+          </div>
+
+          <div class="subtab-panel active" id="panel-maintenance">
+            <div class="section-gap">
+
+            <div class="banner">
+              <span class="banner-icon tone-ok">&#10003;</span>
+              <div class="grow">
+                <div class="banner-title" data-i18n="repairSafetyTitle">כל הפעולות כאן משתמשות בכלי Microsoft רשמיים</div>
+                <p class="banner-desc" data-i18n="repairSafetyNote">קבצים אישיים, מסמכים, תמונות, שולחן העבודה ותוכנות מותקנות נשמרים לחלוטין.</p>
+              </div>
+            </div>
+
+            <!-- Audit snapshot -->
+            <div class="grid grid-4">
+              <div class="card">
+                <div class="card-body">
+                  <div class="spread" style="margin-bottom: 8px;">
+                    <span class="eyebrow" data-i18n="lblAuditTemp">קבצים זמניים ומטמון</span>
+                    <span class="badge badge-mono">Temp</span>
+                  </div>
+                  <div class="stat-value" id="auditRecoverableSize">--</div>
+                  <span class="stat-note" data-i18n="lblAuditRecoverable">ניתן לפינוי</span>
+                </div>
+              </div>
+
+              <div class="card">
+                <div class="card-body">
+                  <div class="spread" style="margin-bottom: 8px;">
+                    <span class="eyebrow" data-i18n="lblAuditStartup">יישומי אתחול</span>
+                    <span class="badge badge-mono">Startup</span>
+                  </div>
+                  <div class="stat-value" id="auditStartupCount">--</div>
+                  <span class="stat-note tone-warn" id="auditHighImpactCount">--</span>
+                </div>
+              </div>
+
+              <div class="card">
+                <div class="card-body">
+                  <div class="spread" style="margin-bottom: 8px;">
+                    <span class="eyebrow" data-i18n="lblAuditTrim">מיטוב כונן SSD</span>
+                    <span class="badge badge-mono">TRIM</span>
+                  </div>
+                  <div class="stat-value tone-ok" data-i18n="auditReady">מוכן</div>
+                  <span class="stat-note" data-i18n="auditTrimNote">רענון בלוקים פנויים</span>
+                </div>
+              </div>
+
+              <div class="card">
+                <div class="card-body">
+                  <div class="spread" style="margin-bottom: 8px;">
+                    <span class="eyebrow" data-i18n="lblAuditDism">ספריית רכיבי Windows</span>
+                    <span class="badge badge-mono">DISM</span>
+                  </div>
+                  <div class="stat-value tone-accent">ResetBase</div>
+                  <span class="stat-note" data-i18n="auditDismNote">צמצום WinSxS וגיבויי עדכונים</span>
+                </div>
+              </div>
+            </div>
+
+            <!-- Task selection -->
+            <div class="card">
+              <div class="card-head">
+                <div>
+                  <div class="card-title" data-i18n="txtActionCenterTitle">בחירת פעולות תיקון ותחזוקה</div>
+                  <p class="card-sub" data-i18n="txtActionCenterDesc">סמן את המשימות שברצונך להריץ, והפעל הכל בלחיצה אחת.</p>
+                </div>
+                <div class="card-tools">
+                  <button class="btn btn-sm" onclick="refreshRepairAudit()">
+                    <svg fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+                      <path stroke-linecap="round" stroke-linejoin="round" d="M4 4v5h.6M19.9 11A8 8 0 004.6 9M20 20v-5h-.6m0 0a8 8 0 01-15.4-2M19.4 15H15"/>
+                    </svg>
+                    <span data-i18n="btnAuditScan">סריקת מצב</span>
+                  </button>
+                  <button class="btn btn-primary btn-lg" id="btnRunRevitalize" onclick="runSafeRevitalization()">
+                    <svg fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+                      <path stroke-linecap="round" stroke-linejoin="round" d="M14.8 11.2l-3.2-2.1A1 1 0 0010 9.9v4.2a1 1 0 001.6.9l3.2-2.2a1 1 0 000-1.6z"/>
+                      <circle cx="12" cy="12" r="9"/>
+                    </svg>
+                    <span id="txtBtnRunRevitalize" data-i18n="btnRunRevitalize">הפעל תחזוקה</span>
+                  </button>
+                </div>
+              </div>
+
+              <div class="card-body">
+                <div class="eyebrow" style="margin-bottom: 9px;" data-i18n="groupCleanup">ניקוי ופינוי מקום</div>
+                <div class="grid grid-2">
+                  <label class="opt">
+                    <input type="checkbox" id="chkCleanTemp" checked>
+                    <div>
+                      <span class="opt-title" data-i18n="lblChkCleanTemp">ניקוי קבצי זבל זמניים ומטמון ישן</span>
+                      <span class="opt-desc" data-i18n="descChkCleanTemp">מחיקת %TEMP%, SoftwareDistribution/Download ומטמון דוחות שגיאה רדום.</span>
+                    </div>
+                  </label>
+
+                  <label class="opt">
+                    <input type="checkbox" id="chkDismCleanup">
+                    <div>
+                      <span class="opt-title" data-i18n="lblChkDism">ניקוי ספריית רכיבי Windows</span>
+                      <span class="opt-desc" data-i18n="descChkDism">סילוק גיבויי עדכונים ישנים וצמצום WinSxS. פעולה איטית — 4 עד 20 דקות. כבויה כברירת מחדל.</span>
+                      <code class="opt-cmd ltr">dism /online /cleanup-image /startcomponentcleanup /resetbase</code>
+                      <span class="opt-hint hidden" id="dismSuggestHint"></span>
+                    </div>
+                  </label>
+
+                  <label class="opt">
+                    <input type="checkbox" id="chkRetrimSsd" checked>
+                    <div>
+                      <span class="opt-title" data-i18n="lblChkRetrim">מיטוב ביצועי כונן SSD (TRIM)</span>
+                      <span class="opt-desc" data-i18n="descChkRetrim">רענון בלוקים פנויים לשמירה על מהירות קריאה וכתיבה.</span>
+                      <code class="opt-cmd ltr">Optimize-Volume -ReTrim</code>
+                    </div>
+                  </label>
+
+                  <label class="opt">
+                    <input type="checkbox" id="chkFlushRam" checked>
+                    <div>
+                      <span class="opt-title" data-i18n="lblChkFlushRam">שחרור זיכרון עבודה ודפים רדומים</span>
+                      <span class="opt-desc" data-i18n="descChkFlushRam">החזרת מאות מגה-בייטים של RAM פנוי באופן מיידי.</span>
+                      <code class="opt-cmd ltr">EmptyWorkingSet</code>
+                    </div>
+                  </label>
+                </div>
+
+                <div class="eyebrow" style="margin: 18px 0 9px;" data-i18n="groupIntegrity">תיקון שלמות מערכת</div>
+                <div class="grid grid-2">
+                  <label class="opt">
+                    <input type="checkbox" id="chkDismRestore">
+                    <div>
+                      <span class="opt-title" data-i18n="lblChkDismRestore">תיקון תמונת מערכת Windows</span>
+                      <span class="opt-desc" data-i18n="descChkDismRestore">סריקה ושחזור של רכיבי Windows פגומים. עשוי להימשך מספר דקות.</span>
+                      <code class="opt-cmd ltr">dism /online /cleanup-image /restorehealth</code>
+                    </div>
+                  </label>
+
+                  <label class="opt">
+                    <input type="checkbox" id="chkSfc">
+                    <div>
+                      <span class="opt-title" data-i18n="lblChkSfc">סריקה ותיקון קבצי מערכת פגומים</span>
+                      <span class="opt-desc" data-i18n="descChkSfc">בדיקת כל קבצי הליבה המוגנים של Windows ושחזור גרסאות פגומות.</span>
+                      <code class="opt-cmd ltr">sfc /scannow</code>
+                    </div>
+                  </label>
+                </div>
+
+                <div class="eyebrow" style="margin: 18px 0 9px;" data-i18n="groupServices">רשת ושירותים</div>
+                <div class="grid grid-2">
+                  <label class="opt">
+                    <input type="checkbox" id="chkFlushDns" checked>
+                    <div>
+                      <span class="opt-title" data-i18n="lblChkFlushDns">איפוס מטמון DNS</span>
+                      <span class="opt-desc" data-i18n="descChkFlushDns">פתרון איטיות גלישה ואתרים שלא נטענים.</span>
+                      <code class="opt-cmd ltr">ipconfig /flushdns</code>
+                    </div>
+                  </label>
+
+                  <label class="opt">
+                    <input type="checkbox" id="chkNetReset">
+                    <div>
+                      <span class="opt-title" data-i18n="lblChkNetReset">איפוס עמוק של מחסנית הרשת ו-Winsock</span>
+                      <span class="opt-desc" data-i18n="descChkNetReset">תיקון ניתוקי אינטרנט חוזרים. דורש הפעלה מחדש.</span>
+                      <code class="opt-cmd ltr">netsh winsock reset + netsh int ip reset</code>
+                    </div>
+                  </label>
+
+                  <label class="opt">
+                    <input type="checkbox" id="chkWuReset">
+                    <div>
+                      <span class="opt-title" data-i18n="lblChkWuReset">איפוס שירותי Windows Update</span>
+                      <span class="opt-desc" data-i18n="descChkWuReset">אתחול wuauserv, bits ו-cryptsvc ופינוי עדכונים תקועים.</span>
+                    </div>
+                  </label>
+
+                  <label class="opt">
+                    <input type="checkbox" id="chkSpoolerReset">
+                    <div>
+                      <span class="opt-title" data-i18n="lblChkSpoolerReset">איפוס שירות הדפסה ופינוי התור</span>
+                      <span class="opt-desc" data-i18n="descChkSpoolerReset">ניקוי תור הדפסה תקוע ואתחול spoolsv.exe.</span>
+                    </div>
+                  </label>
+                </div>
+              </div>
+            </div>
+
+            <!-- Live run output -->
+            <div class="card hidden" id="revitalizeResultsContainer">
+              <div class="card-head">
+                <div class="grow">
+                  <div class="progress-head">
+                    <span class="progress-step" id="txtRevitalizeCurrentStep">מבצע פעולות תחזוקה...</span>
+                    <span class="progress-pct" id="revitalizePercentBadge">0%</span>
+                  </div>
+                  <div class="meter">
+                    <div class="meter-fill" id="revitalizeProgressBar" style="width: 0%"></div>
+                  </div>
+                  <div class="run-meta mono" id="revitalizeRunMeta">
+                    <span id="revitalizeElapsed">00:00</span>
+                    <span class="run-meta-sep">·</span>
+                    <span id="revitalizeEta"></span>
+                    <span class="run-meta-sep">·</span>
+                    <span id="revitalizeStepCount"></span>
+                  </div>
+                </div>
+              </div>
+
+              <div class="card-body">
+                <div class="eyebrow" style="margin-bottom: 8px;" data-i18n="lblStepList">שלבי התהליך</div>
+                <ol class="step-list" id="revitalizeStepList"></ol>
+
+                <div class="spread" style="margin: 16px 0 8px;">
+                  <span class="row" style="gap: 7px;">
+                    <span class="live-chip-label mono" data-i18n="liveOutput">פלט פקודות חי</span>
+                  </span>
+                  <span class="mono tone-ok" style="font-weight: 700; font-size: 11.5px;" id="revitalizeTotalFreedBadge"></span>
+                </div>
+
+                <div class="terminal" id="revitalizeTerminalLogs">
+                  <div class="term-line term-info">[System] Ready to start maintenance...</div>
+                </div>
+
+                <div class="grid grid-2" id="revitalizeTasksList" style="margin-top: 12px;"></div>
+              </div>
+            </div>
+
+          </div>
+          </div>
+
+          <div class="subtab-panel" id="panel-uninstaller">
+            <div class="section-gap">
+
+            <!-- Top Stats Bar -->
+            <div class="grid grid-4">
+              <div class="card">
+                <div class="card-body spread">
+                  <div>
+                    <span class="stat-label" data-i18n="lblTotalApps">סה"כ תוכנות מותקנות</span>
+                    <div class="metric-hero sm" id="valTotalApps">--</div>
+                  </div>
+                  <svg class="hero-icon" fill="none" stroke="currentColor" stroke-width="1.8" viewBox="0 0 24 24" style="width:32px;height:32px;opacity:0.25;">
+                    <path stroke-linecap="round" stroke-linejoin="round" d="M20 7l-8-4-8 4m16 0l-8 4m8-4v10l-8 4m0-10L4 7m8 4v10M4 7v10l8 4"/>
+                  </svg>
+                </div>
+              </div>
+              <div class="card">
+                <div class="card-body spread">
+                  <div>
+                    <span class="stat-label" data-i18n="lblTotalSpace">נפח דיסק תפוס משוער</span>
+                    <div class="metric-hero sm ltr" id="valTotalAppSpace">-- GB</div>
+                  </div>
+                  <svg class="hero-icon" fill="none" stroke="currentColor" stroke-width="1.8" viewBox="0 0 24 24" style="width:32px;height:32px;opacity:0.25;">
+                    <path stroke-linecap="round" stroke-linejoin="round" d="M4 7v10c0 2 1.5 3 3.5 3h9c2 0 3.5-1 3.5-3V7c0-2-1.5-3-3.5-3h-9C5.5 4 4 5 4 7z"/>
+                  </svg>
+                </div>
+              </div>
+              <div class="card">
+                <div class="card-body spread">
+                  <div>
+                    <span class="stat-label" data-i18n="lblWin32Apps">תוכנות Desktop (Win32)</span>
+                    <div class="metric-hero sm" id="valWin32Apps">--</div>
+                  </div>
+                  <span class="badge" style="font-size:11px;background:rgba(56,189,248,0.15);color:var(--accent);">Win32</span>
+                </div>
+              </div>
+              <div class="card">
+                <div class="card-body spread">
+                  <div>
+                    <span class="stat-label" data-i18n="lblUwpApps">אפליקציות חנות (UWP)</span>
+                    <div class="metric-hero sm" id="valUwpApps">--</div>
+                  </div>
+                  <span class="badge" style="font-size:11px;background:rgba(168,85,247,0.15);color:#c084fc;">Store</span>
+                </div>
+              </div>
+            </div>
+
+            <!-- Main App List Card -->
+            <div class="card">
+              <div class="card-head">
+                <div class="grow">
+                  <div class="card-title">
+                    <span data-i18n="uninstallerCardTitle">מסיר תוכנות מתקדם וניקוי שאריות עמוק</span>
+                    <span class="badge badge-mono" id="badgeAppsFilteredCount">0</span>
+                  </div>
+                  <p class="card-sub" data-i18n="uninstallerCardDesc">
+                    הסרה מלאה של יישומים, יצירת נקודות שחזור וגיבוי Registry, סריקת שאריות היוריסטית (Safe/Moderate/Advanced), הסרה כפויה וכוונת ציד.
+                  </p>
+                </div>
+                <div class="card-tools">
+                  <button class="btn btn-sm" onclick="openBackupCenterModal()">
+                    <svg fill="none" stroke="currentColor" stroke-width="1.8" viewBox="0 0 24 24">
+                      <path stroke-linecap="round" stroke-linejoin="round" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"/>
+                    </svg>
+                    <span data-i18n="btnBackupCenter">מרכז גיבויים ושחזור</span>
+                  </button>
+                  <button class="btn btn-sm" onclick="openHunterModal()">
+                    <svg fill="none" stroke="currentColor" stroke-width="1.8" viewBox="0 0 24 24">
+                      <circle cx="12" cy="12" r="9"/>
+                      <path stroke-linecap="round" d="M12 3v4M12 17v4M3 12h4M17 12h4"/>
+                    </svg>
+                    <span data-i18n="btnHunterMode">כוונת ציד</span>
+                  </button>
+                  <button class="btn btn-sm" onclick="openForcedUninstallModal()">
+                    <svg fill="none" stroke="currentColor" stroke-width="1.8" viewBox="0 0 24 24">
+                      <path stroke-linecap="round" stroke-linejoin="round" d="M13 10V3L4 14h7v7l9-11h-7z"/>
+                    </svg>
+                    <span data-i18n="btnForcedUninstall">הסרה כפויה</span>
+                  </button>
+                  <button class="btn btn-sm btn-primary" id="btnToggleBatchMode" onclick="toggleBatchMode()">
+                    <svg fill="none" stroke="currentColor" stroke-width="1.8" viewBox="0 0 24 24">
+                      <path stroke-linecap="round" stroke-linejoin="round" d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 104 0M9 5a2 2 0 014 0"/>
+                    </svg>
+                    <span id="txtBtnBatchMode" data-i18n="btnBatchUninstall">הסרה מרוכזת (Batch)</span>
+                  </button>
+                  <button class="btn btn-sm" onclick="fetchInstalledApps(true)" title="רענון רשימת תוכנות">
+                    <svg fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+                      <path stroke-linecap="round" stroke-linejoin="round" d="M4 4v5h.6M19.9 11A8 8 0 004.6 9M20 20v-5h-.6m0 0a8 8 0 01-15.4-2M19.4 15H15"/>
+                    </svg>
+                  </button>
+                </div>
+              </div>
+
+              <!-- Search and Filters Toolbar -->
+              <div class="table-toolbar" style="padding: 12px 16px; border-bottom: 1px solid var(--line); display: flex; flex-wrap: wrap; gap: 12px; align-items: center; justify-content: space-between;">
+                <div class="input-wrap" style="max-width: 380px;">
+                  <svg fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+                    <circle cx="11" cy="11" r="8"/>
+                    <path stroke-linecap="round" d="M21 21l-4.35-4.35"/>
+                  </svg>
+                  <input type="text" id="uninstallerSearchInput" class="input" placeholder="חיפוש לפי שם תוכנה, יצרן או גרסה..." oninput="onUninstallerSearch(this.value)">
+                  <button class="input-clear hidden" id="btnClearUninstallerSearch" onclick="clearUninstallerSearch()">&times;</button>
+                </div>
+
+                <div class="seg-group">
+                  <button class="seg-btn active" id="uninstallerFilterAll" onclick="setUninstallerFilter('all')" data-i18n="filterAll">הכל</button>
+                  <button class="seg-btn" id="uninstallerFilterWin32" onclick="setUninstallerFilter('win32')" data-i18n="filterWin32">תוכנות Desktop</button>
+                  <button class="seg-btn" id="uninstallerFilterUwp" onclick="setUninstallerFilter('uwp')" data-i18n="filterUwp">אפליקציות Windows</button>
+                  <button class="seg-btn" id="uninstallerFilterHeavy" onclick="setUninstallerFilter('heavy')" data-i18n="filterHeavy">תוכנות כבדות (&gt;500MB)</button>
+                </div>
+              </div>
+
+              <!-- Batch Action Bar (Visible in batch mode) -->
+              <div id="batchActionBar" class="banner banner-accent hidden" style="margin: 12px 16px; display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: 10px;">
+                <div class="row" style="gap: 12px;">
+                  <span style="font-weight: 650;" id="batchSelectedCountText">0 תוכנות נבחרו להסרה</span>
+                  <button class="btn btn-sm" onclick="selectAllBatchApps(true)" data-i18n="btnSelectAll">בחר הכל</button>
+                  <button class="btn btn-sm" onclick="selectAllBatchApps(false)" data-i18n="btnClearSelection">נקה בחירה</button>
+                </div>
+                <div class="row" style="gap: 12px;">
+                  <label class="row" style="gap: 6px; font-size: 12px; cursor: pointer; user-select: none;">
+                    <input type="checkbox" id="chkBatchSkipRp">
+                    <span data-i18n="chkSkipRpBatch" style="font-weight: 600;">דלג על יצירת נקודת שחזור</span>
+                  </label>
+                  <button class="btn btn-sm btn-solid-danger" onclick="executeBatchUninstall()" data-i18n="btnExecuteBatch">
+                    הסר את כל הנבחרים ברצף
+                  </button>
+                </div>
+              </div>
+
+              <!-- Apps Table -->
+              <div class="card-body" style="padding: 0;">
+                <div class="table-scroll">
+                  <table class="table" id="tableInstalledApps">
+                    <thead>
+                      <tr>
+                        <th style="width: 36px;" class="batch-col hidden"><input type="checkbox" id="chkBatchAll" onchange="toggleSelectAllBatch(this.checked)"></th>
+                        <th data-i18n="thAppName" class="sortable col-app-name" onclick="sortApps('name')">שם התוכנה</th>
+                        <th data-i18n="thAppPublisher" class="sortable col-app-pub" onclick="sortApps('publisher')">יצרן / מפתח</th>
+                        <th data-i18n="thAppVersion" class="col-app-ver">גרסה</th>
+                        <th data-i18n="thAppDate" class="sortable col-app-date" onclick="sortApps('date')">תאריך התקנה</th>
+                        <th data-i18n="thAppSize" class="num sortable col-app-size" onclick="sortApps('size')">גודל משוער</th>
+                        <th data-i18n="thActions" class="act col-app-act">פעולות</th>
+                      </tr>
+                    </thead>
+                    <tbody id="installedAppsTbody">
+                      <tr>
+                        <td colspan="7" class="loading" style="text-align: center; padding: 40px;" data-i18n="loadingApps">טוען רשימת תוכנות מותקנות...</td>
+                      </tr>
+                    </tbody>
+                  </table>
+                </div>
+              </div>
+
+            </div>
+
+          </div>
+          </div>
+
+          <div class="subtab-panel" id="panel-startup">
+            <div class="card">
+            <div class="card-head">
+              <div>
+                <div class="card-title">
+                  <span data-i18n="txtStartupExplorerTitle">תוכנות שעולות עם המחשב</span>
+                  <span class="badge badge-mono" id="badgeStartupCount">0</span>
+                </div>
+                <p class="card-sub" data-i18n="txtStartupExplorerDesc">יישומים הפועלים אוטומטית בעת עליית המחשב, מדורגים לפי השפעה על זמן ההפעלה.</p>
+              </div>
+              <div class="card-tools">
+                <span class="badge" data-i18n="startupSafeNote">קריאה בלבד</span>
+                <button class="btn btn-sm" onclick="refreshRepairAudit()">
+                  <svg fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" d="M4 4v5h.6M19.9 11A8 8 0 004.6 9M20 20v-5h-.6m0 0a8 8 0 01-15.4-2M19.4 15H15"/>
+                  </svg>
+                  <span data-i18n="btnRefresh">רענון</span>
+                </button>
+              </div>
+            </div>
+            <div class="card-body">
+              <div class="grid grid-2" id="startupAppsList">
+                <div class="loading" data-i18n="loading">טוען...</div>
+              </div>
+            </div>
+          </div>
+          </div>
+        </section>
+
+        <!-- ==============================================================
+             CATEGORY 5 - DIAGNOSTICS & STABILITY
+             ============================================================== -->
+        <section class="screen" id="screen-diagnostics">
+          <div class="subtabs-bar">
+            <button class="subtab-btn active" data-subtab="crashes" onclick="switchSubTab('diagnostics', 'crashes')">
+              <svg fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M12 9v4m0 4h.01M10.3 4.3L2.6 17.5A2 2 0 004.3 20.5h15.4a2 2 0 001.7-3L13.7 4.3a2 2 0 00-3.4 0z"/></svg>
+              <span data-i18n="navCrashes">קריסות ומסך כחול</span>
+            </button>
+            <button class="subtab-btn" data-subtab="events" onclick="switchSubTab('diagnostics', 'events')">
+              <svg fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 104 0M9 5a2 2 0 014 0M9 12h6M9 16h4"/></svg>
+              <span data-i18n="navEvents">יומן שגיאות מערכת</span>
+            </button>
+          </div>
+
+          <div class="subtab-panel active" id="panel-crashes">
+            <div class="section-gap">
+
+            <div class="grid grid-3">
+              <div class="card">
+                <div class="card-body spread">
+                  <span class="stat-label" data-i18n="lblTotalCrashes">אירועי קריסה ב-30 יום</span>
+                  <span class="stat-value" id="valTotalCrashes" style="margin: 0;">0</span>
+                </div>
+              </div>
+              <div class="card">
+                <div class="card-body spread">
+                  <span class="stat-label" data-i18n="lblBsodCount">מסכים כחולים (BSOD)</span>
+                  <span class="stat-value" id="valBsodCount" style="margin: 0;">0</span>
+                </div>
+              </div>
+              <div class="card">
+                <div class="card-body spread">
+                  <span class="stat-label" data-i18n="lblPowerLossCount">כיבויי פתע (Kernel-Power)</span>
+                  <span class="stat-value" id="valPowerLossCount" style="margin: 0;">0</span>
+                </div>
+              </div>
+            </div>
+
+            <div class="card">
+              <div class="card-head">
+                <div>
+                  <div class="card-title">
+                    <span data-i18n="txtCrashInspectorTitle">היסטוריית קריסות ופענוח מסך כחול</span>
+                    <span class="badge badge-ok" id="badgeCrashHealth">בודק...</span>
+                  </div>
+                  <p class="card-sub" data-i18n="txtCrashInspectorDesc">פענוח אוטומטי של Minidump, קודי BugCheck וכיבויי פתע מיומן האירועים, עם אבחון שורש והמלצות.</p>
+                </div>
+                <div class="card-tools">
+                  <button class="btn btn-sm" onclick="scheduleMemoryDiagnostic()">
+                    <svg fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+                      <path stroke-linecap="round" stroke-linejoin="round" d="M9 3v2m6-2v2M9 19v2m6-2v2M5 9H3m2 6H3m18-6h-2m2 6h-2M7 19h10a2 2 0 002-2V7a2 2 0 00-2-2H7a2 2 0 00-2 2v10a2 2 0 002 2z"/>
+                    </svg>
+                    <span data-i18n="txtBtnMemDiag">בדיקת חומרת RAM</span>
+                  </button>
+                  <button class="btn btn-sm btn-icon" onclick="fetchCrashHistory()" data-i18n-title="btnRefresh" title="רענון">
+                    <svg fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+                      <path stroke-linecap="round" stroke-linejoin="round" d="M4 4v5h.6M19.9 11A8 8 0 004.6 9M20 20v-5h-.6m0 0a8 8 0 01-15.4-2M19.4 15H15"/>
+                    </svg>
+                  </button>
+                </div>
+              </div>
+              <div class="card-body">
+                <div class="stack" id="crashHistoryList" style="gap: 10px;">
+                  <div class="loading" data-i18n="loading">טוען...</div>
+                </div>
+              </div>
+            </div>
+
+          </div>
+          </div>
+
+          <div class="subtab-panel" id="panel-events">
+            <div class="section-gap">
+
+            <div class="grid grid-3">
+              <div class="card">
+                <div class="card-body spread">
+                  <span class="stat-label" data-i18n="eventsTotalLabel">שגיאות בסך הכל</span>
+                  <span class="stat-value" id="valEventTotal" style="margin: 0;">0</span>
+                </div>
+              </div>
+              <div class="card">
+                <div class="card-body spread">
+                  <span class="stat-label" data-i18n="eventsActionableLabel">דורשות טיפול</span>
+                  <span class="stat-value" id="valEventActionable" style="margin: 0;">0</span>
+                </div>
+              </div>
+              <div class="card">
+                <div class="card-body spread">
+                  <span class="stat-label" data-i18n="eventsNoiseLabel">רעש מוכר ולא מזיק</span>
+                  <span class="stat-value muted" id="valEventNoise" style="margin: 0;">0</span>
+                </div>
+              </div>
+            </div>
+
+            <div class="card">
+              <div class="card-head">
+                <div>
+                  <div class="card-title">
+                    <span data-i18n="eventsTitle">שגיאות חוזרות ביומן האירועים</span>
+                    <span class="badge" id="eventOverallBadge">בודק...</span>
+                  </div>
+                  <p class="card-sub" data-i18n="eventsDesc">
+                    השגיאות מקובצות לפי מקור ומזהה אירוע ומדורגות לפי חשיבות, לא לפי כמות — כך ששגיאת דיסק בודדת
+                    לא נבלעת בין מאה הודעות רעש.
+                  </p>
+                </div>
+                <div class="card-tools">
+                  <label class="row" style="gap: 6px; font-size: 11.5px; cursor: pointer;">
+                    <input type="checkbox" id="chkShowNoise" onchange="renderEventGroups()">
+                    <span data-i18n="eventsShowNoise">הצג גם רעש</span>
+                  </label>
+                  <select id="eventDays" class="select" onchange="fetchEventLog(true)">
+                    <option value="7" selected data-i18n="events7">7 ימים</option>
+                    <option value="14" data-i18n="events14">14 ימים</option>
+                    <option value="30" data-i18n="events30">30 ימים</option>
+                  </select>
+                  <button class="btn btn-sm btn-icon" onclick="fetchEventLog(true)" data-i18n-title="btnRefresh" title="רענון">
+                    <svg fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+                      <path stroke-linecap="round" stroke-linejoin="round" d="M4 4v5h.6M19.9 11A8 8 0 004.6 9M20 20v-5h-.6m0 0a8 8 0 01-15.4-2M19.4 15H15"/>
+                    </svg>
+                  </button>
+                </div>
+              </div>
+              <div class="card-body">
+                <div class="stack" id="eventGroupList" style="gap: 10px;">
+                  <div class="loading" data-i18n="loading">טוען...</div>
+                </div>
+              </div>
+            </div>
+
+          </div>
+          </div>
+        </section>
+
+        <!-- ==============================================================
+             CATEGORY 6 - HARDWARE & DEVICES
+             ============================================================== -->
+        <section class="screen" id="screen-hardware">
+          <div class="subtabs-bar">
+            <button class="subtab-btn active" data-subtab="devices" onclick="switchSubTab('hardware', 'devices')">
+              <svg fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><rect x="7" y="7" width="10" height="10" rx="1.5"/><path stroke-linecap="round" d="M10 3v4M14 3v4M10 17v4M14 17v4M3 10h4M3 14h4M17 10h4M17 14h4"/></svg>
+              <span data-i18n="navDevices">דרייברים והתקנים</span>
+            </button>
+            <button class="subtab-btn" data-subtab="battery" onclick="switchSubTab('hardware', 'battery')">
+              <svg fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><rect x="2" y="7" width="16" height="10" rx="2"/><path stroke-linecap="round" d="M20 11v2"/></svg>
+              <span data-i18n="navBattery">בריאות סוללה וחשמל</span>
+            </button>
+          </div>
+
+          <div class="subtab-panel active" id="panel-devices">
+            <div class="section-gap">
+
+            <div class="card">
+              <div class="card-head">
+                <div>
+                  <div class="card-title">
+                    <span data-i18n="devicesProblemTitle">התקנים שווינדוס סימנה כתקולים</span>
+                    <span class="badge" id="deviceProblemBadge">0</span>
+                  </div>
+                  <p class="card-sub" data-i18n="devicesProblemDesc">
+                    אלה המשולשים הצהובים ב-Device Manager, מתורגמים מקוד תקלה מספרי להסבר ולפעולה מומלצת.
+                  </p>
+                </div>
+                <div class="card-tools">
+                  <button class="btn btn-sm" onclick="fetchDevices(true)">
+                    <svg fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+                      <path stroke-linecap="round" stroke-linejoin="round" d="M4 4v5h.6M19.9 11A8 8 0 004.6 9M20 20v-5h-.6m0 0a8 8 0 01-15.4-2M19.4 15H15"/>
+                    </svg>
+                    <span data-i18n="btnRefresh">רענון</span>
+                  </button>
+                </div>
+              </div>
+              <div class="card-body">
+                <div class="stack" id="problemDeviceList" style="gap: 10px;">
+                  <div class="loading" data-i18n="loading">טוען...</div>
+                </div>
+              </div>
+            </div>
+
+            <div class="card">
+              <div class="card-head">
+                <div>
+                  <div class="card-title">
+                    <span data-i18n="devicesStaleTitle">דרייברים ישנים</span>
+                    <span class="badge badge-mono" id="staleDriverBadge">0</span>
+                  </div>
+                  <p class="card-sub" data-i18n="devicesStaleDesc">
+                    דרייברים בני יותר מארבע שנים לכרטיס מסך, רשת או אחסון. דרייברים מובנים של Microsoft אינם נכללים —
+                    התאריך שלהם הוא תאריך שחרור Windows ואינו מעיד על גיל.
+                  </p>
+                </div>
+                <div class="card-tools">
+                  <span class="badge" id="driverCountBadge"></span>
+                </div>
+              </div>
+              <div class="card-body">
+                <div class="stack" id="staleDriverList" style="gap: 8px;">
+                  <div class="loading" data-i18n="loading">טוען...</div>
+                </div>
+              </div>
+            </div>
+
+          </div>
+          </div>
+
+          <div class="subtab-panel" id="panel-battery">
+            <div class="section-gap">
+              <!-- ==============================================================
+                 BATTERY HEALTH & POWER DIAGNOSTICS CARD
+                 ============================================================== -->
+            <div class="card" id="cardBatteryOverview">
+              <div class="card-head">
+                <div class="row" style="gap: 14px;">
+                  <div class="score" id="batteryScoreCircle">
+                    <span class="score-val" id="batteryScoreVal">--%</span>
+                    <span class="score-cap" data-i18n="batteryScoreCap">בריאות</span>
+                  </div>
+                  <div>
+                    <div class="card-title">
+                      <span data-i18n="batteryCardTitle">בריאות הסוללה וצריכת חשמל</span>
+                      <span class="badge" id="batteryStatusBadge">בודק...</span>
+                    </div>
+                    <p class="card-sub" id="batterySummaryText" data-i18n="batteryScanning">
+                      מחשב קיבולת יצרן מול קיבולת מרבית עכשווית, רמת שחיקה ומחזורי טעינה.
+                    </p>
+                  </div>
+                </div>
+                <div class="card-tools">
+                  <button class="btn btn-sm" id="btnRefreshBattery" onclick="fetchBattery(true)">
+                    <svg fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+                      <path stroke-linecap="round" stroke-linejoin="round" d="M4 4v5h.6M19.9 11A8 8 0 004.6 9M20 20v-5h-.6m0 0a8 8 0 01-15.4-2M19.4 15H15"/>
+                    </svg>
+                    <span data-i18n="btnRefreshBattery">רענון סוללה</span>
+                  </button>
+                </div>
+              </div>
+
+              <!-- Content when battery is detected -->
+              <div class="card-body" id="batteryActiveBody">
+                <div class="spread" style="align-items: flex-end; margin-bottom: 14px;">
+                  <div>
+                    <span class="eyebrow" data-i18n="batteryChargeLevel">רמת טעינה נוכחית</span>
+                    <div class="metric-hero" id="statBatteryPercent">--%</div>
+                  </div>
+                  <div class="row" style="gap: 6px;">
+                    <span class="muted" style="font-size: 11.5px;" data-i18n="batteryStatusLabel">מצב פעולה:</span>
+                    <span id="valBatteryPowerStatus" style="font-weight: 650; font-size: 12px;">--</span>
+                  </div>
+                </div>
+
+                <div class="meter" title="רמת טעינה נוכחית">
+                  <div class="meter-fill" id="batteryProgressBar" style="width: 0%"></div>
+                </div>
+
+                <div class="grid grid-5" style="margin-top: 14px;">
+                  <div class="stat">
+                    <span class="stat-label" data-i18n="batteryFullCapacity">קיבולת מלאה נוכחית</span>
+                    <span class="stat-value sm ltr" id="valBatteryFullCapacity">-- Wh</span>
+                  </div>
+                  <div class="stat">
+                    <span class="stat-label" data-i18n="batteryDesignCapacity">קיבולת יצרן מקורית</span>
+                    <span class="stat-value sm ltr" id="valBatteryDesignCapacity">-- Wh</span>
+                  </div>
+                  <div class="stat">
+                    <span class="stat-label" data-i18n="batteryWearLevel">רמת שחיקה</span>
+                    <span class="stat-value sm ltr" id="valBatteryWear">--%</span>
+                  </div>
+                  <div class="stat">
+                    <span class="stat-label" data-i18n="batteryCycleCount">מחזורי טעינה</span>
+                    <span class="stat-value sm ltr" id="valBatteryCycles">--</span>
+                  </div>
+                  <div class="stat">
+                    <span class="stat-label" data-i18n="batteryEstimatedTime">זמן עבודה משוער</span>
+                    <span class="stat-value sm" id="valBatteryTimeRemaining">--</span>
+                  </div>
+                </div>
+              </div>
+
+              <!-- Desktop PC fallback state (shown when has_battery is false) -->
+              <div class="card-body hidden" id="batteryDesktopBody" style="padding: 24px 16px;">
+                <div class="row" style="gap: 16px; align-items: center;">
+                  <div class="score neutral" style="width: 48px; height: 48px; min-width: 48px; border-radius: 10px;">
+                    <svg fill="none" stroke="currentColor" stroke-width="1.8" viewBox="0 0 24 24" style="width: 24px; height: 24px;">
+                      <rect x="2" y="3" width="20" height="14" rx="2"/>
+                      <line x1="8" y1="21" x2="16" y2="21"/>
+                      <line x1="12" y1="17" x2="12" y2="21"/>
+                    </svg>
+                  </div>
+                  <div>
+                    <div style="font-weight: 650; font-size: 14px; margin-bottom: 2px;" data-i18n="desktopNoBatteryTitle">מחשב נייח / ללא סוללה</div>
+                    <div class="muted" style="font-size: 12.5px;" data-i18n="desktopNoBatteryDesc">המערכת מחוברת ישירות למקור חשמל AC קבוע. לא נדרש ניטור שחיקת סוללה.</div>
+                  </div>
+                </div>
+              </div>
+            </div>
+            </div>
+          </div>
+        </section>
+
+        <!-- ==============================================================
+             CATEGORY 7 - TOOLS & SETTINGS
+             ============================================================== -->
+        <section class="screen" id="screen-settings">
+          <div class="subtabs-bar">
+            <button class="subtab-btn active" data-subtab="tools" onclick="switchSubTab('settings', 'tools')">
+              <svg fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M4 6h10M18 6h2M4 12h2M10 12h10M4 18h8M16 18h4M16 4v4M8 10v4M14 16v4"/></svg>
+              <span data-i18n="navTools">כלי מקלדת</span>
+            </button>
+            <button class="subtab-btn" data-subtab="settings" onclick="switchSubTab('settings', 'settings')">
+              <svg fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><circle cx="12" cy="12" r="3"/><path stroke-linecap="round" stroke-linejoin="round" d="M19.4 15a1.6 1.6 0 00.3 1.8l.1.1a2 2 0 11-2.8 2.8l-.1-.1a1.6 1.6 0 00-2.7 1.1v.3a2 2 0 11-4 0v-.2a1.6 1.6 0 00-2.8-1.1l-.1.1a2 2 0 11-2.8-2.8l.1-.1A1.6 1.6 0 004 15a2 2 0 01-2-2 2 2 0 012-2 1.6 1.6 0 001.1-2.8l-.1-.1a2 2 0 112.8-2.8l.1.1A1.6 1.6 0 009 4.6a2 2 0 012-2 2 2 0 012 2 1.6 1.6 0 002.7 1.1l.1-.1a2 2 0 112.8 2.8l-.1.1A1.6 1.6 0 0020 11a2 2 0 012 2 2 2 0 01-2 2z"/></svg>
+              <span data-i18n="navSettings">הגדרות תוכנה</span>
+            </button>
+          </div>
+
+          <div class="subtab-panel active" id="panel-tools">
+            <div class="card">
+            <div class="card-head">
+              <div>
+                <div class="card-title">
+                  <span data-i18n="copilotKeyTitle">מיפוי מקש Copilot ל-Ctrl ימני</span>
+                  <span class="badge" id="badgeCopilotStatus">
+                    <span class="priv-dot" id="dotCopilotStatus" style="background: var(--text-faint);"></span>
+                    <span id="txtCopilotStatus">בודק סטטוס...</span>
+                  </span>
+                </div>
+                <p class="card-sub" data-i18n="copilotKeyDesc">הופך את מקש ה-Copilot (שמשדר חומרתית Win+Shift+F23) למקש Ctrl ימני תקני. פועל אוטומטית בכל הפעלה של המחשב, ללא צורך להשאיר את Polaris פתוחה.</p>
+              </div>
+              <div class="card-tools">
+                <button class="btn btn-primary" id="btnEnableCopilot" onclick="enableCopilotRemap()">
+                  <svg fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" d="M5 13l4 4L19 7"/>
+                  </svg>
+                  <span id="txtBtnEnableCopilot" data-i18n="btnEnableCopilot">הפעל מיפוי</span>
+                </button>
+                <button class="btn btn-danger" id="btnDisableCopilot" onclick="disableCopilotRemap()">
+                  <span id="txtBtnDisableCopilot" data-i18n="btnDisableCopilot">בטל מיפוי</span>
+                </button>
+                <button class="btn btn-sm btn-icon" onclick="openCopilotKeyboardSettings()" data-i18n-title="openWinSettings" title="פתח הגדרות מקלדת של Windows">
+                  <svg fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" d="M10 6H6a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2v-4M14 4h6m0 0v6m0-6L10 14"/>
+                  </svg>
+                </button>
+              </div>
+            </div>
+
+            <div class="card-body">
+              <div class="grid grid-3">
+                <div class="stat">
+                  <span class="opt-title" id="lblCopilotFeat1" data-i18n="lblCopilotFeat1">0% עומס מערכת</span>
+                  <span class="opt-desc" id="descCopilotFeat1" data-i18n="descCopilotFeat1">שירות Hook שקוף וזעיר. נשמר ופועל אוטומטית לאחר כל הפעלה מחדש.</span>
+                </div>
+                <div class="stat">
+                  <span class="opt-title" id="lblCopilotFeat2" data-i18n="lblCopilotFeat2">ללא נעילת קבצים</span>
+                  <span class="opt-desc" id="descCopilotFeat2" data-i18n="descCopilotFeat2">מותקן ב-AppData בצורה מבודדת, כך שניתן למחוק או להעביר את קובץ ההתקנה בחופשיות.</span>
+                </div>
+                <div class="stat">
+                  <span class="opt-title" id="lblCopilotFeat3" data-i18n="lblCopilotFeat3">קבוע לאחר הפעלה מחדש</span>
+                  <span class="opt-desc" id="descCopilotFeat3" data-i18n="descCopilotFeat3">תומך בהחזקה רציפה: Ctrl+C, Ctrl+V, קיצורי עריכה וגיימינג.</span>
+                </div>
+              </div>
+            </div>
+
+            <div class="card-foot">
+              <span class="mono faint">Created by YAKIR LAVIE</span>
+            </div>
+          </div>
+          </div>
+
+          <div class="subtab-panel" id="panel-settings">
+            <div class="section-gap">
+
+            <div class="card">
+              <div class="card-head">
+                <div>
+                  <div class="card-title" data-i18n="settingsGeneral">העדפות תצוגה</div>
+                  <p class="card-sub" data-i18n="settingsGeneralDesc">שפת הממשק וקצב דגימת הנתונים החיים.</p>
+                </div>
+              </div>
+              <div class="card-body stack" style="gap: 10px;">
+
+                <div class="switch-row">
+                  <div>
+                    <span class="opt-title" data-i18n="settingTheme">ערכת נושא</span>
+                    <span class="opt-desc" data-i18n="settingThemeDesc">בחירתך נשמרת ונטענת אוטומטית בהפעלה הבאה.</span>
+                  </div>
+                  <div class="seg">
+                    <button class="seg-btn active" id="btnThemeDark" onclick="setTheme('dark')" data-i18n="themeDark">כהה</button>
+                    <button class="seg-btn" id="btnThemeLight" onclick="setTheme('light')" data-i18n="themeLight">בהיר</button>
+                  </div>
+                </div>
+
+                <div class="switch-row">
+                  <div>
+                    <span class="opt-title" data-i18n="settingLang">שפת ממשק</span>
+                    <span class="opt-desc" data-i18n="settingLangDesc">מחליף בין עברית (ימין לשמאל) לאנגלית (שמאל לימין).</span>
+                  </div>
+                  <button class="btn" onclick="toggleLanguage()"><span id="langText">English</span></button>
+                </div>
+
+                <div class="switch-row">
+                  <div>
+                    <span class="opt-title" data-i18n="settingRefresh">קצב רענון נתונים</span>
+                    <span class="opt-desc" data-i18n="settingRefreshDesc">תדירות דגימת הזיכרון ורשימת התהליכים. קצב איטי יותר מפחית עומס מעבד.</span>
+                  </div>
+                  <select id="refreshRate" class="select" onchange="changeRefreshRate(this.value)">
+                    <option value="1000" selected data-i18n="rate1">כל שנייה</option>
+                    <option value="2000" data-i18n="rate2">כל 2 שניות</option>
+                    <option value="5000" data-i18n="rate5">כל 5 שניות</option>
+                    <option value="0" data-i18n="rate0">מושהה</option>
+                  </select>
+                </div>
+
+              </div>
+            </div>
+
+            <div class="card">
+              <div class="card-head">
+                <div>
+                  <div class="card-title" data-i18n="settingsData">נתונים ודוחות</div>
+                  <p class="card-sub" data-i18n="settingsDataDesc">ייצוא תמונת מצב של הזיכרון, האבחון והתהליכים.</p>
+                </div>
+              </div>
+              <div class="card-body">
+                <div class="switch-row">
+                  <div>
+                    <span class="opt-title" data-i18n="settingExport">ייצוא דוח תמונת מצב</span>
+                    <span class="opt-desc" data-i18n="settingExportDesc">שומר קובץ JSON עם נתוני הזיכרון, ממצאי האבחון ו-30 התהליכים הכבדים.</span>
+                  </div>
+                  <button class="btn" onclick="exportSnapshotReport()">
+                    <svg fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+                      <path stroke-linecap="round" stroke-linejoin="round" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4"/>
+                    </svg>
+                    <span data-i18n="btnExport">ייצוא</span>
+                  </button>
+                </div>
+              </div>
+            </div>
+
+            <div class="card">
+              <div class="card-head">
+                <div>
+                  <div class="card-title" data-i18n="settingsAbout">אודות</div>
+                </div>
+              </div>
+              <div class="card-body">
+                <div class="grid grid-3">
+                  <div class="stat">
+                    <span class="stat-label" data-i18n="aboutVersion">גרסה</span>
+                    <span class="stat-value sm mono">3.1</span>
+                  </div>
+                  <div class="stat">
+                    <span class="stat-label" data-i18n="aboutPrivileges">הרשאות</span>
+                    <span class="stat-value sm" id="aboutPrivValue">--</span>
+                  </div>
+                  <div class="stat">
+                    <span class="stat-label" data-i18n="aboutAuthor">פותח על ידי</span>
+                    <span class="stat-value sm mono">YAKIR LAVIE</span>
+                  </div>
+                </div>
+                <p class="card-sub" style="margin-top: 12px;" data-i18n="aboutPrivacy">
+                  Polaris מאזין רק על 127.0.0.1, אינו נגיש מהרשת ואינו שולח נתונים החוצה. כל הנכסים ארוזים מקומית והתוכנה עובדת גם ללא אינטרנט.
+                </p>
+                <div style="margin-top: 16px; padding-top: 14px; border-top: 1px solid var(--line); display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: 10px;">
+                  <div>
+                    <div style="font-weight: 600; font-size: 13px;" data-i18n="termsTitle">תקנון תנאי שימוש ורישיון (EULA)</div>
+                    <div class="muted" style="font-size: 11.5px;" data-i18n="termsSub">הסכם רישיון משתמש קצה, מדיניות וזכויות בלעדיות ליקיר לביא</div>
+                  </div>
+                  <button class="btn btn-sm btn-outline" onclick="openTermsModal()">
+                    <svg fill="none" stroke="currentColor" stroke-width="1.8" viewBox="0 0 24 24" style="width: 14px; height: 14px; margin-inline-end: 6px;">
+                      <path stroke-linecap="round" stroke-linejoin="round" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"/>
+                    </svg>
+                    <span data-i18n="btnViewTerms">צפה בתקנון ובתנאי השימוש</span>
+                  </button>
+                </div>
+              </div>
+            </div>
+
+          </div>
+          </div>
+        </section>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- =====================================================================
+     TOAST
+     ===================================================================== -->
+<div id="toast" class="toast">
+  <span class="toast-dot"></span>
+  <div>
+    <div class="toast-title" id="toastTitle">הודעה</div>
+    <p class="toast-msg" id="toastMessage">הפעולה הושלמה בהצלחה.</p>
+  </div>
+</div>
+
+<!-- =====================================================================
+     PROCESS DETAILS MODAL
+     ===================================================================== -->
+<div id="procModal" class="modal hidden">
+  <div class="modal-card">
+
+    <div class="modal-head">
+      <div class="grow">
+        <div class="row-wrap">
+          <h3 class="modal-title" id="modalProcName">שם התהליך</h3>
+          <span class="badge" id="modalCategoryBadge">קטגוריה</span>
+        </div>
+        <div class="row" style="gap: 8px; margin-top: 3px;">
+          <span class="mono faint" style="font-size: 11px;" id="modalProcPid">PID: 0000</span>
+          <span class="faint">&middot;</span>
+          <span class="mono faint" style="font-size: 11px;" id="modalRawName">process.exe</span>
+        </div>
+      </div>
+      <button class="modal-close" onclick="closeProcModal()">&#10005;</button>
+    </div>
+
+    <div class="modal-body">
+
+      <div class="panel">
+        <span class="panel-label" data-i18n="modalWhatIsIt">מה התהליך הזה עושה</span>
+        <p class="panel-text" id="modalExplanationDesc">טוען נתונים...</p>
+        <div style="margin-top: 9px; padding-top: 9px; border-top: 1px solid var(--line); font-size: 11.5px;">
+          <span class="muted" data-i18n="modalWhyMemory">למה הוא בזיכרון:</span>
+          <span id="modalWhyInMemory">--</span>
+        </div>
+      </div>
+
+      <div class="panel" id="modalSafetyCard">
+        <div class="row-wrap" style="gap: 8px;">
+          <span class="panel-label" style="margin: 0;" data-i18n="modalKillStatus">סיום התהליך</span>
+          <span class="badge" id="modalSafetyBadge">בטוח לסגירה</span>
+        </div>
+        <p class="panel-text muted" style="font-size: 11.5px; margin-top: 5px;" id="modalSafetyDesc">
+          סיום תהליך זה אינו פוגע ביציבות Windows.
+        </p>
+      </div>
+
+      <div class="panel hidden" id="modalServicesContainer">
+        <span class="panel-label" data-i18n="modalServices">שירותי Windows שרצים בתוך התהליך</span>
+        <div class="stack" id="modalServicesList" style="gap: 6px; max-height: 150px; overflow-y: auto;"></div>
+      </div>
+
+      <div class="grid grid-4">
+        <div class="stat">
+          <span class="stat-label" data-i18n="modalRss">זיכרון פעיל</span>
+          <span class="stat-value sm ltr" id="modalProcRss">--</span>
+        </div>
+        <div class="stat">
+          <span class="stat-label" data-i18n="modalVms">זיכרון וירטואלי</span>
+          <span class="stat-value sm ltr muted" id="modalProcVms">--</span>
+        </div>
+        <div class="stat">
+          <span class="stat-label" data-i18n="modalPct">אחוז מה-RAM</span>
+          <span class="stat-value sm ltr tone-accent" id="modalProcPercent">--%</span>
+        </div>
+        <div class="stat">
+          <span class="stat-label" data-i18n="modalCpu">מעבד</span>
+          <span class="stat-value sm ltr" id="modalProcCpu">--%</span>
+        </div>
+      </div>
+
+      <div>
+        <span class="panel-label" data-i18n="modalPath">נתיב קובץ מלא</span>
+        <code class="code-block" id="modalProcPath">--</code>
+      </div>
+      <div>
+        <span class="panel-label" data-i18n="modalCmd">שורת הפקודה</span>
+        <code class="code-block" id="modalProcCmd">--</code>
+      </div>
+
+    </div>
+
+    <div class="modal-foot">
+      <button class="btn btn-sm" onclick="trimSingleProcessFromModal()">
+        <span data-i18n="modalTrim">שחרור זיכרון עבודה</span>
+      </button>
+      <div class="row" style="gap: 7px;">
+        <button class="btn btn-sm" onclick="closeProcModal()" data-i18n="btnClose">סגור</button>
+        <button class="btn btn-sm btn-danger" id="modalBtnKill" data-i18n="btnKill">סיום תהליך</button>
+      </div>
+    </div>
+
+  </div>
+</div>
+
+<!-- =====================================================================
+     CONFIRMATION MODAL
+     ===================================================================== -->
+<div id="confirmActionModal" class="modal hidden">
+  <div class="modal-card sm">
+    <div class="modal-head">
+      <div class="grow">
+        <h3 class="modal-title" id="confirmModalTitle">אישור פעולה</h3>
+        <p class="card-sub" id="confirmModalDesc">האם אתה בטוח שברצונך להמשיך?</p>
+      </div>
+    </div>
+    <div class="modal-foot" style="justify-content: flex-end;">
+      <button class="btn btn-sm" onclick="closeConfirmModal()" data-i18n="btnCancel">ביטול</button>
+      <button class="btn btn-sm btn-solid-danger" id="btnConfirmActionExec" data-i18n="btnKill">סיום תהליך</button>
+    </div>
+  </div>
+</div>
+
+<!-- =====================================================================
+     CRASH DETAIL MODAL
+     ===================================================================== -->
+<div id="crashDetailModal" class="modal hidden">
+  <div class="modal-card">
+
+    <div class="modal-head">
+      <div class="grow">
+        <div class="row-wrap">
+          <h3 class="modal-title" id="crashModalTitle">פרטי קריסת מערכת</h3>
+          <span class="badge badge-danger" id="crashModalSeverityBadge">קריטי</span>
+        </div>
+        <span class="mono faint" style="font-size: 11px;" id="crashModalTimestamp">--</span>
+      </div>
+      <button class="modal-close" onclick="closeCrashModal()">&#10005;</button>
+    </div>
+
+    <div class="modal-body">
+      <div class="panel">
+        <span class="panel-label" data-i18n="crashRootCause">אבחון שורש הבעיה</span>
+        <p class="panel-text" id="crashModalCause">טוען...</p>
+        <div class="grid grid-2" style="margin-top: 10px; gap: 10px;">
+          <div>
+            <span class="stat-label" data-i18n="crashCode">קוד שגיאה (BugCheck)</span>
+            <span class="mono" style="font-weight: 700; display: block;" id="crashModalBugcheck">--</span>
+          </div>
+          <div>
+            <span class="stat-label" data-i18n="crashDriver">דרייבר / רכיב אחראי</span>
+            <span class="mono tone-accent" style="font-weight: 700; display: block;" id="crashModalDriver">--</span>
+          </div>
+        </div>
+
+        <!-- "rt640x64.sys" means nothing on its own; this says what it is. -->
+        <div style="margin-top: 10px; padding-top: 10px; border-top: 1px solid var(--line);" id="crashDriverInfo">
+          <span class="stat-label" data-i18n="crashDriverMeans">מה זה בפועל</span>
+          <span class="panel-text" style="display: block;" id="crashDriverMeaning">--</span>
+          <span class="faint mono" style="font-size: 10.5px; display: block; margin-top: 3px;" id="crashDriverVersion"></span>
+        </div>
+      </div>
+
+      <div class="panel">
+        <span class="panel-label tone-ok" data-i18n="crashSolution">המלצות מעשיות לפתרון</span>
+        <p class="panel-text" id="crashModalSolution">טוען...</p>
+      </div>
+
+      <div>
+        <span class="panel-label" data-i18n="crashRaw">יומן אירועים מקורי</span>
+        <code class="code-block" id="crashModalRaw">--</code>
+      </div>
+    </div>
+
+    <div class="modal-foot" style="justify-content: flex-end;">
+      <button class="btn btn-sm" onclick="closeCrashModal()" data-i18n="btnClose">סגור</button>
+    </div>
+
+  </div>
+</div>
+
+<!-- =====================================================================
+     UNINSTALLER WIZARD MODAL (Revo multi-step uninstallation engine)
+     ===================================================================== -->
+<div id="modalUninstallWizard" class="modal hidden">
+  <div class="modal-card lg" style="max-width: 820px; width: 95%;">
+
+    <!-- Head -->
+    <div class="modal-head">
+      <div class="grow">
+        <div class="row" style="gap: 12px; align-items: center;">
+          <div id="wizardAppIconContainer" style="width: 32px; height: 32px; display: flex; align-items: center; justify-content: center; background: var(--panel-2); border-radius: var(--r-sm); overflow: hidden;">
+            <svg fill="none" stroke="currentColor" stroke-width="1.8" viewBox="0 0 24 24" style="width: 20px; height: 20px;">
+              <path stroke-linecap="round" stroke-linejoin="round" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"/>
+            </svg>
+          </div>
+          <div>
+            <h3 class="modal-title" id="wizardAppTitle">הסרת תוכנה</h3>
+            <p class="card-sub" id="wizardAppSub">--</p>
+          </div>
+        </div>
+      </div>
+      <button class="modal-close" onclick="closeUninstallWizard()">&#10005;</button>
+    </div>
+
+    <!-- Body -->
+    <div class="modal-body" style="gap: 16px;">
+
+      <!-- Step 1: Pre-Uninstall Safety Options -->
+      <div id="wizardStep1Content" class="wizard-step-pane">
+        <div class="panel">
+          <span class="panel-label" data-i18n="wizSafetyHeader">שכבות אבטחה וגיבוי מקדים (Revo Safety Net)</span>
+          <div class="grid grid-2" style="margin-top: 10px; gap: 12px;">
+
+            <div class="kv" style="flex-direction: column; align-items: flex-start; gap: 6px; padding: 12px;">
+              <label class="row" style="gap: 8px; font-weight: 650; cursor: pointer; user-select: none;">
+                <input type="checkbox" id="chkWizardRestorePoint" checked>
+                <span data-i18n="wizRestorePointLabel">נקודת שחזור מערכת (VSS)</span>
+              </label>
+              <span class="kv-desc" data-i18n="wizRestorePointDesc">יוצר נקודת שחזור מערכת רשמית של Windows למקרה של תקלה.</span>
+              <button class="btn btn-sm" style="margin-top: 6px; font-size: 11px;" onclick="wizardToggleSkipRpOnly()" id="btnWizardSkipRpQuick">
+                <span data-i18n="wizBtnSkipRpOnly">דלג על שחזור מערכת זה</span>
+              </button>
+            </div>
+
+            <div class="kv" style="flex-direction: column; align-items: flex-start; gap: 6px; padding: 12px;">
+              <label class="row" style="gap: 8px; font-weight: 650; cursor: pointer; user-select: none;">
+                <input type="checkbox" id="chkWizardRegistryBackup" checked>
+                <span data-i18n="wizRegBackupLabel">גיבוי מלא של ענפי ה-Registry</span>
+              </label>
+              <span class="kv-desc" data-i18n="wizRegBackupDesc">מייצא קובץ .reg וסקריפט שחזור Restore.bat offline לשחזור בלחיצה אחת.</span>
+            </div>
+
+          </div>
+        </div>
+
+        <div class="panel" style="margin-top: 12px;">
+          <span class="panel-label" data-i18n="wizScanModeHeader">עומק סריקת שאריות היוריסטית</span>
+          <p class="panel-text" style="margin-bottom: 10px;" data-i18n="wizScanModeDesc">בחר את האלגוריתם לאיתור שאריות רישום וקבצים שיישארו לאחר המסיר המקורי:</p>
+          
+          <div class="grid grid-3" style="gap: 10px;">
+            <label class="scan-mode-card" id="modeCardSafe" onclick="selectWizardScanMode('safe')">
+              <input type="radio" name="wizScanMode" value="safe" style="display:none;">
+              <div class="mode-title" data-i18n="modeSafeTitle">Safe (בטוח)</div>
+              <div class="mode-desc" data-i18n="modeSafeDesc">סריקה מהירה של מפתחות וקבצים וודאיים בלבד. אפס סיכון.</div>
+            </label>
+            <label class="scan-mode-card active" id="modeCardModerate" onclick="selectWizardScanMode('moderate')">
+              <input type="radio" name="wizScanMode" value="moderate" checked style="display:none;">
+              <div class="mode-title" data-i18n="modeModerateTitle">Moderate (בינוני - מומלץ)</div>
+              <div class="mode-desc" data-i18n="modeModerateDesc">כולל תיקיות התקנה, AppData, משתפי רישום ונתיבים נפוצים.</div>
+            </label>
+            <label class="scan-mode-card" id="modeCardAdvanced" onclick="selectWizardScanMode('advanced')">
+              <input type="radio" name="wizScanMode" value="advanced" style="display:none;">
+              <div class="mode-title" data-i18n="modeAdvancedTitle">Advanced (מתקדם)</div>
+              <div class="mode-desc" data-i18n="modeAdvancedDesc">סריקה עמוקה של כל ה-Registry, CLSID, ושירותי מערכת נלווים.</div>
+            </label>
+          </div>
+        </div>
+      </div>
+
+      <!-- Step 2: Running & Monitoring Active Session -->
+      <div id="wizardStep2Content" class="wizard-step-pane hidden">
+        <div class="card" style="background: var(--panel-2); border: 1px solid var(--line);">
+          <div class="card-body">
+            <div class="spread" style="align-items: center; margin-bottom: 12px;">
+              <div class="row" style="gap: 10px; align-items: center;">
+                <span class="pulse"></span>
+                <span style="font-weight: 650; font-size: 13px;" id="wizardCurrentStageText">מבצע פעולה...</span>
+              </div>
+              <span class="mono faint" id="wizardProgressPercent">0%</span>
+            </div>
+
+            <div class="meter" style="height: 9px; margin-bottom: 14px;">
+              <div class="meter-fill" id="wizardProgressBar" style="width: 5%"></div>
+            </div>
+
+            <p class="panel-text mono" id="wizardStatusDetails" style="font-size: 12px; color: var(--text-dim); min-height: 24px;">
+              מאתחל...
+            </p>
+
+            <!-- Real-time Skip Option for current step -->
+            <div id="wizardSkipArea" class="spread" style="margin-top: 14px; padding-top: 12px; border-top: 1px solid var(--line); align-items: center;">
+              <span class="faint" style="font-size: 11px;" data-i18n="wizSkipTip">השלב מתעכב או אינו מגיב? ניתן לדלג עליו באופן מיידי:</span>
+              <button class="btn btn-sm btn-warn" id="btnWizardSkipCurrent" onclick="skipCurrentUninstallStep()">
+                <svg fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24" style="width: 14px; height: 14px;">
+                  <path stroke-linecap="round" stroke-linejoin="round" d="M13 5l7 7-7 7M5 5l7 7-7 7"/>
+                </svg>
+                <span data-i18n="btnSkipCurrentStep">דלג על שלב זה (Skip)</span>
+              </button>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Step 3: Leftovers Review & Selection (Bold Rule) -->
+      <div id="wizardStep3Content" class="wizard-step-pane hidden">
+        <div class="banner banner-ok" style="margin: 0; display: flex; align-items: center; justify-content: space-between;">
+          <div class="row" style="gap: 8px;">
+            <svg fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24" style="width: 18px; height: 18px; color: var(--ok);">
+              <path stroke-linecap="round" stroke-linejoin="round" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"/>
+            </svg>
+            <span id="wizardLeftoversCountSummary" style="font-weight: 600; font-size: 12.5px;">נמצאו שאריות במערכת.</span>
+          </div>
+          <span class="badge" style="font-size: 10.5px;" data-i18n="wizBoldRuleBadge">פריטים מודגשים בטוחים למחיקה</span>
+        </div>
+
+        <!-- Leftovers Tabs & Selection Toolbar -->
+        <div class="spread" style="align-items: center; margin-top: 6px; gap: 8px; flex-wrap: wrap;">
+          <div class="seg-group">
+            <button class="seg-btn active" id="tabLeftoversRegistry" onclick="switchLeftoversTab('registry')">
+              <span data-i18n="tabRegLeftovers">רישום Windows (Registry)</span>
+              <span class="badge badge-mono" id="badgeCountRegLeftovers" style="font-size: 10px; margin-inline-start: 4px;">0</span>
+            </button>
+            <button class="seg-btn" id="tabLeftoversFiles" onclick="switchLeftoversTab('files')">
+              <span data-i18n="tabFilesLeftovers">קבצים ותיקיות (Files)</span>
+              <span class="badge badge-mono" id="badgeCountFilesLeftovers" style="font-size: 10px; margin-inline-start: 4px;">0</span>
+            </button>
+          </div>
+
+          <div class="row" style="gap: 6px;">
+            <button class="btn btn-sm btn-primary" onclick="selectOnlyBoldLeftovers()" data-i18n="btnSelectBoldOnly">
+              <span class="leftover-bold-indicator">●</span> בחר רק מודגשים (Bold - בטוח)
+            </button>
+            <button class="btn btn-sm" onclick="selectAllLeftovers(true)" data-i18n="btnSelectAll">בחר הכל</button>
+            <button class="btn btn-sm" onclick="selectAllLeftovers(false)" data-i18n="btnClearSelection">נקה בחירה</button>
+          </div>
+        </div>
+
+        <!-- Leftovers Tree List View -->
+        <div class="leftovers-container" id="leftoversTreeContainer" style="max-height: 340px; overflow-y: auto; background: var(--bg); border: 1px solid var(--line); border-radius: var(--r); padding: 8px;">
+          <!-- Leftover items dynamically rendered here -->
+        </div>
+
+        <div id="sharedDllsNote" class="hidden faint mono" style="font-size: 11px; padding: 4px 8px; color: var(--warn);">
+          ℹ ספריות DLL משותפות מוגנות ב-SharedDlls ולא נבחרו למחיקה.
+        </div>
+      </div>
+
+      <!-- Step 4: Completion Summary -->
+      <div id="wizardStep4Content" class="wizard-step-pane hidden">
+        <div style="text-align: center; padding: 24px 12px;">
+          <div style="width: 56px; height: 56px; border-radius: 50%; background: rgba(34, 197, 94, 0.15); color: var(--ok); display: flex; align-items: center; justify-content: center; margin: 0 auto 16px;">
+            <svg fill="none" stroke="currentColor" stroke-width="2.2" viewBox="0 0 24 24" style="width: 32px; height: 32px;">
+              <path stroke-linecap="round" stroke-linejoin="round" d="M5 13l4 4L19 7"/>
+            </svg>
+          </div>
+          <h3 style="font-size: 16px; font-weight: 700; margin-bottom: 6px;" data-i18n="wizDoneTitle">ההסרה וניקוי השאריות הושלמו בהצלחה!</h3>
+          <p class="card-sub" id="wizardDoneDesc" style="max-width: 480px; margin: 0 auto 16px;">
+            כל השאריות הנבחרות הוסרו מהמערכת.
+          </p>
+          <div class="grid grid-2" style="max-width: 420px; margin: 0 auto 16px; gap: 10px;">
+            <div class="kv" style="justify-content: center; text-align: center; flex-direction: column;">
+              <span class="kv-desc" data-i18n="lblRegKeysRemoved">מפתחות רישום שנמחקו</span>
+              <span class="mono tone-accent" style="font-size: 20px; font-weight: 700;" id="valWizardDeletedReg">0</span>
+            </div>
+            <div class="kv" style="justify-content: center; text-align: center; flex-direction: column;">
+              <span class="kv-desc" data-i18n="lblFilesRemoved">קבצים ותיקיות שנמחקו</span>
+              <span class="mono tone-accent" style="font-size: 20px; font-weight: 700;" id="valWizardDeletedFiles">0</span>
+            </div>
+          </div>
+          <div id="wizardRebootNotice" class="banner banner-warn hidden" style="max-width: 500px; margin: 0 auto 14px; text-align: start;">
+            <span class="banner-icon">ℹ</span>
+            <div class="grow">
+              <span style="font-weight: 600;" data-i18n="wizRebootTitle">קבצים תוזמנו למחיקה באתחול</span>
+              <p class="faint" style="font-size: 11.5px; margin-top: 2px;" data-i18n="wizRebootDesc">
+                חלק מהקבצים היו נעולים ע"י Windows ותוזמנו למחיקה אוטומטית בהפעלה מחדש באמצעות MoveFileEx.
+              </p>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Live command output. Deliberately a sibling of the step panes, not
+           part of step 2: it has to stay on screen through the leftover review
+           and the cleanup so the terminal never goes dark mid-operation. -->
+      <div id="wizardLiveOutputBox" class="hidden">
+        <div class="run-meta mono" id="wizardRunMeta" style="margin-bottom: 10px;">
+          <span id="wizardElapsed">00:00</span>
+          <span class="run-meta-sep">·</span>
+          <span id="wizardEta"></span>
+          <span class="run-meta-sep">·</span>
+          <span id="wizardStepCount"></span>
+        </div>
+
+        <div class="eyebrow" style="margin: 0 0 8px;" data-i18n="lblStepList">שלבי התהליך</div>
+        <ol class="step-list" id="wizardStepList"></ol>
+
+        <div class="spread" style="margin: 16px 0 8px; align-items: center;">
+          <span class="live-chip-label mono" data-i18n="liveOutput">פלט פקודות חי</span>
+          <button class="btn btn-sm" id="btnCopyUninstallLog" onclick="copyUninstallLog()" title="העתק את הלוג ללוח">
+            <svg fill="none" stroke="currentColor" stroke-width="1.8" viewBox="0 0 24 24" style="width: 13px; height: 13px;">
+              <path stroke-linecap="round" stroke-linejoin="round" d="M8 16H6a2 2 0 01-2-2V6a2 2 0 012-2h8a2 2 0 012 2v2m-6 12h8a2 2 0 002-2v-8a2 2 0 00-2-2h-8a2 2 0 00-2 2v8a2 2 0 002 2z"/>
+            </svg>
+            <span data-i18n="btnCopyLog">העתק לוג</span>
+          </button>
+        </div>
+        <div class="terminal" id="wizardTerminalLogs" style="max-height: 220px;">
+          <div class="term-line term-info">[System] ממתין להתחלה…</div>
+        </div>
+      </div>
+
+    </div>
+
+    <!-- Foot -->
+    <div class="modal-foot" id="wizardModalFoot" style="justify-content: space-between;">
+      <button class="btn btn-sm" id="btnWizardCancel" onclick="closeUninstallWizard()" data-i18n="btnCancel">ביטול</button>
+      <div class="row" style="gap: 8px;">
+        <!-- Step 1 Actions -->
+        <button class="btn btn-sm" id="btnWizardPreviewScan" onclick="submitPreviewScan()">
+          <span data-i18n="btnPreviewScan">סרוק בלי להסיר</span>
+        </button>
+        <button class="btn btn-sm btn-warn" id="btnWizardStartNoRp" onclick="submitStartUninstall(true)">
+          <span data-i18n="btnSkipRpAndStart">דלג על שחזור והסר מיד</span>
+        </button>
+        <button class="btn btn-sm btn-primary" id="btnWizardStartNormal" onclick="submitStartUninstall(false)">
+          <span data-i18n="btnStartUninstall">התחל הסרה מלאה</span>
+        </button>
+        <!-- Step 3 Actions -->
+        <button class="btn btn-sm btn-solid-danger hidden" id="btnWizardDeleteSelected" onclick="executeDeleteLeftovers()">
+          <span data-i18n="btnDeleteSelectedLeftovers">מחק שאריות נבחרות</span>
+        </button>
+        <!-- Step 4 Actions -->
+        <button class="btn btn-sm btn-primary hidden" id="btnWizardFinish" onclick="closeUninstallWizard()">
+          <span data-i18n="btnFinishAndClose">סיום וסגירה</span>
+        </button>
+      </div>
+    </div>
+
+  </div>
+</div>
+
+<!-- =====================================================================
+     FORCED UNINSTALL MODAL (Broken / stubborn apps removal)
+     ===================================================================== -->
+<div id="modalForcedUninstall" class="modal hidden">
+  <div class="modal-card">
+    <div class="modal-head">
+      <div class="grow">
+        <h3 class="modal-title" data-i18n="forcedModalTitle">הסרה כפויה (Forced Uninstall)</h3>
+        <p class="card-sub" data-i18n="forcedModalDesc">
+          הסרת תוכנות עיקשות, פגומות או כאלו שאינן מופיעות ברשימת ההסרה של Windows.
+        </p>
+      </div>
+      <button class="modal-close" onclick="closeForcedModal()">&#10005;</button>
+    </div>
+    <div class="modal-body" style="gap: 14px;">
+      <div>
+        <label class="stat-label" data-i18n="lblForcedTarget">שם התוכנה או נתיב מלא לקובץ / תיקייה:</label>
+        <input type="text" id="forcedTargetInput" class="input" style="padding-inline-start: 12px; margin-top: 6px;" placeholder="לדוגמה: Photoshop או C:\Program Files\AppFolder">
+      </div>
+
+      <div class="panel">
+        <span class="panel-label" data-i18n="wizScanModeHeader">עומק סריקת שאריות</span>
+        <div class="grid grid-3" style="gap: 8px; margin-top: 8px;">
+          <label class="scan-mode-card" id="forcedModeSafe" onclick="setForcedMode('safe')">
+            <input type="radio" name="forcedMode" value="safe" style="display:none;">
+            <div class="mode-title">Safe</div>
+            <div class="mode-desc">בטוח ומהיר</div>
+          </label>
+          <label class="scan-mode-card active" id="forcedModeModerate" onclick="setForcedMode('moderate')">
+            <input type="radio" name="forcedMode" value="moderate" checked style="display:none;">
+            <div class="mode-title">Moderate</div>
+            <div class="mode-desc">מומלץ ומאוזן</div>
+          </label>
+          <label class="scan-mode-card" id="forcedModeAdvanced" onclick="setForcedMode('advanced')">
+            <input type="radio" name="forcedMode" value="advanced" style="display:none;">
+            <div class="mode-title">Advanced</div>
+            <div class="mode-desc">עמוק ויסודי</div>
+          </label>
+        </div>
+      </div>
+    </div>
+    <div class="modal-foot" style="justify-content: flex-end; gap: 8px;">
+      <button class="btn btn-sm" onclick="closeForcedModal()" data-i18n="btnCancel">ביטול</button>
+      <button class="btn btn-sm btn-solid-danger" id="btnRunForced" onclick="executeForcedScan()" data-i18n="btnScanForced">
+        סרוק שאריות בכפייה
+      </button>
+    </div>
+  </div>
+</div>
+
+<!-- =====================================================================
+     HUNTER MODE MODAL (Target crosshair & direct process/file execution)
+     ===================================================================== -->
+<div id="modalHunterMode" class="modal hidden">
+  <div class="modal-card">
+    <div class="modal-head">
+      <div class="grow">
+        <div class="row" style="gap: 10px; align-items: center;">
+          <div style="width: 32px; height: 32px; border-radius: 50%; background: rgba(56, 189, 248, 0.15); display: flex; align-items: center; justify-content: center; color: var(--accent);">
+            <svg fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24" style="width: 20px; height: 20px;">
+              <circle cx="12" cy="12" r="9"/>
+              <path stroke-linecap="round" d="M12 3v4M12 17v4M3 12h4M17 12h4"/>
+            </svg>
+          </div>
+          <div>
+            <h3 class="modal-title" data-i18n="hunterModalTitle">כוונת ציד (Hunter Mode)</h3>
+            <p class="card-sub" data-i18n="hunterModalDesc">זיהוי מטרות ישיר לפי תהליך פעיל, חלון או נתיב קובץ וביצוע פעולות מיידיות.</p>
+          </div>
+        </div>
+      </div>
+      <button class="modal-close" onclick="closeHunterModal()">&#10005;</button>
+    </div>
+    <div class="modal-body" style="gap: 14px;">
+      <div>
+        <label class="stat-label" data-i18n="hunterSelectProcess">בחר תהליך פעיל או הקלד נתיב/PID:</label>
+        <div class="row" style="gap: 8px; margin-top: 6px;">
+          <input type="text" id="hunterTargetInput" class="input grow" style="padding-inline-start: 12px;" placeholder="שם תהליך, PID או נתיב קובץ...">
+          <button class="btn btn-sm btn-primary" onclick="resolveHunterTargetAction()" data-i18n="btnHunterResolve">זהה מטרה</button>
+        </div>
+      </div>
+
+      <!-- Resolved Target Card -->
+      <div id="hunterTargetCard" class="panel hidden">
+        <div class="spread" style="align-items: flex-start;">
+          <div>
+            <span class="stat-label" data-i18n="hunterTargetLabel">פרטי המטרה שזוהתה</span>
+            <div style="font-weight: 700; font-size: 14px; margin-top: 2px;" id="hunterTargetName">--</div>
+            <div class="mono faint" style="font-size: 11px; margin-top: 2px; word-break: break-all;" id="hunterTargetPath">--</div>
+          </div>
+          <span class="badge badge-accent mono" id="hunterTargetPid">PID: --</span>
+        </div>
+        <div class="grid grid-2" style="margin-top: 10px; gap: 8px;">
+          <div class="kv">
+            <span class="kv-key">זיכרון בשימוש:</span>
+            <span class="kv-val ltr" id="hunterTargetMemory">-- MB</span>
+          </div>
+          <div class="kv">
+            <span class="kv-key">יצרן / חתימה:</span>
+            <span class="kv-val" id="hunterTargetPublisher">--</span>
+          </div>
+        </div>
+      </div>
+
+      <!-- Action Buttons Grid -->
+      <div class="panel">
+        <span class="panel-label" data-i18n="hunterActionsHeader">פעולות זמינות למטרה</span>
+        <div class="grid grid-2" style="gap: 8px; margin-top: 8px;">
+          <button class="btn btn-sm btn-solid-danger" onclick="executeHunterActionBtn('kill')" data-i18n="btnHunterKill">
+            סיים תהליך (Kill Process)
+          </button>
+          <button class="btn btn-sm btn-solid-danger" onclick="executeHunterActionBtn('kill_and_delete')" data-i18n="btnHunterKillDelete">
+            סיים ומחק קובץ (Kill &amp; Delete)
+          </button>
+          <button class="btn btn-sm btn-primary" onclick="executeHunterActionBtn('forced_uninstall')" data-i18n="btnHunterForced">
+            הסרה כפויה מלאה (Forced Uninstall)
+          </button>
+          <button class="btn btn-sm" onclick="executeHunterActionBtn('disable_autostart')" data-i18n="btnHunterDisableStartup">
+            בטל הפעלה באתחול (Disable Startup)
+          </button>
+        </div>
+      </div>
+    </div>
+    <div class="modal-foot" style="justify-content: flex-end;">
+      <button class="btn btn-sm" onclick="closeHunterModal()" data-i18n="btnClose">סגור</button>
+    </div>
+  </div>
+</div>
+
+<!-- =====================================================================
+     BACKUP CENTER MODAL (Safety Rollback & WinRE Offline Recovery)
+     ===================================================================== -->
+<div id="modalBackupCenter" class="modal hidden">
+  <div class="modal-card lg" style="max-width: 780px; width: 95%;">
+    <div class="modal-head">
+      <div class="grow">
+        <div class="row" style="gap: 10px; align-items: center;">
+          <div style="width: 32px; height: 32px; border-radius: var(--r-sm); background: rgba(56, 189, 248, 0.15); display: flex; align-items: center; justify-content: center; color: var(--accent);">
+            <svg fill="none" stroke="currentColor" stroke-width="1.8" viewBox="0 0 24 24" style="width: 20px; height: 20px;">
+              <path stroke-linecap="round" stroke-linejoin="round" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"/>
+            </svg>
+          </div>
+          <div>
+            <h3 class="modal-title" data-i18n="backupModalTitle">מרכז גיבויים ושחזור (Backup Center)</h3>
+            <p class="card-sub" data-i18n="backupModalDesc">גיבויי Registry שנוצרו לפני הסרות. שחזור בלחיצה אחת או בסביבת WinRE במצב לא מקוון.</p>
+          </div>
+        </div>
+      </div>
+      <button class="modal-close" onclick="closeBackupCenterModal()">&#10005;</button>
+    </div>
+    <div class="modal-body" style="padding: 0;">
+      <div class="table-scroll" style="max-height: 380px;">
+        <table class="table">
+          <thead>
+            <tr>
+              <th data-i18n="thBackupDate">תאריך ושעה</th>
+              <th data-i18n="thBackupApp">תוכנה</th>
+              <th data-i18n="thBackupFiles">קבצי גיבוי</th>
+              <th data-i18n="thBackupOffline">שחזור WinRE</th>
+              <th class="act" data-i18n="thActions">שחזור</th>
+            </tr>
+          </thead>
+          <tbody id="backupHistoryTbody">
+            <tr>
+              <td colspan="5" class="loading" style="text-align: center; padding: 30px;" data-i18n="loadingBackups">טוען היסטוריית גיבויים...</td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+    <div class="modal-foot" style="justify-content: flex-end;">
+      <button class="btn btn-sm" onclick="closeBackupCenterModal()" data-i18n="btnClose">סגור</button>
+    </div>
+  </div>
+</div>
+
+<!-- =====================================================================
+     TERMS OF USE & EULA MODAL
+     ===================================================================== -->
+<div id="modalTerms" class="modal hidden" onclick="if (event.target === this) closeTermsModal()">
+  <div class="modal-card lg" style="max-width: 860px; width: 95%; max-height: 90vh; display: flex; flex-direction: column;">
+    <div class="modal-head">
+      <div class="grow">
+        <div class="row" style="gap: 10px; align-items: center;">
+          <div style="width: 32px; height: 32px; border-radius: var(--r-sm); background: rgba(56, 189, 248, 0.15); display: flex; align-items: center; justify-content: center; color: var(--accent);">
+            <svg fill="none" stroke="currentColor" stroke-width="1.8" viewBox="0 0 24 24" style="width: 20px; height: 20px;">
+              <path stroke-linecap="round" stroke-linejoin="round" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"/>
+            </svg>
+          </div>
+          <div>
+            <h3 class="modal-title" data-i18n="termsModalTitle">תקנון תנאי שימוש והסכם רישיון (EULA)</h3>
+            <p class="card-sub" data-i18n="termsModalSub">תוכנת Polaris &bull; בעל הזכויות והמפתח: יקיר לביא</p>
+          </div>
+        </div>
+      </div>
+      <button class="modal-close" onclick="closeTermsModal()">&#10005;</button>
+    </div>
+
+    <div class="modal-body" style="padding: 18px 22px; overflow-y: auto; max-height: calc(90vh - 140px);">
+      <div class="terms-reader">
+
+        <div class="terms-callout">
+          <div class="terms-callout-title">
+            <svg fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24" style="width: 16px; height: 16px;">
+              <path stroke-linecap="round" stroke-linejoin="round" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z"/>
+            </svg>
+            הודעה מקדימה והסכמה מחייבת
+          </div>
+          התקנת התוכנה, פתיחתה או שימוש בה מהווים הסכמה והתחייבות בלתי חוזרת מצדך לכל התנאים, ההגבלות והסייגים המפורטים במסמך זה. אם אינך מסכים/ה לכל התנאים במלואם, הינך נדרש/ת לחדול מכל שימוש ולמחוק את התוכנה לאלתר.
+        </div>
+
+        <div class="terms-clause">
+          <h4>1. הענקת רישיון מוגבלת והדירה (Limited &amp; Revocable License)</h4>
+          <p>1.1. המפתח, יקיר לביא, מעניק למשתמש רישיון אישי, מוגבל, הדיר (הניתן לביטול בכל עת), בלתי-בלעדי ובלתי-עביר להפעלת התוכנה בגרסת הקוד הבינארי בלבד.</p>
+          <p>1.2. <strong>התוכנה אינה נמכרת למשתמש</strong>, אלא ניתן לגביה רישיון שימוש זמני ומוגבל בלבד. שום זכות בעלות או קניין אינה מועברת למשתמש.</p>
+        </div>
+
+        <div class="terms-callout danger">
+          <div class="terms-callout-title">
+            <svg fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24" style="width: 16px; height: 16px;">
+              <path stroke-linecap="round" stroke-linejoin="round" d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z"/>
+            </svg>
+            2. זכות בלעדית ומוחלטת לכיבוי, שלילת גישה ושינוי ("שליטה חד-צדדית מוחלטת")
+          </div>
+          <p style="margin: 0 0 6px 0;">המשתמש מאשר ומסכים בזאת מפורשות ובאופן בלתי חוזר, כי <strong>יקיר לביא</strong> שומר לעצמו את הזכות המלאה, הבלעדית, המוחלטת ונטולת כל סייג:</p>
+          <ul style="margin: 0 0 6px 0; padding-inline-start: 18px;">
+            <li><strong>לכבות, להשבית, לנטרל, להקפיא או להפסיק לצמיתות או זמנית</strong> את פעולת התוכנה כולה או חלק מרכיביה (לרבות באמצעות מנגנון ניטרול מרוחק / Kill-Switch או חסימה).</li>
+            <li><strong>לשלול, לחסום, לבטל או למנוע גישה לתוכנה</strong> מכל משתמש, מחשב או כתובת, באופן מיידי ולצמיתות.</li>
+            <li><strong>לשנות, להסיר, להוסיף, להגביל או למחוק כל תכונה, מודול או מסך</strong> בתוכנה.</li>
+            <li><strong>לבצע כל שינוי, פעולה או החלטה כראות עיניו המוחלטת ולפי שיקול דעתו הבלעדי בכל עת ומכל סיבה שהיא ("לעשות מה שהוא רוצה מתי שהוא רוצה").</strong></li>
+          </ul>
+          <p style="margin: 0; font-size: 11.5px; opacity: 0.95;">
+            פעולות אלו ייעשו <strong>בכל עת ומיידית, ללא צורך בהודעה מוקדמת, ללא חובת הנמקה או הסבר, וללא כל חבות, פיצוי, שיפוי או החזר כספי כלשהו</strong>. המשתמש מוותר מראש ובאופן בלתי חוזר על כל טענה, תביעה או דרישה בעניין זה.
+          </p>
+        </div>
+
+        <div class="terms-clause">
+          <h4>3. הגבלות שימוש מחמירות (Strict Prohibitions)</h4>
+          <p>חל איסור מוחלט על המשתמש או מי מטעמו:</p>
+          <ul>
+            <li>לבצע הנדסה לאחור (Reverse Engineering), דה-קומפילציה, פירוק, פענוח או ניסיון לחלץ את קוד המקור, המבנה והאלגוריתמים של התוכנה.</li>
+            <li>לערוך, לשנות, לעקוף, לנטרל או לפגוע בכל מנגנון הגנה, אימות, אבטחה או מנגנון כיבוי/חסימה.</li>
+            <li>להעתיק, למכור, להשכיר, להחכיר, להפיץ מחדש, לתת רישיון-משנה או להעמיד את התוכנה לרשות הציבור ברשת ללא אישור בכתב מאת יקיר לביא.</li>
+            <li>ליצור עבודות נגזרות או להשתמש בתוכנה לשם פיתוח מוצר מתחרה או תחליפי.</li>
+          </ul>
+        </div>
+
+        <div class="terms-clause">
+          <h4>4. בעלות וקניין רוחני (Intellectual Property)</h4>
+          <p>כל זכויות הקניין הרוחני מכל סוג – לרבות זכויות יוצרים, סימני מסחר, סודות מסחריים, קוד מקור, עיצובים, אלגוריתמים וממשקי משתמש – שייכים באופן מלא ובלעדי ל<strong>יקיר לביא</strong> בלבד.</p>
+        </div>
+
+        <div class="terms-clause">
+          <h4>5. שימוש על אחריות המשתמש ופטור מאחריות ("AS IS")</h4>
+          <p>5.1. התוכנה וכלל כליה מסופקים "כמות שהם" ("AS IS") ו-"כפי שהם זמינים" ("AS AVAILABLE"), ללא כל התחייבות, מצג או אחריות מכל סוג שהוא.</p>
+          <p>5.2. מאחר שהתוכנה מבצעת פעולות ברמת מערכת ההפעלה (ניהול זיכרון RAM, כלי תיקון מערכת, ניקוי וכוננים), <strong>כל שימוש והפעלת פעולות הינם באחריותו המלאה והבלעדית של המשתמש</strong>.</p>
+          <p>5.3. המשתמש אחראי בלעדית לביצוע גיבויים מלאים ותקופתיים של כל הקבצים וההגדרות במחשבו.</p>
+        </div>
+
+        <div class="terms-clause">
+          <h4>6. הגבלת חבות מוחלטת (Limitation of Liability)</h4>
+          <p>6.1. בשום מקרה ובשום עילה משפטית לא יהיה יקיר לביא אחראי לכל נזק ישיר, עקיף, מקרי, תוצאתי, אובדן רווחים, אובדן נתונים, קריסת מערכת או השבתה עסקית הנובעים מהתוכנה, משימוש בה, מכיבויה או מחסימת הגישה אליה.</p>
+          <p>6.2. <strong>המשתמש מאשר ומסכים מפורשות כי בשום מקרה ובשום מצב – לרבות אם ערכאה שיפוטית תטיל חבות כלשהי על אף האמור – חבותו הכוללת והמצטברת של יקיר לביא תעמוד על 0 ₪ (אפס שקלים) באופן מוחלט, גורף וסופי.</strong></p>
+        </div>
+
+        <div class="terms-clause">
+          <h4>7. שיפוי, סיום ושינויים</h4>
+          <p>7.1. המשתמש מתחייב לשפות ולפצות את יקיר לביא בגין כל נזק, הפסד, תביעה או הוצאה הנובעים מהפרת תנאי תקנון זה על ידי המשתמש.</p>
+          <p>7.2. יקיר לביא רשאי להביא הסכם זה לסיומו בכל עת. עם סיום הרישיון, על המשתמש למחוק ולהסיר כל עותק של התוכנה מרשותו לאלתר.</p>
+          <p>7.3. יקיר לביא שומר לעצמו את הזכות לעדכן תקנון זה מעת לעת. המשך השימוש בתוכנה מהווה הסכמה לתקנון המעודכן.</p>
+        </div>
+
+        <div class="terms-clause">
+          <h4>8. ברירת דין וסמכות שיפוט בלעדית</h4>
+          <p>על תקנון זה, פרשנותו והשימוש בתוכנה יחולו אך ורק דיני מדינת ישראל. סמכות השיפוט הבלעדית והייחודית בכל סכסוך נתונה אך ורק לבתי המשפט המוסמכים במחוז תל-אביב-יפו, ישראל.</p>
+        </div>
+
+      </div>
+    </div>
+
+    <div class="modal-foot" style="display: flex; justify-content: space-between; align-items: center;">
+      <span class="muted" style="font-size: 11.5px;" data-i18n="termsAgreementNote">השימוש בתוכנה מהווה הסכמה מלאה ובלתי חוזרת לתנאים אלו.</span>
+      <button class="btn btn-sm btn-primary" onclick="closeTermsModal()" data-i18n="btnClose">סגור</button>
+    </div>
+  </div>
+</div>
+
+<script src="app.js"></script>
+</body>
+</html>
