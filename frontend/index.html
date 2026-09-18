@@ -213,7 +213,7 @@
                         <span class="badge" id="healthStatusBadge">בודק...</span>
                       </div>
                       <p class="card-sub" id="healthSummaryText" data-i18n="diagScanning">
-                        סורק תהליכי רקע, בריכות זיכרון קרנל ושירותי מערכת פעילים.
+                        סורק תהליכי רקע, מאגרי זיכרון של הקרנל ושירותי מערכת פעילים.
                       </p>
                     </div>
                   </div>
@@ -257,7 +257,7 @@
                       <span class="stat-value sm ltr muted" id="valCachedRam">-- GB</span>
                     </div>
                     <div class="stat">
-                      <span class="stat-label" data-i18n="totalRam">סה"כ מותקן</span>
+                      <span class="stat-label" data-i18n="totalRam">סה״כ מותקן</span>
                       <span class="stat-value sm ltr" id="valTotalRam">-- GB</span>
                     </div>
                   </div>
@@ -279,7 +279,7 @@
                   </div>
                 </div>
                 <div class="card-foot">
-                  <span data-i18n="attentionFoot">פירוט מלא, בריכות קרנל והתפלגות</span>
+                  <span data-i18n="attentionFoot">פירוט מלא, מאגרי הקרנל והתפלגות</span>
                   <button class="btn-link" onclick="goToScreen('memory')">
                     <span data-i18n="attentionLink">אבחון זיכרון מלא</span> &#8592;
                   </button>
@@ -659,7 +659,7 @@
                       <span class="badge badge-accent" data-i18n="storageBadgeSquirrel">Sunburst &amp; Collector</span>
                     </div>
                     <p class="card-sub" data-i18n="storageSub">
-                      ניתוח שטח אחסון מהיר, תרשים Sunburst מעגלי אינטראקטיבי (DaisyDisk style), סל איסוף למחיקה (Collector), ומפת כריות Treemap.
+                      מנתח מה תופס מקום בכונן ומאפשר למחוק ישירות מהתרשים: תרשים מעגלי, מפת שטחים ופילוח לפי סוג קובץ.
                     </p>
                   </div>
                   <div class="card-tools row" style="gap: 8px;">
@@ -804,7 +804,7 @@
                   <span data-i18n="storageTabSunburst">🪐 תרשים מעגלי (Sunburst)</span>
                 </button>
                 <button class="tab-btn" id="tabBtnStorageTreemap" onclick="switchStorageTab('treemap')">
-                  <span data-i18n="storageTabTreemap">📊 עץ ומפת כריות (Treemap)</span>
+                  <span data-i18n="storageTabTreemap">📊 עץ תיקיות ומפת שטחים (Treemap)</span>
                 </button>
                 <button class="tab-btn" id="tabBtnStorageTop" onclick="switchStorageTab('top')">
                   <span data-i18n="storageTabTop">🏆 100 הקבצים הגדולים</span>
@@ -1023,7 +1023,7 @@
                       <option value="pastel">פסטל רך (Pastel)</option>
                     </select>
 
-                    <button class="btn btn-sm btn-icon" onclick="reloadStorageTreemapData()" title="רענן מפת כריות">
+                    <button class="btn btn-sm btn-icon" onclick="reloadStorageTreemapData()" title="רענן מפת שטחים">
                       <svg fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
                         <path stroke-linecap="round" stroke-linejoin="round" d="M4 4v5h.6M19.9 11A8 8 0 004.6 9M20 20v-5h-.6m0 0a8 8 0 01-15.4-2M19.4 15H15"/>
                       </svg>
@@ -1059,7 +1059,11 @@
                     <span data-i18n="storageTopTitle">100 הקבצים הגדולים ביותר בכונן</span>
                     <span class="badge" id="storageTopCountBadge">0</span>
                   </div>
-                  <div class="card-tools">
+                  <div class="card-tools" style="display: flex; align-items: center; gap: 12px; flex-wrap: wrap;">
+                    <label style="display: inline-flex; align-items: center; gap: 6px; font-size: 12px; cursor: pointer; color: var(--text-muted); user-select: none;">
+                      <input type="checkbox" id="storageHideSystemTopFiles" onchange="filterStorageTopFiles()" checked style="cursor: pointer;" />
+                      <span data-i18n="storageHideSystem">הסתר קבצי מערכת חיוניים</span>
+                    </label>
                     <input type="text" class="input input-sm" id="storageTopFilter" placeholder="חיפוש קובץ..." oninput="filterStorageTopFiles()" style="width: 180px;" />
                   </div>
                 </div>
@@ -1171,7 +1175,7 @@
                   </div>
                   <div class="card-body">
                     <p class="card-sub" style="margin-bottom: 14px;">
-                      בדיקת השטח שווינדוס מקצה עבור נקודות שחזור ועותקי צללית (הסבר ל-&lt;Unknown&gt; space).
+                      בדיקת השטח ש-Windows מקצה עבור נקודות שחזור ועותקי צללית (הסבר לשטח המוצג כ-&lt;Unknown&gt;).
                     </p>
                     <button class="btn btn-secondary" onclick="executeStorageQuickClean('query_vss')">
                       <span>בדוק הקצאת שטח צלליות (VSS)</span>
@@ -1220,12 +1224,15 @@
           <div class="ctx-item" onclick="onStorageCtxAction('copy')">
             <span>📋 העתק נתיב מלא</span>
           </div>
-          <div class="ctx-divider"></div>
-          <div class="ctx-item ctx-warn" onclick="onStorageCtxAction('recycle')">
+          <div class="ctx-divider" id="storageCtxDeleteDivider"></div>
+          <div class="ctx-item ctx-warn" id="storageCtxRecycleItem" onclick="onStorageCtxAction('recycle')">
             <span>🗑️ העבר לסל המחזור</span>
           </div>
-          <div class="ctx-item ctx-danger" onclick="onStorageCtxAction('delete')">
+          <div class="ctx-item ctx-danger" id="storageCtxDeleteItem" onclick="onStorageCtxAction('delete')">
             <span>⚠️ מחק לצמיתות</span>
+          </div>
+          <div class="ctx-item hidden" id="storageCtxProtectedItem" style="opacity: 0.6; cursor: not-allowed; color: var(--text-muted);">
+            <span>🔒 פריט מערכת מוגן (לא ניתן למחיקה)</span>
           </div>
         </div>
       </section>
@@ -1482,7 +1489,7 @@
               <div class="card">
                 <div class="card-body spread">
                   <div>
-                    <span class="stat-label" data-i18n="lblTotalApps">סה"כ תוכנות מותקנות</span>
+                    <span class="stat-label" data-i18n="lblTotalApps">סה״כ תוכנות מותקנות</span>
                     <div class="metric-hero sm" id="valTotalApps">--</div>
                   </div>
                   <svg class="hero-icon" fill="none" stroke="currentColor" stroke-width="1.8" viewBox="0 0 24 24" style="width:32px;height:32px;opacity:0.25;">
@@ -1526,11 +1533,11 @@
               <div class="card-head">
                 <div class="grow">
                   <div class="card-title">
-                    <span data-i18n="uninstallerCardTitle">מסיר תוכנות מתקדם וניקוי שאריות עמוק</span>
+                    <span data-i18n="uninstallerCardTitle">מסיר תוכנות וניקוי שאריות עמוק</span>
                     <span class="badge badge-mono" id="badgeAppsFilteredCount">0</span>
                   </div>
                   <p class="card-sub" data-i18n="uninstallerCardDesc">
-                    הסרה מלאה של יישומים, יצירת נקודות שחזור וגיבוי Registry, סריקת שאריות היוריסטית (Safe/Moderate/Advanced), הסרה כפויה וכוונת ציד.
+                    הסרה מלאה של תוכנות, כולל נקודת שחזור, גיבוי Registry, סריקת שאריות מבוססת דפוסים (Safe/Moderate/Advanced), הסרה כפויה ומיקוד ידני.
                   </p>
                 </div>
                 <div class="card-tools">
@@ -1545,7 +1552,7 @@
                       <circle cx="12" cy="12" r="9"/>
                       <path stroke-linecap="round" d="M12 3v4M12 17v4M3 12h4M17 12h4"/>
                     </svg>
-                    <span data-i18n="btnHunterMode">כוונת ציד</span>
+                    <span data-i18n="btnHunterMode">מיקוד ידני</span>
                   </button>
                   <button class="btn btn-sm" onclick="openForcedUninstallModal()">
                     <svg fill="none" stroke="currentColor" stroke-width="1.8" viewBox="0 0 24 24">
@@ -1820,7 +1827,7 @@
               <div class="card-head">
                 <div>
                   <div class="card-title">
-                    <span data-i18n="devicesProblemTitle">התקנים שווינדוס סימנה כתקולים</span>
+                    <span data-i18n="devicesProblemTitle">התקנים ש-Windows סימנה כתקולים</span>
                     <span class="badge" id="deviceProblemBadge">0</span>
                   </div>
                   <p class="card-sub" data-i18n="devicesProblemDesc">
@@ -2382,7 +2389,7 @@
         </div>
 
         <div class="panel" style="margin-top: 12px;">
-          <span class="panel-label" data-i18n="wizScanModeHeader">עומק סריקת שאריות היוריסטית</span>
+          <span class="panel-label" data-i18n="wizScanModeHeader">עומק סריקת השאריות</span>
           <p class="panel-text" style="margin-bottom: 10px;" data-i18n="wizScanModeDesc">בחר את האלגוריתם לאיתור שאריות רישום וקבצים שיישארו לאחר המסיר המקורי:</p>
           
           <div class="grid grid-3" style="gap: 10px;">
@@ -2462,6 +2469,10 @@
               <span data-i18n="tabFilesLeftovers">קבצים ותיקיות (Files)</span>
               <span class="badge badge-mono" id="badgeCountFilesLeftovers" style="font-size: 10px; margin-inline-start: 4px;">0</span>
             </button>
+            <button class="seg-btn" id="tabLeftoversTasks" onclick="switchLeftoversTab('scheduled_tasks')">
+              <span data-i18n="tabTasksLeftovers">משימות מתוזמנות (Tasks)</span>
+              <span class="badge badge-mono" id="badgeCountTasksLeftovers" style="font-size: 10px; margin-inline-start: 4px;">0</span>
+            </button>
           </div>
 
           <div class="row" style="gap: 6px;">
@@ -2495,7 +2506,7 @@
           <p class="card-sub" id="wizardDoneDesc" style="max-width: 480px; margin: 0 auto 16px;">
             כל השאריות הנבחרות הוסרו מהמערכת.
           </p>
-          <div class="grid grid-2" style="max-width: 420px; margin: 0 auto 16px; gap: 10px;">
+          <div class="grid grid-3" style="max-width: 500px; margin: 0 auto 16px; gap: 10px;">
             <div class="kv" style="justify-content: center; text-align: center; flex-direction: column;">
               <span class="kv-desc" data-i18n="lblRegKeysRemoved">מפתחות רישום שנמחקו</span>
               <span class="mono tone-accent" style="font-size: 20px; font-weight: 700;" id="valWizardDeletedReg">0</span>
@@ -2503,6 +2514,10 @@
             <div class="kv" style="justify-content: center; text-align: center; flex-direction: column;">
               <span class="kv-desc" data-i18n="lblFilesRemoved">קבצים ותיקיות שנמחקו</span>
               <span class="mono tone-accent" style="font-size: 20px; font-weight: 700;" id="valWizardDeletedFiles">0</span>
+            </div>
+            <div class="kv" style="justify-content: center; text-align: center; flex-direction: column;">
+              <span class="kv-desc" data-i18n="lblTasksRemoved">משימות מתוזמנות שנמחקו</span>
+              <span class="mono tone-accent" style="font-size: 20px; font-weight: 700;" id="valWizardDeletedTasks">0</span>
             </div>
           </div>
           <div id="wizardRebootNotice" class="banner banner-warn hidden" style="max-width: 500px; margin: 0 auto 14px; text-align: start;">
@@ -2641,7 +2656,7 @@
             </svg>
           </div>
           <div>
-            <h3 class="modal-title" data-i18n="hunterModalTitle">כוונת ציד (Hunter Mode)</h3>
+            <h3 class="modal-title" data-i18n="hunterModalTitle">מיקוד ידני (Hunter Mode)</h3>
             <p class="card-sub" data-i18n="hunterModalDesc">זיהוי מטרות ישיר לפי תהליך פעיל, חלון או נתיב קובץ וביצוע פעולות מיידיות.</p>
           </div>
         </div>
