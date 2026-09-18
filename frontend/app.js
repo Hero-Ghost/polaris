@@ -129,17 +129,17 @@ const I18N = {
 
     /* Consolidated Categories */
     catPerformanceTitle: "משאבים וביצועים",
-    catPerformanceDesc: "ניהול תהליכים פעילים, שירותי Windows ואבחון מעמיק של זיכרון RAM וקרנל",
+    catPerformanceDesc: "ניהול תהליכים, שירותי Windows ואבחון עומק של RAM והקרנל",
     catStorageTitle: "כוננים ואחסון",
-    catStorageDesc: "בריאות כוננים ומדדי S.M.A.R.T, לצד סייר אחסון חכם וויזואלי",
+    catStorageDesc: "בריאות כוננים לפי נתוני S.M.A.R.T, וסייר אחסון חזותי למציאת קבצים כבדים",
     catMaintenanceTitle: "תחזוקה ותוכנות",
-    catMaintenanceDesc: "תיקון קבצי מערכת, ניקוי מטמון, הסרת תוכנות ושאריות וניהול תוכנות אתחול",
+    catMaintenanceDesc: "תיקון קבצי מערכת, ניקוי מטמון, הסרת תוכנות ושאריות, וניהול תוכנות אתחול",
     catDiagnosticsTitle: "אבחון ויציבות",
-    catDiagnosticsDesc: "ניתוח קריסות ומסכים כחולים (BSOD) ויומן אירועי שגיאה של Windows",
+    catDiagnosticsDesc: "ניתוח קריסות ומסכים כחולים (BSOD), ויומן שגיאות Windows",
     catHardwareTitle: "חומרה והתקנים",
-    catHardwareDesc: "מנהל התקנים, תקינות דרייברים ובריאות סוללה וחשמל",
+    catHardwareDesc: "מנהל ההתקנים, תקינות הדרייברים ובריאות הסוללה",
     catSettingsTitle: "כלים והגדרות",
-    catSettingsDesc: "התאמת מקלדת (Copilot Remapper) והגדרות תוכנת Polaris",
+    catSettingsDesc: "התאמת מקלדת (מיפוי מקש Copilot) והגדרות התוכנה",
 
     navPerformance: "משאבים וביצועים",
     navStorageGroup: "כוננים ואחסון",
@@ -158,11 +158,11 @@ const I18N = {
     scrProcessesTitle: "תהליכים ושירותים",
     scrProcessesDesc: "מה רץ עכשיו, כמה זיכרון הוא תופס, ומה אפשר לסגור",
     scrMemoryTitle: "אבחון זיכרון",
-    scrMemoryDesc: "למה הזיכרון תפוס - ממצאים, בריכות קרנל והתפלגות",
+    scrMemoryDesc: "למה הזיכרון תפוס — ממצאים, מאגרי הקרנל והתפלגות",
     scrMaintenanceTitle: "תחזוקה ותיקון",
     scrMaintenanceDesc: "כלי Microsoft רשמיים לניקוי, תיקון ואיפוס",
-    scrUninstallerTitle: "הסרת תוכנות מתקדמת",
-    scrUninstallerDesc: "הסרה נקייה, נקודות שחזור, גיבוי Registry וסריקת שאריות עמוקה",
+    scrUninstallerTitle: "הסרת תוכנות ושאריות",
+    scrUninstallerDesc: "הסרה נקייה עם נקודת שחזור, גיבוי Registry וסריקת שאריות מעמיקה",
     scrStartupTitle: "תוכנות אתחול",
     scrStartupDesc: "מה עולה יחד עם המחשב וכמה זה מאט את ההפעלה",
     scrCrashesTitle: "קריסות ומסך כחול",
@@ -174,12 +174,12 @@ const I18N = {
 
     /* Shared */
     loading: "טוען...",
-    btnRefresh: "רענון",
+    btnRefresh: "רענן",
     btnClose: "סגור",
-    btnCancel: "ביטול",
-    btnKill: "סיום תהליך",
-    btnOptimize: "שחרור זיכרון",
-    btnDeepScan: "סריקה מחדש",
+    btnCancel: "בטל",
+    btnKill: "סיים תהליך",
+    btnOptimize: "שחרר זיכרון",
+    btnDeepScan: "סרוק מחדש",
     optimizing: "משחרר...",
     details: "פרטים",
     procsShort: "תהליכים",
@@ -195,19 +195,19 @@ const I18N = {
     /* Overview */
     scoreCap: "ציון",
     diagTitle: "מצב בריאות המערכת",
-    diagScanning: "סורק תהליכי רקע, בריכות זיכרון קרנל ושירותי מערכת פעילים.",
+    diagScanning: "סורק תהליכי רקע, מאגרי זיכרון של הקרנל ושירותי מערכת פעילים",
     physicalRamTitle: "זיכרון פיזי בשימוש",
     memoryLoad: "עומס זיכרון:",
     usedRam: "בשימוש",
     availableRam: "פנוי וזמין",
     cachedRam: "מטמון (Standby)",
-    totalRam: 'סה"כ מותקן',
+    totalRam: "סה״כ מותקן",
     loadNormal: "תקין",
     loadModerate: "בינוני",
     loadHigh: "גבוה",
     attentionTitle: "דורש תשומת לב",
     attentionDesc: "הממצאים המשמעותיים ביותר מהאבחון האחרון.",
-    attentionFoot: "פירוט מלא, בריכות קרנל והתפלגות",
+    attentionFoot: "פירוט מלא, מאגרי הקרנל והתפלגות",
     attentionLink: "אבחון זיכרון מלא",
     attentionNone: "לא נמצאו ממצאים חריגים. הזיכרון מנוהל כרגיל.",
     timelineTitle: "היסטוריית שימוש בזיכרון",
@@ -215,14 +215,14 @@ const I18N = {
     legendUsed: "בשימוש (GB)",
     legendCached: "מטמון (GB)",
     topHogsTitle: "צרכני הזיכרון הגדולים",
-    topHogsDesc: "היישומים שתופסים את הנתח המשמעותי ביותר כרגע.",
+    topHogsDesc: "התוכנות שתופסות את החלק הגדול ביותר מהזיכרון כרגע",
     topHogsLink: "לכל התהליכים",
 
     /* Battery Overview */
     batteryScoreCap: "בריאות",
     batteryCardTitle: "בריאות הסוללה וצריכת חשמל",
     batteryScanning: "מחשב קיבולת יצרן מול קיבולת מרבית עכשווית, רמת שחיקה ומחזורי טעינה.",
-    btnRefreshBattery: "רענון סוללה",
+    btnRefreshBattery: "רענן סוללה",
     batteryChargeLevel: "רמת טעינה נוכחית",
     batteryStatusLabel: "מצב פעולה:",
     batteryFullCapacity: "קיבולת מלאה נוכחית",
@@ -249,7 +249,7 @@ const I18N = {
     catDevelopment: "פיתוח",
     catSystem: "שירותי מערכת",
     catApps: "תוכנות",
-    thProcessName: "שם התהליך / אפליקציה",
+    thProcessName: "שם התהליך / התוכנה",
     thCategory: "קטגוריה",
     thRam: "זיכרון (RAM)",
     thRamPercent: "% מה-RAM",
@@ -278,7 +278,7 @@ const I18N = {
     /* Maintenance */
     repairSafetyTitle: "כל הפעולות כאן משתמשות בכלי Microsoft רשמיים",
     repairSafetyNote: "קבצים אישיים, מסמכים, תמונות, שולחן העבודה ותוכנות מותקנות נשמרים לחלוטין.",
-    btnAuditScan: "סריקת מצב",
+    btnAuditScan: "סרוק מצב",
     lblAuditTemp: "קבצים זמניים ומטמון",
     lblAuditRecoverable: "ניתן לפינוי",
     lblAuditStartup: "יישומי אתחול",
@@ -307,7 +307,7 @@ const I18N = {
     lblChkDismRestore: "תיקון תמונת מערכת Windows",
     descChkDismRestore: "סריקה ושחזור של רכיבי Windows פגומים. עשוי להימשך מספר דקות.",
     lblChkSfc: "סריקה ותיקון קבצי מערכת פגומים",
-    descChkSfc: "בדיקת כל קבצי הליבה המוגנים של Windows ושחזור גרסאות פגומות.",
+    descChkSfc: "בדיקת כל קובצי המערכת המוגנים של Windows ושחזור גרסאות פגומות",
     lblChkFlushDns: "איפוס מטמון DNS",
     descChkFlushDns: "פתרון איטיות גלישה ואתרים שלא נטענים.",
     lblChkNetReset: "איפוס עמוק של מחסנית הרשת ו-Winsock",
@@ -320,12 +320,12 @@ const I18N = {
     lblStepList: "שלבי התהליך",
     btnCopyLog: "העתק לוג",
     btnPreviewScan: "סרוק בלי להסיר",
-    btnFinishAndClose: "סיום וסגירה",
-    totalFreed: 'סה"כ פונו:',
+    btnFinishAndClose: "סיים וסגור",
+    totalFreed: "סה״כ פונו:",
 
     /* Startup */
     txtStartupExplorerTitle: "תוכנות שעולות עם המחשב",
-    txtStartupExplorerDesc: "יישומים הפועלים אוטומטית בעת עליית המחשב, מדורגים לפי השפעה על זמן ההפעלה.",
+    txtStartupExplorerDesc: "תוכנות שפועלות אוטומטית בעת עליית המחשב, מדורגות לפי השפעתן על זמן ההפעלה",
     startupSafeNote: "קריאה בלבד",
     noStartup: "לא נמצאו תוכנות אתחול פעילות ברישום המערכת.",
     impactSuffix: "השפעה",
@@ -341,7 +341,7 @@ const I18N = {
     healthBsod: "אותרו מסכים כחולים",
     healthPower: "אותרו כיבויי פתע",
     noCrashes: "לא אותרו קריסות או כיבויי פתע",
-    noCrashesDesc: "יומן האירועים נקי משגיאות ליבה חמורות ב-30 הימים האחרונים.",
+    noCrashesDesc: "יומן האירועים נקי משגיאות קרנל חמורות ב-30 הימים האחרונים",
     crashDetailsBtn: "פרטים ופתרון",
     crashCodeShort: "קוד:",
     crashDriverShort: "רכיב:",
@@ -376,7 +376,7 @@ const I18N = {
     settingsDataDesc: "ייצוא תמונת מצב של הזיכרון, האבחון והתהליכים.",
     settingExport: "ייצוא דוח תמונת מצב",
     settingExportDesc: "שומר קובץ JSON עם נתוני הזיכרון, ממצאי האבחון ו-30 התהליכים הכבדים.",
-    btnExport: "ייצוא",
+    btnExport: "ייצא",
     settingsAbout: "אודות",
     aboutVersion: "גרסה",
     aboutPrivileges: "הרשאות",
@@ -390,7 +390,7 @@ const I18N = {
     modalServices: "שירותי Windows שרצים בתוך התהליך",
     modalRss: "זיכרון פעיל",
     modalVms: "זיכרון וירטואלי",
-    modalPct: "אחוז מה-RAM",
+    modalPct: "% מה-RAM",
     modalCpu: "מעבד",
     modalPath: "נתיב קובץ מלא",
     modalCmd: "שורת הפקודה",
@@ -434,7 +434,7 @@ const I18N = {
     scrDevicesTitle: "דרייברים והתקנים",
     scrDevicesDesc: "התקנים תקולים ודרייברים שעברו זמנם",
     scrEventsTitle: "יומן שגיאות מערכת",
-    scrEventsDesc: "שגיאות חוזרות שווינדוס רושמת, ממוינות לפי חשיבות",
+    scrEventsDesc: "שגיאות חוזרות שמתעדת Windows, ממוינות לפי חשיבות",
     scanning: "סורק...",
 
     /* Drive health */
@@ -443,7 +443,7 @@ const I18N = {
     disksLimitedTitle: "נתוני S.M.A.R.T. חלקיים",
     disksLimitedDesc: "מוני האמינות של הכוננים (בלאי, טמפרטורה, סקטורים פגומים) דורשים הרשאות מנהל. הפעל את Polaris כמנהל כדי לראות אותם. נתוני הקיבולת מוצגים כרגיל.",
     disksNone: "לא אותרו כוננים",
-    disksNoneDesc: "ווינדוס לא החזירה מידע על כוננים פיזיים במחשב הזה.",
+    disksNoneDesc: "Windows לא החזירה מידע על כוננים פיזיים במחשב הזה",
     driveLife: "תוחלת חיים שנותרה",
     driveWear: "בלאי",
     driveTemp: "טמפרטורה",
@@ -482,7 +482,7 @@ const I18N = {
     devicesStaleTitle: "דרייברים ישנים",
     devicesStaleDesc: "דרייברים בני יותר מארבע שנים לכרטיס מסך, רשת או אחסון. דרייברים מובנים של Microsoft אינם נכללים — התאריך שלהם הוא תאריך שחרור Windows ואינו מעיד על גיל.",
     devicesAllOk: "כל ההתקנים פועלים כשורה",
-    devicesAllOkDesc: "ווינדוס לא סימנה אף התקן כתקול או חסר דרייבר.",
+    devicesAllOkDesc: "Windows לא סימנה אף התקן כתקול או חסר דרייבר",
     deviceProblemCode: "קוד",
     deviceInstanceId: "מזהה ההתקן",
     driversInstalled: "דרייברים מותקנים",
@@ -513,14 +513,14 @@ const I18N = {
     eventsOnlyNoiseDesc: "כל השגיאות שנרשמו הן כאלה שמופיעות בכל מחשב Windows תקין. סמן \"הצג גם רעש\" כדי לראות אותן.",
 
     /* Uninstaller */
-    lblTotalApps: 'סה"כ תוכנות מותקנות',
+    lblTotalApps: "סה״כ תוכנות מותקנות",
     lblTotalSpace: "נפח דיסק תפוס משוער",
     lblWin32Apps: "תוכנות Desktop (Win32)",
     lblUwpApps: "אפליקציות חנות (UWP)",
-    uninstallerCardTitle: "מסיר תוכנות מתקדם וניקוי שאריות עמוק",
-    uninstallerCardDesc: "הסרה מלאה של יישומים, יצירת נקודות שחזור וגיבוי Registry, סריקת שאריות היוריסטית (Safe/Moderate/Advanced), הסרה כפויה וכוונת ציד.",
+    uninstallerCardTitle: "מסיר תוכנות וניקוי שאריות עמוק",
+    uninstallerCardDesc: "הסרה מלאה של תוכנות, כולל נקודת שחזור, גיבוי Registry, סריקת שאריות מבוססת דפוסים (Safe/Moderate/Advanced), הסרה כפויה ומיקוד ידני",
     btnBackupCenter: "מרכז גיבויים ושחזור",
-    btnHunterMode: "כוונת ציד",
+    btnHunterMode: "מיקוד ידני",
     btnUninstall: "הסר",
     btnForcedUninstall: "הסרה כפויה",
     btnBatchUninstall: "הסרה מרוכזת (Batch)",
@@ -544,7 +544,7 @@ const I18N = {
     wizBtnSkipRpOnly: "דלג על שחזור מערכת זה",
     wizRegBackupLabel: "גיבוי מלא של ענפי ה-Registry",
     wizRegBackupDesc: "מייצא קובץ .reg וסקריפט שחזור Restore.bat לשחזור בלחיצה אחת.",
-    wizScanModeHeader: "עומק סריקת שאריות היוריסטית",
+    wizScanModeHeader: "עומק סריקת השאריות",
     wizScanModeDesc: "בחר את האלגוריתם לאיתור שאריות רישום וקבצים שיישארו לאחר המסיר המקורי:",
     modeSafeTitle: "Safe (בטוח)",
     modeSafeDesc: "סריקה מהירה של מפתחות וקבצים וודאיים בלבד. אפס סיכון.",
@@ -557,12 +557,14 @@ const I18N = {
     wizBoldRuleBadge: "פריטים מודגשים בטוחים למחיקה",
     tabRegLeftovers: "רישום Windows (Registry)",
     tabFilesLeftovers: "קבצים ותיקיות (Files)",
+    tabTasksLeftovers: "משימות מתוזמנות (Tasks)",
     btnSelectBoldOnly: "בחר רק מודגשים (Bold - בטוח)",
     wizDoneTitle: "ההסרה וניקוי השאריות הושלמו בהצלחה!",
     lblRegKeysRemoved: "מפתחות רישום שנמחקו",
+    lblTasksRemoved: "משימות מתוזמנות שנמחקו",
     lblFilesRemoved: "קבצים ותיקיות שנמחקו",
     wizRebootTitle: "קבצים תוזמנו למחיקה באתחול",
-    wizRebootDesc: "חלק מהקבצים היו נעולים ע\"י Windows ותוזמנו למחיקה אוטומטית בהפעלה מחדש באמצעות MoveFileEx.",
+    wizRebootDesc: "חלק מהקבצים היו נעולים ע״י Windows ותוזמנו למחיקה אוטומטית בהפעלה מחדש באמצעות MoveFileEx",
     btnSkipRpAndStart: "דלג על שחזור והסר מיד",
     btnStartUninstall: "התחל הסרה מלאה",
     btnDeleteSelectedLeftovers: "מחק שאריות נבחרות",
@@ -570,7 +572,7 @@ const I18N = {
     forcedModalDesc: "הסרת תוכנות עיקשות, פגומות או כאלו שאינן מופיעות ברשימת ההסרה של Windows.",
     lblForcedTarget: "שם התוכנה או נתיב מלא לקובץ / תיקייה:",
     btnScanForced: "סרוק שאריות בכפייה",
-    hunterModalTitle: "כוונת ציד (Hunter Mode)",
+    hunterModalTitle: "מיקוד ידני (Hunter Mode)",
     hunterModalDesc: "זיהוי מטרות ישיר לפי תהליך פעיל, חלון או נתיב קובץ וביצוע פעולות מיידיות.",
     hunterSelectProcess: "בחר תהליך פעיל או הקלד נתיב/PID:",
     btnHunterResolve: "זהה מטרה",
@@ -591,9 +593,12 @@ const I18N = {
     /* Storage Analyzer */
     navStorage: "סייר אחסון",
     scrStorageTitle: "סייר אחסון חכם",
-    scrStorageDesc: "ניתוח תפוסת דיסק, תרשים Sunburst מעגלי אינטראקטיבי, סל איסוף למחיקה (Collector) ומפת כריות Treemap",
+    scrStorageDesc: "מציג מה תופס מקום בכונן: תרשים מעגלי אינטראקטיבי (Sunburst), מפת שטחים (Treemap) וסל איסוף למחיקה",
     storageTitle: "סייר אחסון חכם",
-    storageSub: "ניתוח תפוסת שטח אחסון מהיר, תרשים מעגלי (DaisyDisk style), סל איסוף מחיקות חכם ופילוח סיומות.",
+    storageSub: "מנתח מה תופס מקום בכונן ומאפשר למחוק ישירות מהתרשים: תרשים מעגלי, מפת שטחים ופילוח לפי סוג קובץ",
+    storageHideSystem: "הסתר קבצי מערכת חיוניים",
+    storageSystemBadge: "מערכת",
+    storageSystemProtectedTooltip: "קובץ מערכת מוגן של Windows - לא ניתן למחיקה",
 
     /* Terms of Use & EULA */
     termsTitle: "תקנון תנאי שימוש ורישיון (EULA)",
@@ -626,7 +631,7 @@ const I18N = {
     storageUnknownSpace: "שטח נסתר (<Unknown>):",
     storageTotalDrive: "סך הכונן:",
     storageTabSunburst: "🪐 תרשים מעגלי (Sunburst)",
-    storageTabTreemap: "📊 עץ ומפת כריות (Treemap)",
+    storageTabTreemap: "📊 עץ תיקיות ומפת שטחים (Treemap)",
     storageTabTop: "🏆 100 הקבצים הגדולים",
     storageTabDupes: "👯 איתור כפילויות",
     storageTabClean: "🧹 פעולות ניקוי מהירות",
@@ -647,7 +652,7 @@ const I18N = {
     storageMinSize: "גודל מינימלי:",
     storageBtnScanDupes: "חפש כפילויות עכשיו",
     storageDupesPrompt: "לחץ על 'חפש כפילויות עכשיו' כדי למצוא קבצים זהים שתופסים שטח כפול בדיסק.",
-    storageExportCsv: "ייצוא דו\"ח CSV"
+    storageExportCsv: "ייצא דו״ח CSV"
   },
 
   en: {
@@ -667,17 +672,17 @@ const I18N = {
 
     /* Consolidated Categories */
     catPerformanceTitle: "Performance & Resources",
-    catPerformanceDesc: "Live process management, Windows services, and deep RAM / kernel analysis",
+    catPerformanceDesc: "Managing active processes, Windows services, and in-depth RAM and kernel diagnostics",
     catStorageTitle: "Drives & Storage",
-    catStorageDesc: "Drive health and S.M.A.R.T telemetry, plus smart storage visualizer",
+    catStorageDesc: "Drive health from S.M.A.R.T telemetry, plus a visual storage explorer for finding heavy files",
     catMaintenanceTitle: "Maintenance & Software",
-    catMaintenanceDesc: "System file repair, cache cleaning, program removal with leftovers, and startup apps",
+    catMaintenanceDesc: "System file repair, cache cleanup, program removal with leftovers, and startup app management",
     catDiagnosticsTitle: "Diagnostics & Stability",
-    catDiagnosticsDesc: "Crash analysis, Blue Screen of Death (BSOD) decoding, and Windows event log errors",
+    catDiagnosticsDesc: "Crash analysis, Blue Screen of Death (BSOD) decoding, and the Windows error log",
     catHardwareTitle: "Hardware & Devices",
-    catHardwareDesc: "Device Manager, driver health, and battery power telemetry",
+    catHardwareDesc: "Device Manager, driver health, and battery condition",
     catSettingsTitle: "Tools & Settings",
-    catSettingsDesc: "Copilot key remapping and Polaris preferences",
+    catSettingsDesc: "Keyboard remapping (Copilot key) and app preferences",
 
     navPerformance: "Performance & Resources",
     navStorageGroup: "Drives & Storage",
@@ -699,7 +704,7 @@ const I18N = {
     scrMemoryDesc: "Why memory is occupied - findings, kernel pools and breakdown",
     scrMaintenanceTitle: "Maintenance & Repair",
     scrMaintenanceDesc: "Official Microsoft tools for cleanup, repair and reset",
-    scrUninstallerTitle: "Advanced Uninstaller",
+    scrUninstallerTitle: "Uninstaller & Leftover Cleaner",
     scrUninstallerDesc: "Clean uninstallation, restore points, registry backups & deep leftover cleaner",
     scrStartupTitle: "Startup Apps",
     scrStartupDesc: "What boots with Windows and how much it slows startup",
@@ -753,7 +758,7 @@ const I18N = {
     legendUsed: "In use (GB)",
     legendCached: "Standby (GB)",
     topHogsTitle: "Largest memory consumers",
-    topHogsDesc: "The applications holding the biggest share right now.",
+    topHogsDesc: "The programs holding the largest share of memory right now",
     topHogsLink: "All processes",
 
     /* Battery Overview */
@@ -1055,8 +1060,8 @@ const I18N = {
     lblTotalSpace: "Estimated Disk Usage",
     lblWin32Apps: "Desktop Apps (Win32)",
     lblUwpApps: "Store Apps (UWP)",
-    uninstallerCardTitle: "Advanced Software Uninstaller & Deep Leftover Cleaner",
-    uninstallerCardDesc: "Complete program removal, VSS restore points, registry backups, heuristic scanning (Safe/Moderate/Advanced), forced uninstall & hunter mode.",
+    uninstallerCardTitle: "Software Uninstaller & Deep Leftover Cleaner",
+    uninstallerCardDesc: "Complete program removal with a restore point, Registry backup, pattern-based leftover scanning (Safe/Moderate/Advanced), forced uninstall and manual targeting",
     btnBackupCenter: "Backup Center",
     btnHunterMode: "Hunter Mode",
     btnUninstall: "Uninstall",
@@ -1082,7 +1087,7 @@ const I18N = {
     wizBtnSkipRpOnly: "Skip this Restore Point",
     wizRegBackupLabel: "Full Registry Key Backup",
     wizRegBackupDesc: "Exports .reg hive backups and offline Restore.bat script for 1-click rollback.",
-    wizScanModeHeader: "Heuristic Leftovers Scanning Mode",
+    wizScanModeHeader: "Leftover Scan Depth",
     wizScanModeDesc: "Select scanning depth for post-uninstall registry keys and file remnants:",
     modeSafeTitle: "Safe",
     modeSafeDesc: "Fast scan of deterministic keys and directories. Zero risk.",
@@ -1095,10 +1100,12 @@ const I18N = {
     wizBoldRuleBadge: "Bold items are safe to delete",
     tabRegLeftovers: "Windows Registry",
     tabFilesLeftovers: "Files & Folders",
+    tabTasksLeftovers: "Scheduled Tasks",
     btnSelectBoldOnly: "Select Bold Only (Safe)",
     wizDoneTitle: "Uninstallation & Leftovers Cleanup Complete!",
     lblRegKeysRemoved: "Registry keys deleted",
     lblFilesRemoved: "Files & directories removed",
+    lblTasksRemoved: "Scheduled tasks removed",
     wizRebootTitle: "Locked files scheduled for reboot",
     wizRebootDesc: "Some files were locked by Windows and scheduled for automatic removal upon reboot (MoveFileEx).",
     btnSkipRpAndStart: "Skip Restore Point & Start",
@@ -1129,9 +1136,12 @@ const I18N = {
     /* Storage Analyzer */
     navStorage: "Disk Explorer",
     scrStorageTitle: "Smart Storage Explorer",
-    scrStorageDesc: "Fast disk usage analysis, interactive Sunburst chart, drag-and-drop Deletion Collector, and Cushion Treemap",
+    scrStorageDesc: "Shows what's taking up space on the drive: an interactive Sunburst chart, a Treemap, and a deletion collector",
     storageTitle: "Smart Storage Explorer",
-    storageSub: "Disk usage statistics, space hog identification, interactive Sunburst chart (DaisyDisk style) and Collector.",
+    storageSub: "Analyzes what's taking up space and lets you delete straight from the chart: Sunburst view, Treemap and file-type breakdown",
+    storageHideSystem: "Hide Essential System Files",
+    storageSystemBadge: "System",
+    storageSystemProtectedTooltip: "Protected Windows system file - cannot be deleted",
 
     /* Terms of Use & EULA */
     termsTitle: "Terms of Use & License (EULA)",
@@ -4998,24 +5008,28 @@ function renderLeftoversView() {
 
   const regItems = currentWizardLeftovers.registry || [];
   const fileItems = currentWizardLeftovers.files || [];
+  const taskItems = currentWizardLeftovers.scheduled_tasks || [];
 
   const regBadge = document.getElementById('badgeCountRegLeftovers');
   const filesBadge = document.getElementById('badgeCountFilesLeftovers');
+  const tasksBadge = document.getElementById('badgeCountTasksLeftovers');
   if (regBadge) regBadge.textContent = regItems.length;
   if (filesBadge) filesBadge.textContent = fileItems.length;
+  if (tasksBadge) tasksBadge.textContent = taskItems.length;
 
   const summary = document.getElementById('wizardLeftoversCountSummary');
   if (summary) {
+    const taskNote = taskItems.length ? ` ו-${taskItems.length} משימות מתוזמנות` : '';
     summary.textContent = currentWizardLeftovers.still_installed
-      ? `סריקה בלבד: ${regItems.length} מפתחות רישום ו-${fileItems.length} קבצים ותיקיות. התוכנה לא הוסרה, ולכן שום פריט לא נבחר מראש.`
-      : `נמצאו ${regItems.length} מפתחות רישום ו-${fileItems.length} קבצים ותיקיות שנותרו במערכת.`;
+      ? `סריקה בלבד: ${regItems.length} מפתחות רישום, ${fileItems.length} קבצים ותיקיות${taskNote}. התוכנה לא הוסרה, ולכן שום פריט לא נבחר מראש.`
+      : `נמצאו ${regItems.length} מפתחות רישום, ${fileItems.length} קבצים ותיקיות${taskNote} שנותרו במערכת.`;
   }
 
   // Pre-select ALL bold items by default (Revo's core safety rule).
   // Keyed on the engine's item id, not on the path: two autostart values under
   // the same Run key share a path and used to collapse into one checkbox.
   selectedLeftoverItems.clear();
-  regItems.concat(fileItems).forEach(item => {
+  regItems.concat(fileItems, taskItems).forEach(item => {
     if (item.is_bold && item.id) selectedLeftoverItems.add(item.id);
   });
 
@@ -5047,6 +5061,7 @@ function switchLeftoversTab(tab) {
   currentLeftoversTab = tab;
   document.getElementById('tabLeftoversRegistry')?.classList.toggle('active', tab === 'registry');
   document.getElementById('tabLeftoversFiles')?.classList.toggle('active', tab === 'files');
+  document.getElementById('tabLeftoversTasks')?.classList.toggle('active', tab === 'scheduled_tasks');
   renderActiveLeftoversTab();
 }
 
@@ -5109,10 +5124,12 @@ function toggleLeftoverItem(itemId, checked) {
   else selectedLeftoverItems.delete(itemId);
 }
 
-/** All leftovers across both tabs */
+/** All leftovers across every tab */
 function allLeftoverItems() {
   if (!currentWizardLeftovers) return [];
-  return (currentWizardLeftovers.registry || []).concat(currentWizardLeftovers.files || []);
+  return (currentWizardLeftovers.registry || [])
+    .concat(currentWizardLeftovers.files || [])
+    .concat(currentWizardLeftovers.scheduled_tasks || []);
 }
 
 /** Select bold items only (Revo safety rule) */
@@ -5180,7 +5197,15 @@ async function executeDeleteLeftovers() {
     clearInterval(logPump);
     await pumpUninstallLog();  // drain the last lines
 
-    if (data.success) {
+    // data.success now reflects whether EVERY selected item was removed
+    // (see delete_leftovers) - a run that partially failed still ran and
+    // still freed whatever it could, so it's shown on the done screen with
+    // the failures listed, same as before. Only a request the server never
+    // even ran (no scan match, nothing selected) has no summary at all and
+    // falls to the error toast below.
+    const ran = data.summary || data.deleted_registry !== undefined || data.deleted_files !== undefined;
+
+    if (ran) {
       // Transition to step 4 (Done)
       document.getElementById('wizardStep3Content')?.classList.add('hidden');
       document.getElementById('wizardStep4Content')?.classList.remove('hidden');
@@ -5191,8 +5216,10 @@ async function executeDeleteLeftovers() {
 
       const valReg = document.getElementById('valWizardDeletedReg');
       const valFiles = document.getElementById('valWizardDeletedFiles');
+      const valTasks = document.getElementById('valWizardDeletedTasks');
       if (valReg) valReg.textContent = data.deleted_registry || 0;
       if (valFiles) valFiles.textContent = data.deleted_files || 0;
+      if (valTasks) valTasks.textContent = data.deleted_tasks || 0;
 
       const rebootNotice = document.getElementById('wizardRebootNotice');
       if (rebootNotice) {
@@ -5218,7 +5245,8 @@ async function executeDeleteLeftovers() {
 
       showToast(
         "ניקוי שאריות הושלם",
-        `נמחקו ${data.deleted_registry || 0} פריטי רישום ו-${data.deleted_files || 0} קבצים` +
+        `נמחקו ${data.deleted_registry || 0} פריטי רישום, ${data.deleted_files || 0} קבצים` +
+        (data.deleted_tasks ? ` ו-${data.deleted_tasks} משימות מתוזמנות` : '') +
         (failed.length ? ` · ${failed.length} נכשלו` : ''),
         failed.length ? "warn" : undefined
       );
@@ -5915,6 +5943,11 @@ async function pollStorageProgress() {
       setStorageScanUiState("completed");
       hideStorageScanningOverlay();
       showToast("הסריקה הושלמה!", `נסרקו ${(data.files_scanned || 0).toLocaleString()} קבצים ב-${data.total_bytes_formatted}`, "accent");
+      if (data.access_denied_count > 0) {
+        showToast("הרשאות חסרות",
+                   `${data.access_denied_count.toLocaleString()} תיקיות/פריטים לא נקראו עקב חוסר הרשאה — הרץ כמנהל לתמונה מלאה.`,
+                   "warn");
+      }
       await loadStorageResults();
     } else if (data.status === 'error') {
       stopStoragePolling();
@@ -5992,7 +6025,16 @@ function updateStorageProgressUi(data) {
   const elTime = document.getElementById('storagePillTime');
   const elPath = document.getElementById('pacmanCurrentPath');
 
-  if (elFiles) elFiles.textContent = (data.files_scanned || 0).toLocaleString();
+  // While a scan is running, files_scanned/folders_scanned only get their
+  // real values once at the very end (from the finished, pruned tree) - the
+  // native pdu engine reports a single running total in the meantime
+  // (items_seen), so that is what's live during scanning. Once completed,
+  // items_seen holds the same total the tree reports, so this never has to
+  // jump between two different sources.
+  if (elFiles) {
+    const liveTotal = data.status === 'scanning' ? (data.items_seen || 0) : (data.files_scanned || 0);
+    elFiles.textContent = liveTotal.toLocaleString();
+  }
   if (elFolders) elFolders.textContent = (data.folders_scanned || 0).toLocaleString();
   if (elSize) elSize.textContent = data.total_bytes_formatted || "0 B";
   if (elRate) elRate.textContent = `${(data.scan_rate || 0).toLocaleString()} קבצים/שנ'`;
@@ -6039,7 +6081,7 @@ function updateStorageProgressUi(data) {
     }
 
     if (overlayStats) {
-      const fCount = (data.files_scanned || 0).toLocaleString();
+      const fCount = (data.status === 'scanning' ? (data.items_seen || 0) : (data.files_scanned || 0)).toLocaleString();
       const dCount = (data.folders_scanned || 0).toLocaleString();
       const bytesStr = data.total_bytes_formatted || "0 B";
       const usedStr = vol.used_formatted || formatBytesJS(used);
@@ -6395,7 +6437,7 @@ function handleSunburstClick(e) {
     if (hit.node.is_dir && hit.node.children && hit.node.children.length > 0) {
       zoomSunburstToNode(hit.node);
     } else if (!hit.node.is_aggregated && hit.node.path) {
-      toggleCollectorItem(hit.node.path, hit.node.name, hit.node.size);
+      toggleCollectorItem(hit.node.id, hit.node.path, hit.node.name, hit.node.size);
     }
   }
 }
@@ -6406,7 +6448,9 @@ function handleSunburstContextMenu(e) {
   const { px, py } = getSunburstCanvasCoords(e);
 
   const hit = findSunburstSliceAt(px, py);
-  if (hit && hit.node && hit.node.path) {
+  // Same synthetic-rollup guard as the treemap context menu - "<N Smaller
+  // Items>" slices (id -1, is_aggregated) must never open a delete menu.
+  if (hit && hit.node && hit.node.id !== -1 && !hit.node.is_aggregated && hit.node.path) {
     openStorageContextMenu(e, hit.node.id, hit.node.path);
   }
 }
@@ -6581,19 +6625,21 @@ function getFileIcon(filename, ext) {
 // Deletion Collector (Drag & Drop + Safe Batch Recycle)
 // -------------------------------------------------------------
 function onFileLineDragStart(e, el) {
+  const id = Number(el.getAttribute('data-node-id'));
   const path = el.getAttribute('data-path') || '';
   const name = el.getAttribute('data-name') || '';
   const size = Number(el.getAttribute('data-size')) || 0;
-  e.dataTransfer.setData('application/json', JSON.stringify({ path, name, size }));
+  e.dataTransfer.setData('application/json', JSON.stringify({ id, path, name, size }));
   e.dataTransfer.effectAllowed = 'copy';
 }
 
 function toggleCollectorFromEl(el) {
   if (!el) return;
+  const id = Number(el.getAttribute('data-node-id'));
   const path = el.getAttribute('data-path') || '';
   const name = el.getAttribute('data-name') || '';
   const size = Number(el.getAttribute('data-size')) || 0;
-  toggleCollectorItem(path, name, size);
+  toggleCollectorItem(id, path, name, size);
 }
 
 function openStorageContextMenuFromEl(e, el) {
@@ -6625,21 +6671,30 @@ function onCollectorDrop(e) {
     if (!raw) return;
     const item = JSON.parse(raw);
     if (item && item.path) {
-      toggleCollectorItem(item.path, item.name, item.size, true);
+      toggleCollectorItem(item.id, item.path, item.name, item.size, true);
     }
   } catch (err) {
     console.error("onCollectorDrop parse error:", err);
   }
 }
 
-function toggleCollectorItem(path, name, size, forceAdd = false) {
+function toggleCollectorItem(id, path, name, size, forceAdd = false) {
   if (!path) return;
   if (collectorItems.has(path)) {
     if (!forceAdd) {
       collectorItems.delete(path);
     }
   } else {
-    collectorItems.set(path, { path, name: name || path.split('\\').pop() || path, size: Number(size) || 0 });
+    // id is the scan-produced node id - the delete call resolves against it
+    // server-side rather than trusting this path string directly, so a
+    // missing/invalid id here means the item simply can't be deleted later
+    // (surfaced as an error from the server, not a silent path substitution).
+    collectorItems.set(path, {
+      id: Number.isFinite(id) ? id : null,
+      path,
+      name: name || path.split('\\').pop() || path,
+      size: Number(size) || 0,
+    });
   }
   updateCollectorUi();
 }
@@ -6706,10 +6761,10 @@ async function executeCollectorDelete() {
   if (count === 0) return;
 
   let totalBytes = 0;
-  const paths = [];
+  const ids = [];
   collectorItems.forEach(item => {
     totalBytes += item.size;
-    paths.push(item.path);
+    if (item.id !== null && item.id !== undefined) ids.push(item.id);
   });
 
   const confirmMsg = `האם אתה בטוח שברצונך להעביר ${count} פריטים (${formatBytesJS(totalBytes)}) לסל המחזור של Windows?`;
@@ -6717,17 +6772,27 @@ async function executeCollectorDelete() {
 
   try {
     showToast("מחיקה בתהליך", "מעביר פריטים שנאספו לסל המחזור...", "accent");
+    // ids are resolved against the live scan index on the server - the
+    // client's paths are never used directly for the delete itself.
     const res = await fetch('/api/storage/collector/delete', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ paths })
+      body: JSON.stringify({ ids })
     });
     const data = await res.json();
+    // `success` now means "every item was deleted" - a partial run (some
+    // deleted, some rejected/protected) still ran and freed real space, so it
+    // is reported here too instead of being treated as an outright failure.
+    const ran = data.deleted_count !== undefined;
 
-    if (data.success) {
-      showToast("מחיקה הושלמה", `הועברו ${data.deleted_count} פריטים לסל המחזור (${data.freed_formatted})`, "accent");
+    if (ran) {
+      if (data.deleted_count > 0) {
+        showToast("מחיקה הושלמה", `הועברו ${data.deleted_count} פריטים לסל המחזור (${data.freed_formatted})`, "accent");
+      }
       if (data.errors && data.errors.length > 0) {
-        showToast("אזהרה", `${data.errors.length} פריטים לא נמחקו (מוגנים או לא נמצאו)`, "warn");
+        showToast(data.deleted_count > 0 ? "אזהרה" : "שגיאה במחיקה",
+                  `${data.errors.length} פריטים לא נמחקו (מוגנים או לא נמצאו)`,
+                  data.deleted_count > 0 ? "warn" : "danger");
       }
       collectorItems.clear();
       updateCollectorUi();
@@ -7366,7 +7431,11 @@ function handleTreemapContextMenu(e) {
   const mouseY = e.clientY - rect.top;
 
   const clicked = findTreemapBlockAt(mouseX, mouseY);
-  if (clicked) {
+  // A "<N smaller files>" rollup block is a synthetic summary, not a real
+  // file or folder - it carries id -1 and no real path. Never let it reach
+  // the context menu, since a delete there could otherwise target whatever
+  // path a stale/legacy payload happened to leave on the node.
+  if (clicked && clicked.id !== -1 && !clicked.is_aggregated && clicked.path) {
     openStorageContextMenu(e, clicked.id, clicked.path);
   }
 }
@@ -7495,30 +7564,55 @@ function renderStorageTopFiles() {
     return;
   }
 
-  tbody.innerHTML = storageTopFiles.map((f, i) => `
-    <tr class="storage-top-row" data-path="${esc(f.path)}" data-node-id="${f.id}" oncontextmenu="openStorageContextMenuFromEl(event, this)">
-      <td class="text-muted">${i + 1}</td>
-      <td><strong>${esc(f.name)}</strong></td>
-      <td class="mono font-bold">${esc(f.size_formatted)}</td>
-      <td class="mono">${f.percentage}%</td>
-      <td class="mono text-muted text-xs" style="max-width: 300px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap;" title="${esc(f.path)}">${esc(f.path)}</td>
-      <td>
-        <button class="btn btn-sm btn-icon" data-path="${esc(f.path)}" onclick="performStorageActionFromEl(this, 'reveal')" title="הצג בסייר הקבצים">📁</button>
-        <button class="btn btn-sm btn-icon" data-path="${esc(f.path)}" onclick="performStorageActionFromEl(this, 'recycle')" title="העבר לסל המחזור">🗑️</button>
-      </td>
-    </tr>
-  `).join('');
+  tbody.innerHTML = storageTopFiles.map((f, i) => {
+    const isSystem = Boolean(f.is_system) || isProtectedStoragePath(f.path, f);
+    const isProtected = f.is_safe_to_delete === false || isSystem;
+    const badgeHtml = isSystem
+      ? `<span class="badge badge-accent" style="font-size: 10px; margin-inline-start: 6px; padding: 1px 6px; vertical-align: middle; background: rgba(59, 130, 246, 0.15); color: #60a5fa; border: 1px solid rgba(59, 130, 246, 0.3);" title="${esc(f.protection_reason || 'קובץ מערכת של Windows')}">🛡️ ${t('storageSystemBadge') || 'מערכת'}</span>`
+      : '';
+
+    const actionDeleteHtml = isProtected
+      ? `<button class="btn btn-sm btn-icon btn-disabled" disabled title="${esc(f.protection_reason || t('storageSystemProtectedTooltip') || 'קובץ מערכת מוגן - לא ניתן למחיקה')}" style="opacity: 0.35; cursor: not-allowed; filter: grayscale(1);">🔒</button>`
+      : `<button class="btn btn-sm btn-icon" data-path="${esc(f.path)}" onclick="performStorageActionFromEl(this, 'recycle')" title="העבר לסל המחזור">🗑️</button>`;
+
+    return `
+      <tr class="storage-top-row" data-path="${esc(f.path)}" data-node-id="${f.id}" data-is-system="${isSystem ? 'true' : 'false'}" data-is-protected="${isProtected ? 'true' : 'false'}" oncontextmenu="openStorageContextMenuFromEl(event, this)">
+        <td class="text-muted">${i + 1}</td>
+        <td><strong>${esc(f.name)}</strong>${badgeHtml}</td>
+        <td class="mono font-bold">${esc(f.size_formatted)}</td>
+        <td class="mono">${f.percentage}%</td>
+        <td class="mono text-muted text-xs" style="max-width: 300px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap;" title="${esc(f.path)}">${esc(f.path)}</td>
+        <td>
+          <button class="btn btn-sm btn-icon" data-path="${esc(f.path)}" onclick="performStorageActionFromEl(this, 'reveal')" title="הצג בסייר הקבצים">📁</button>
+          ${actionDeleteHtml}
+        </td>
+      </tr>
+    `;
+  }).join('');
+
+  filterStorageTopFiles();
 }
 
 function filterStorageTopFiles() {
   const query = stripBidi(document.getElementById('storageTopFilter')?.value || '').toLowerCase().trim();
-  const rows = document.querySelectorAll('#storageTopBody tr');
+  const hideSystem = document.getElementById('storageHideSystemTopFiles')?.checked ?? true;
+  const rows = document.querySelectorAll('#storageTopBody tr.storage-top-row');
+  let visibleCount = 0;
   rows.forEach(tr => {
-    // The rendered cells carry BiDi isolates and no-break spaces; strip them so
-    // a search for "24.16 GB" still matches.
+    const isSystem = tr.getAttribute('data-is-system') === 'true';
+    if (hideSystem && isSystem) {
+      tr.style.display = 'none';
+      return;
+    }
     const text = stripBidi(tr.textContent).toLowerCase();
-    tr.style.display = !query || text.includes(query) ? '' : 'none';
+    const matches = !query || text.includes(query);
+    tr.style.display = matches ? '' : 'none';
+    if (matches) visibleCount++;
   });
+  const countBadge = document.getElementById('storageTopCountBadge');
+  if (countBadge && storageTopFiles && storageTopFiles.length > 0) {
+    countBadge.textContent = `${visibleCount}`;
+  }
 }
 
 // -------------------------------------------------------------
@@ -7559,16 +7653,22 @@ async function runStorageDuplicateScan() {
               <div class="table-wrap">
                 <table class="data-table">
                   <tbody>
-                    ${group.files.map(f => `
-                      <tr>
-                        <td class="mono font-bold" style="width: 25%;">${esc(f.name)}</td>
-                        <td class="mono text-muted text-xs">${esc(f.path)}</td>
-                        <td style="width: 110px; text-align: end;">
-                          <button class="btn btn-sm btn-icon" data-path="${esc(f.path)}" onclick="performStorageActionFromEl(this, 'reveal')" title="הצג בסייר">📁</button>
-                          <button class="btn btn-sm btn-icon" data-path="${esc(f.path)}" onclick="performStorageActionFromEl(this, 'recycle')" title="העבר לסל המחזור">🗑️</button>
-                        </td>
-                      </tr>
-                    `).join('')}
+                    ${group.files.map(f => {
+                      const isProt = f.is_safe_to_delete === false || f.is_system || isProtectedStoragePath(f.path, f);
+                      const deleteBtn = isProt
+                        ? `<button class="btn btn-sm btn-icon btn-disabled" disabled title="קובץ מערכת מוגן - לא ניתן למחיקה" style="opacity: 0.35; cursor: not-allowed; filter: grayscale(1);">🔒</button>`
+                        : `<button class="btn btn-sm btn-icon" data-path="${esc(f.path)}" onclick="performStorageActionFromEl(this, 'recycle')" title="העבר לסל המחזור">🗑️</button>`;
+                      return `
+                        <tr data-node-id="${f.id}">
+                          <td class="mono font-bold" style="width: 25%;">${esc(f.name)}</td>
+                          <td class="mono text-muted text-xs">${esc(f.path)}</td>
+                          <td style="width: 110px; text-align: end;">
+                            <button class="btn btn-sm btn-icon" data-path="${esc(f.path)}" onclick="performStorageActionFromEl(this, 'reveal')" title="הצג בסייר">📁</button>
+                            ${deleteBtn}
+                          </td>
+                        </tr>
+                      `;
+                    }).join('')}
                   </tbody>
                 </table>
               </div>
@@ -7611,8 +7711,41 @@ function capitalize(s) {
 // -------------------------------------------------------------
 // Storage Context Menu & File Actions
 // -------------------------------------------------------------
+function isProtectedStoragePath(path, node = null) {
+  if (node) {
+    if (node.is_safe_to_delete === false || node.is_system === true) return true;
+  }
+  if (!path || typeof path !== 'string') return false;
+  const p = path.toLowerCase().replace(/\//g, '\\');
+  // Bare drive root: C:\, D:\, etc.
+  if (/^[a-z]:\\?$/.test(p)) return true;
+  // Critical Windows system files on any drive
+  const rootSysFiles = [
+    'pagefile.sys', 'swapfile.sys', 'hiberfil.sys', 'dumpstack.log',
+    'dumpstack.log.tmp', 'memory.dmp', 'bootmgr', 'bootnxt', 'bootstat.dat',
+    'ntldr', 'ntdetect.com', 'boot.ini', 'winre.wim'
+  ];
+  const parts = p.split('\\').filter(Boolean);
+  if (parts.length > 0) {
+    const filename = parts[parts.length - 1];
+    if (rootSysFiles.includes(filename)) return true;
+  }
+  // Reserved system directory names anywhere in path
+  const protectedSegments = [
+    'windows', 'system32', 'syswow64', 'winsxs', 'boot', 'recovery',
+    'system volume information', '$recycle.bin', '$winreagent',
+    '$windows.~bt', '$windows.~ws', '$sysreset'
+  ];
+  if (parts.some(seg => protectedSegments.includes(seg))) return true;
+  return false;
+}
+
 function openStorageContextMenu(e, nodeId, path = "") {
   e.preventDefault();
+  // Backstop: id -1 is reserved for synthetic "<N smaller files>" rollup
+  // nodes across every caller (treemap, sunburst, tree, top-files table).
+  // They must never be actionable, whatever path a caller passed in.
+  if (nodeId === -1) return;
   contextTargetNode = { id: nodeId, path: path };
 
   if (!contextTargetNode.path && storageTreeData) {
@@ -7627,7 +7760,26 @@ function openStorageContextMenu(e, nodeId, path = "") {
       return null;
     }
     const found = findNode(storageTreeData);
-    if (found) contextTargetNode.path = found.path;
+    if (found) {
+      contextTargetNode.path = found.path;
+      contextTargetNode.is_safe_to_delete = found.is_safe_to_delete;
+      contextTargetNode.is_system = found.is_system;
+    }
+  }
+
+  const isProtected = isProtectedStoragePath(contextTargetNode.path, contextTargetNode);
+  const recycleItem = document.getElementById('storageCtxRecycleItem');
+  const deleteItem = document.getElementById('storageCtxDeleteItem');
+  const protectedItem = document.getElementById('storageCtxProtectedItem');
+
+  if (isProtected) {
+    if (recycleItem) recycleItem.classList.add('hidden');
+    if (deleteItem) deleteItem.classList.add('hidden');
+    if (protectedItem) protectedItem.classList.remove('hidden');
+  } else {
+    if (recycleItem) recycleItem.classList.remove('hidden');
+    if (deleteItem) deleteItem.classList.remove('hidden');
+    if (protectedItem) protectedItem.classList.add('hidden');
   }
 
   const menu = document.getElementById('storageCtxMenu');
@@ -7653,6 +7805,7 @@ async function onStorageCtxAction(action) {
   closeStorageContextMenu();
   if (!contextTargetNode || !contextTargetNode.path) return;
   const targetPath = contextTargetNode.path;
+  const nodeId = contextTargetNode.id;
 
   if (action === 'copy') {
     navigator.clipboard.writeText(targetPath);
@@ -7660,18 +7813,26 @@ async function onStorageCtxAction(action) {
     return;
   }
 
-  await performStorageFileAction(action, targetPath);
+  await performStorageFileAction(action, targetPath, nodeId);
 }
 
 function performStorageActionFromEl(el, action) {
   if (!el) return;
-  const path = el.getAttribute('data-path') || el.closest('[data-path]')?.getAttribute('data-path') || '';
+  // Path and node-id are looked up independently: some rows put data-path
+  // directly on the button (redundant with the row) but only the row
+  // carries data-node-id, so closest() from the button itself would find
+  // data-path immediately and never walk up far enough to see the id.
+  const pathHost = el.closest('[data-path]');
+  const path = pathHost ? (pathHost.getAttribute('data-path') || '') : '';
+  const idHost = el.closest('[data-node-id]');
+  const nodeIdAttr = idHost ? idHost.getAttribute('data-node-id') : null;
+  const nodeId = (nodeIdAttr !== null && nodeIdAttr !== '') ? Number(nodeIdAttr) : undefined;
   if (path) {
-    performStorageFileAction(action, path);
+    performStorageFileAction(action, path, nodeId);
   }
 }
 
-async function performStorageFileAction(action, targetPath) {
+async function performStorageFileAction(action, targetPath, nodeId) {
   let endpointAction = action;
   if (action === 'reveal') endpointAction = 'reveal_in_explorer';
   if (action === 'open') endpointAction = 'open_item';
@@ -7680,17 +7841,31 @@ async function performStorageFileAction(action, targetPath) {
   if (action === 'recycle') endpointAction = 'recycle';
   if (action === 'delete') endpointAction = 'delete_permanent';
 
-  if (endpointAction === 'delete_permanent') {
-    if (!confirm(`האם אתה בטוח לחלוטין שברצונך למחוק לצמיתות את:\n${targetPath}`)) return;
-  } else if (endpointAction === 'recycle') {
-    if (!confirm(`להעביר לסל המחזור את:\n${targetPath}?`)) return;
+  if (endpointAction === 'recycle' || endpointAction === 'delete_permanent') {
+    if (isProtectedStoragePath(targetPath)) {
+      showToast("פעולה נחסמה", "קובץ מערכת מוגן: לא ניתן למחוק קבצי מערכת של Windows", "warn");
+      return;
+    }
+    if (endpointAction === 'delete_permanent') {
+      if (!confirm(`האם אתה בטוח לחלוטין שברצונך למחוק לצמיתות את:\n${targetPath}`)) return;
+    } else if (endpointAction === 'recycle') {
+      if (!confirm(`להעביר לסל המחזור את:\n${targetPath}?`)) return;
+    }
   }
 
   try {
+    // recycle/delete_permanent are resolved server-side against the node id
+    // from our own scan, never trusted from the raw path alone - target_path
+    // is still sent for the other (non-destructive) actions and as a
+    // human-readable fallback message if the id can't be resolved.
+    const body = { action: endpointAction, target_path: targetPath };
+    if (nodeId !== undefined && nodeId !== null && !Number.isNaN(nodeId)) {
+      body.node_id = nodeId;
+    }
     const res = await fetch('/api/storage/action', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ action: endpointAction, target_path: targetPath })
+      body: JSON.stringify(body)
     });
     const data = await res.json();
     if (data.success) {
@@ -7709,14 +7884,20 @@ async function performStorageFileAction(action, targetPath) {
 async function executeStorageQuickClean(action) {
   if (action === 'empty_bin') {
     if (!confirm("האם לרוקן לצמיתות את סל המחזור של Windows?")) return;
+    const drive = selectedStorageDrive || 'C:\\';
     showToast("סל המחזור", "מרוקן את סל המחזור...", "accent");
     try {
       const res = await fetch('/api/storage/action', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ action: 'open_in_powershell', target_path: 'Clear-RecycleBin -Force -ErrorAction SilentlyContinue' })
+        body: JSON.stringify({ action: 'empty_recycle_bin', target_path: drive })
       });
-      showToast("סל המחזור", "סל המחזור רוקן בהצלחה!");
+      const data = await res.json();
+      if (data.success) {
+        showToast("סל המחזור", data.message || "סל המחזור רוקן בהצלחה!");
+      } else {
+        showToast("שגיאה", data.message || "ריקון סל המחזור נכשל", "danger");
+      }
     } catch (err) {
       showToast("שגיאה", err.message, "danger");
     }
