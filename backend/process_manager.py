@@ -345,7 +345,7 @@ class ProcessManager:
                 if res.returncode == 0 or "SUCCESS" in res.stdout or "הצלחה" in res.stdout:
                     return {
                         "success": True,
-                        "message": f"התהליך {proc_name} (PID: {pid}) וכל תהליכי הבן שלו חוסלו בהצלחה!"
+                        "message": f"התהליך {proc_name} (PID: {pid}) וכל תהליכי הבן שלו חוסלו בהצלחה."
                     }
             except Exception:
                 pass
@@ -421,7 +421,7 @@ class ProcessManager:
                 if res.returncode == 0 or "SUCCESS" in res.stdout or "הצלחה" in res.stdout:
                     return {
                         "success": True,
-                        "message": f"כל התהליכים של {exe_name} חוסלו ונסגרו בהצלחה!",
+                        "message": f"כל התהליכים של {exe_name} חוסלו ונסגרו בהצלחה.",
                         "terminated_count": 1
                     }
             except Exception:

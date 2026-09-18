@@ -766,11 +766,11 @@ class SystemRevitalizer:
         elapsed = time.time() - self._started_at
         with self.lock:
             self.progress_percent = 100
-            self.current_step = "תהליך התיקון והתחזוקה הושלם בהצלחה!"
+            self.current_step = "תהליך התיקון והתחזוקה הושלם בהצלחה"
             self.current_step_en = "Maintenance and repair finished."
         self.log(
             f"[DONE] התהליך הסתיים ב-{self._format_duration(elapsed)}. "
-            f"בוצעו {len(planned)} פעולות, סה\"כ פונו: {self._format_bytes(total_freed)}.",
+            f"בוצעו {len(planned)} פעולות, סה״כ פונו: {self._format_bytes(total_freed)}.",
             "DONE"
         )
 
