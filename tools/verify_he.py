@@ -34,7 +34,12 @@ def i18n_tables():
 def placeholders(path):
     """Map every Hebrew-bearing line to its placeholder multiset."""
     out = {}
-    pat = r'\$\{[^}]*\}' if path.suffix in {'.js', '.html'} else r'\{[^}]*\}'
+    if path.suffix in {'.js', '.html'}:
+        pat = r'\$\{[^}]*\}'
+    else:
+        # Python f-string interpolations only - not dict/set literal braces
+        # (e.g. {"key": "value"} is not a placeholder to preserve).
+        pat = r'\{(?!["\'])[^}]*\}'
     for n, line in enumerate(path.read_text(encoding='utf-8').split('\n'), 1):
         if HEB.search(line):
             out[n] = sorted(re.findall(pat, line))

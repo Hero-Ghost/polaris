@@ -68,11 +68,11 @@ PROBLEM_CODES = {
          "The drivers for this device are not installed",
          "התקן דרייבר מאתר היצרן או דרך Windows Update.",
          "Install a driver from the vendor or via Windows Update."),
-    31: ("ההתקן אינו פועל כראוי כיוון שווינדוס לא הצליח לטעון דרייבר",
+    31: ("ההתקן אינו פועל כראוי כיוון ש-Windows לא הצליחה לטעון עבורו דרייבר",
          "Windows could not load the driver for this device",
          "עדכן את הדרייבר. אם הבעיה נמשכת, הסר את ההתקן והפעל מחדש.",
          "Update the driver. If it persists, remove the device and restart."),
-    43: ("ווינדוס עצרה את ההתקן לאחר שדיווח על תקלה",
+    43: ("Windows עצרה את ההתקן לאחר שדיווח על תקלה",
          "Windows stopped this device because it reported a problem",
          "זהו לרוב כשל חומרה או דרייבר. נסה חיבור אחר, ואם ההתקן פנימי - עדכן דרייבר או בדוק תקינות.",
          "This usually means a hardware or driver fault. Try another port; for internal devices update the driver or test the hardware."),
@@ -270,7 +270,7 @@ class DeviceManager:
             desc_he, desc_en, action_he, action_en = explain
         else:
             status = (raw.get("Status") or "Unknown").strip()
-            desc_he = f"ווינדוס מדווח על מצב \"{status}\" עבור ההתקן."
+            desc_he = f"Windows מדווחת על מצב ״{status}״ עבור ההתקן."
             desc_en = f"Windows reports the device state as \"{status}\"."
             action_he = "פתח את Device Manager לפרטים נוספים ונסה לעדכן את הדרייבר."
             action_en = "Open Device Manager for details and try updating the driver."

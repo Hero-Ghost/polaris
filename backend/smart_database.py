@@ -47,7 +47,7 @@ SMART_ATTRIBUTES = {
     0x05: {
         "name_he": "סקטורים שהוקצו מחדש (Reallocated Sectors)",
         "name_en": "Reallocated Sectors Count",
-        "desc_he": "סקטורים פגומים שהכונן זיהה והחליף בשטח רזרבי. ערך מעל 0 מעיד על תחילת כשל פיזי!",
+        "desc_he": "סקטורים פגומים שהכונן זיהה והחליף בשטח רזרבי. ערך מעל 0 מעיד על תחילת כשל פיזי.",
         "desc_en": "Number of reallocated sectors. When bad sectors are found, they are remapped to spare area.",
         "critical": True,
         "ideal": "low",
@@ -215,7 +215,7 @@ SMART_ATTRIBUTES = {
     0xC5: {
         "name_he": "סקטורים פגומים בהמתנה (Current Pending Sector)",
         "name_en": "Current Pending Sector Count",
-        "desc_he": "סקטורים לא יציבים הממתינים לכתיבה חוזרת כדי להיבדק שוב. מעיד על סיכון קרוב לאובדן קבצים!",
+        "desc_he": "סקטורים לא יציבים הממתינים לכתיבה חוזרת כדי להיבדק שוב. מעיד על סיכון קרוב לאובדן קבצים.",
         "desc_en": "Count of unstable sectors waiting to be remapped upon write.",
         "critical": True,
         "ideal": "low",
@@ -374,7 +374,7 @@ NVME_LOG_FIELDS = {
         "id": 14,
         "name_he": "שגיאות שלמות נתונים ומדיה (Media & Data Integrity Errors)",
         "name_en": "Media & Data Integrity Errors",
-        "desc_he": "מספר המקרים שבהם התגלתה שגיאת שלמות נתונים שלא תוקנה. ערך מעל 0 מחייב גיבוי מיידי!",
+        "desc_he": "מספר המקרים שבהם התגלתה שגיאת שלמות נתונים שלא תוקנה. ערך מעל 0 מחייב גיבוי מיידי.",
         "desc_en": "Number of occurrences where the controller detected unrecovered data integrity errors.",
         "critical": True,
     },

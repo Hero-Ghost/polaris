@@ -477,7 +477,7 @@ const I18N = {
     smartBad: "סכנה",
 
     /* Devices & drivers */
-    devicesProblemTitle: "התקנים שווינדוס סימנה כתקולים",
+    devicesProblemTitle: "התקנים ש-Windows סימנה כתקולים",
     devicesProblemDesc: "אלה המשולשים הצהובים ב-Device Manager, מתורגמים מקוד תקלה מספרי להסבר ולפעולה מומלצת.",
     devicesStaleTitle: "דרייברים ישנים",
     devicesStaleDesc: "דרייברים בני יותר מארבע שנים לכרטיס מסך, רשת או אחסון. דרייברים מובנים של Microsoft אינם נכללים — התאריך שלהם הוא תאריך שחרור Windows ואינו מעיד על גיל.",
@@ -1610,7 +1610,7 @@ function renderElevationBanner() {
 
   if (currentLang === 'he') {
     title.textContent = 'Polaris פועל ללא הרשאות מנהל';
-    desc.textContent = 'ניטור הזיכרון וניהול התהליכים עובדים כרגיל, אך כלי התיקון (DISM, SFC, איפוס רשת, שירות הדפסה, TRIM) ידרשו אישור UAC נפרד או לא יפעלו. להפעלה מלאה: לחיצה ימנית על Polaris ובחירה ב"הפעל כמנהל".';
+    desc.textContent = 'ניטור הזיכרון וניהול התהליכים עובדים כרגיל, אך כלי התיקון (DISM, SFC, איפוס רשת, שירות הדפסה, TRIM) ידרשו אישור UAC נפרד או לא יפעלו. להפעלה מלאה: לחץ לחיצה ימנית על Polaris ובחר ב״הפעל כמנהל״.';
   } else {
     title.textContent = 'Polaris is not running as Administrator';
     desc.textContent = 'Monitoring and process control work normally, but the repair tools (DISM, SFC, network reset, print spooler, SSD TRIM) will each raise their own UAC prompt or silently fail. For full access, right-click Polaris and choose "Run as administrator".';
@@ -3504,8 +3504,8 @@ async function openCopilotKeyboardSettings() {
       showToast(
         currentLang === 'he' ? "הגדרות מקלדת נפתחו" : "Keyboard Settings Opened",
         currentLang === 'he' 
-          ? "בחר בסעיף 'התאמה אישית של מקש Copilot' באפשרות Right Ctrl. ההגדרה תישמר לתמיד!"
-          : "Under 'Customize Copilot key on keyboard', select Right Ctrl. It will be saved permanently!"
+          ? "בחר בסעיף ״התאמה אישית של מקש Copilot״ באפשרות Right Ctrl. ההגדרה נשמרת לצמיתות."
+          : "Under 'Customize Copilot key on keyboard', select Right Ctrl. The setting is saved permanently."
       );
     } else {
       showToast(
@@ -4066,7 +4066,7 @@ async function enableCopilotRemap() {
       copilotRemapStatus = data.status || { is_active: true };
       renderCopilotStatus();
       showToast(
-        currentLang === 'he' ? "בוצע! מיפוי Copilot פעיל" : "Done! Copilot Remapper Active",
+        currentLang === 'he' ? "מיפוי Copilot פעיל" : "Copilot Remapper Active",
         currentLang === 'he'
           ? "מקש Copilot ממופה כעת ל-Right Ctrl ופועל ברקע. (Created by YAKIR LAVIE)"
           : "Copilot key is now mapped to Right Control and running in the background. (Created by YAKIR LAVIE)"
@@ -4557,7 +4557,7 @@ function updateBatchCountText() {
 /** Execute batch uninstallation */
 async function executeBatchUninstall() {
   if (batchSelectedAppIds.size === 0) {
-    showToast("הסרה מרוכזת", "נא לבחור לפחות תוכנה אחת להסרה.");
+    showToast("הסרה מרוכזת", "בחר לפחות תוכנה אחת להסרה.");
     return;
   }
 
@@ -4932,8 +4932,8 @@ async function pollUninstallStatus() {
       if (status.stage === 'restore_point') stageText.textContent = "יצירת נקודת שחזור מערכת (VSS)";
       else if (status.stage === 'registry_backup') stageText.textContent = "גיבוי ענפי ה-Registry";
       else if (status.stage === 'native_uninstall') stageText.textContent = "הפעלת מסיר התוכנה המקורי (Uninstaller)";
-      else if (status.stage === 'scanning') stageText.textContent = `סריקת שאריות היוריסטית (${status.scan_mode || 'Moderate'})`;
-      else if (status.stage === 'ready_for_review') stageText.textContent = "סריקת השאריות הושלמה!";
+      else if (status.stage === 'scanning') stageText.textContent = `סריקת שאריות מבוססת דפוסים (${status.scan_mode || 'Moderate'})`;
+      else if (status.stage === 'ready_for_review') stageText.textContent = "סריקת השאריות הושלמה";
       else stageText.textContent = status.status_message || "מעבד...";
     }
 
@@ -5310,7 +5310,7 @@ async function executeForcedScan() {
   const target = (input ? input.value : '').trim();
 
   if (!target) {
-    showToast("הסרה כפויה", "נא להזין שם תוכנה או נתיב קובץ/תיקייה.");
+    showToast("הסרה כפויה", "הזן שם תוכנה או נתיב לקובץ / תיקייה.");
     return;
   }
 
@@ -5337,7 +5337,7 @@ async function executeForcedScan() {
   const forcedTitle = document.getElementById('wizardAppTitle');
   if (forcedTitle) forcedTitle.textContent = `הסרה כפויה: ${target}`;
   const forcedSub = document.getElementById('wizardAppSub');
-  if (forcedSub) forcedSub.textContent = `סריקה היוריסטית (${selectedForcedScanMode})`;
+  if (forcedSub) forcedSub.textContent = `סריקה מבוססת דפוסים (${selectedForcedScanMode})`;
   const forcedStage = document.getElementById('wizardCurrentStageText');
   if (forcedStage) forcedStage.textContent = 'סורק שאריות במערכת…';
   const forcedDetails = document.getElementById('wizardStatusDetails');
@@ -5381,7 +5381,7 @@ async function executeForcedScan() {
       const titleEl = document.getElementById('wizardAppTitle');
       const subEl = document.getElementById('wizardAppSub');
       if (titleEl) titleEl.textContent = `הסרה כפויה: ${target}`;
-      if (subEl) subEl.textContent = `סריקה היוריסטית (${selectedForcedScanMode})`;
+      if (subEl) subEl.textContent = `סריקה מבוססת דפוסים (${selectedForcedScanMode})`;
 
       document.getElementById('wizardStep1Content')?.classList.add('hidden');
       document.getElementById('wizardStep2Content')?.classList.add('hidden');
@@ -5448,7 +5448,7 @@ async function resolveHunterTargetAction() {
   const target = (input ? input.value : '').trim();
 
   if (!target) {
-    showToast("כוונת ציד", "נא להזין שם תהליך, נתיב או PID.");
+    showToast("מיקוד ידני", "הזן שם תהליך, נתיב או PID.");
     return;
   }
 
@@ -5472,7 +5472,7 @@ async function resolveHunterTargetAction() {
       document.getElementById('hunterTargetCard')?.classList.remove('hidden');
       showToast("מטרה זוהתה", `${data.process_name || target} מוכן לפעולה.`);
     } else {
-      showToast("כוונת ציד", data.error || "לא נמצא תהליך או יישום תואם");
+      showToast("מיקוד ידני", data.error || "לא נמצאה התאמה לתהליך או לתוכנה");
     }
   } catch (err) {
     showToast("שגיאה", err.message);
@@ -5485,7 +5485,7 @@ async function executeHunterActionBtn(action) {
     const input = document.getElementById('hunterTargetInput');
     const target = (input ? input.value : '').trim();
     if (!target) {
-      showToast("כוונת ציד", "נא לזהות מטרה תחילה.");
+      showToast("מיקוד ידני", "זהה מטרה תחילה.");
       return;
     }
     await resolveHunterTargetAction();
@@ -5514,12 +5514,12 @@ async function executeHunterActionBtn(action) {
     const data = await res.json();
 
     if (data.success) {
-      showToast("כוונת ציד", data.message || "הפעולה בוצעה בהצלחה!");
+      showToast("מיקוד ידני", data.message || "הפעולה בוצעה בהצלחה.");
       closeHunterModal();
       fetchProcesses();
       fetchInstalledApps(true);
     } else {
-      showToast("כוונת ציד", data.error || "נכשלה הפעולה");
+      showToast("מיקוד ידני", data.error || "הפעולה נכשלה");
     }
   } catch (err) {
     showToast("שגיאה", err.message);
@@ -5613,7 +5613,7 @@ async function restoreBackupSession(sessionId) {
     const data = await res.json();
 
     if (data.success) {
-      showToast("השחזור הושלם בהצלחה", data.message || "מפתחות הרישום שוחזרו בהצלחה!");
+      showToast("השחזור הושלם בהצלחה", data.message || "מפתחות הרישום שוחזרו בהצלחה.");
       fetchBackupHistory();
       fetchInstalledApps(true);
     } else {
@@ -5785,7 +5785,7 @@ function startStorageCustomScan() {
   const input = document.getElementById('storageCustomFolderInput');
   const path = input ? input.value.trim() : '';
   if (!path) {
-    showToast("בחירת תיקייה", "אנא הזן נתיב תיקייה לסריקה", "warn");
+    showToast("בחירת תיקייה", "הזן נתיב תיקייה לסריקה", "warn");
     return;
   }
   selectAndScanDrive(path);
@@ -5838,7 +5838,7 @@ async function startStorageScan(customTargets) {
   }
 
   if (!targets || targets.length === 0) {
-    showToast("בחירת כונן", "אנא בחר כונן לסריקה", "danger");
+    showToast("בחירת כונן", "בחר כונן לסריקה", "danger");
     return;
   }
 
@@ -5942,7 +5942,7 @@ async function pollStorageProgress() {
       stopStoragePolling();
       setStorageScanUiState("completed");
       hideStorageScanningOverlay();
-      showToast("הסריקה הושלמה!", `נסרקו ${(data.files_scanned || 0).toLocaleString()} קבצים ב-${data.total_bytes_formatted}`, "accent");
+      showToast("הסריקה הושלמה", `נסרקו ${(data.files_scanned || 0).toLocaleString()} קבצים ב-${data.total_bytes_formatted}`, "accent");
       if (data.access_denied_count > 0) {
         showToast("הרשאות חסרות",
                    `${data.access_denied_count.toLocaleString()} תיקיות/פריטים לא נקראו עקב חוסר הרשאה — הרץ כמנהל לתמונה מלאה.`,
@@ -7529,7 +7529,7 @@ function findSubtreeInNode(node, targetId) {
 }
 
 async function reloadStorageTreemapData() {
-  showToast("מרענן מפת כריות", "טוען מבנה קבצים מלא...", "info");
+  showToast("מרענן מפת שטחים", "טוען מבנה קבצים מלא...", "info");
   try {
     const res = await fetch('/api/storage/treemap?depth=10');
     const data = await res.json();
@@ -7539,7 +7539,7 @@ async function reloadStorageTreemapData() {
       treemapBreadcrumbs = [{ id: storageTreemapData.id, name: storageTreemapData.name }];
       renderStorageBreadcrumbs();
       redrawStorageTreemap();
-      showToast("הושלם", "מפת הכריות נטענה בהצלחה!");
+      showToast("הושלם", "מפת השטחים נטענה בהצלחה.");
     } else {
       redrawStorageTreemap();
     }
@@ -7809,7 +7809,7 @@ async function onStorageCtxAction(action) {
 
   if (action === 'copy') {
     navigator.clipboard.writeText(targetPath);
-    showToast("העתקה ללוח", "הנתיב הועתק בהצלחה!");
+    showToast("העתקה ללוח", "הנתיב הועתק בהצלחה.");
     return;
   }
 
@@ -7894,7 +7894,7 @@ async function executeStorageQuickClean(action) {
       });
       const data = await res.json();
       if (data.success) {
-        showToast("סל המחזור", data.message || "סל המחזור רוקן בהצלחה!");
+        showToast("סל המחזור", data.message || "סל המחזור רוקן בהצלחה.");
       } else {
         showToast("שגיאה", data.message || "ריקון סל המחזור נכשל", "danger");
       }

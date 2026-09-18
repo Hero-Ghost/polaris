@@ -429,7 +429,7 @@ class DiskHealthAnalyzer:
                     f"כונן {vol['letter']}: כמעט מלא",
                     f"Drive {vol['letter']}: almost full",
                     f"נותרו {vol['free_formatted']} בלבד ({free_pct}%). "
-                    "ווינדוס זקוק למקום פנוי לקובץ ההחלפה ולעדכונים, ובמצב הזה כל המערכת מאטה.",
+                    "Windows זקוקה למקום פנוי לקובץ ההחלפה ולעדכונים, ובמצב הזה כל המערכת מאטה.",
                     f"Only {vol['free_formatted']} left ({free_pct}%). "
                     "Windows needs free space for the pagefile and updates; the whole system slows down at this level.",
                     "הרץ ניקוי במסך התחזוקה ופנה קבצים גדולים.",

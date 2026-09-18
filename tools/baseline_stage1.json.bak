@@ -72,22 +72,54 @@
   "132": [],
   "134": [],
   "136": [],
-  "144": [],
-  "145": [],
-  "146": [],
-  "147": [],
-  "148": [],
-  "149": [],
-  "150": [],
-  "151": [],
-  "152": [],
-  "153": [],
-  "154": [],
-  "155": [],
-  "156": [],
-  "157": [],
-  "158": [],
-  "159": [],
+  "144": [
+   "{\"name\": \"NVIDIA Graphics Driver\", \"desc_he\": \"דרייבר כרטיס מסך NVIDIA GeForce\"}"
+  ],
+  "145": [
+   "{\"name\": \"AMD Radeon Graphics Driver\", \"desc_he\": \"דרייבר כרטיס מסך AMD Radeon\"}"
+  ],
+  "146": [
+   "{\"name\": \"AMD Radeon Graphics Driver\", \"desc_he\": \"דרייבר כרטיס מסך AMD Radeon\"}"
+  ],
+  "147": [
+   "{\"name\": \"Intel Graphics Driver\", \"desc_he\": \"דרייבר כרטיס מסך מובנה Intel HD/Iris/Arc\"}"
+  ],
+  "148": [
+   "{\"name\": \"Intel Wi-Fi Driver\", \"desc_he\": \"דרייבר כרטיס רשת אלחוטי Intel Wi-Fi\"}"
+  ],
+  "149": [
+   "{\"name\": \"Realtek Wi-Fi Driver\", \"desc_he\": \"דרייבר כרטיס רשת אלחוטי Realtek Wi-Fi\"}"
+  ],
+  "150": [
+   "{\"name\": \"Intel Ethernet Driver\", \"desc_he\": \"דרייבר כרטיס רשת קווי Intel Ethernet\"}"
+  ],
+  "151": [
+   "{\"name\": \"Realtek Ethernet Driver\", \"desc_he\": \"דרייבר כרטיס רשת קווי Realtek PCIe\"}"
+  ],
+  "152": [
+   "{\"name\": \"Windows TCP/IP Stack\", \"desc_he\": \"מחסנית תקשורת ורשת Windows TCP/IP\"}"
+  ],
+  "153": [
+   "{\"name\": \"Windows Network Data Usage\", \"desc_he\": \"דרייבר ניטור תעבורת רשת Windows\"}"
+  ],
+  "154": [
+   "{\"name\": \"Windows NT Kernel\", \"desc_he\": \"ליבת מערכת ההפעלה Windows (הקריסה נבעה מחומרה או מדרייבר שפגע בזיכרון)\"}"
+  ],
+  "155": [
+   "{\"name\": \"Filter Manager\", \"desc_he\": \"מנהל סינון קבצים (קשור לרוב לאנטי-וירוס או כונן אחסון)\"}"
+  ],
+  "156": [
+   "{\"name\": \"MS AHCI Storage Driver\", \"desc_he\": \"דרייבר בקר כונני אחסון SATA/AHCI\"}"
+  ],
+  "157": [
+   "{\"name\": \"Intel RST Storage Driver\", \"desc_he\": \"דרייבר בקר אחסון Intel Rapid Storage\"}"
+  ],
+  "158": [
+   "{\"name\": \"Volume Shadow Copy Driver\", \"desc_he\": \"דרייבר צילומי נפח וגיבוי Windows\"}"
+  ],
+  "159": [
+   "{\"name\": \"Multi-User Win32 Driver\", \"desc_he\": \"דרייבר ממשק חלונות וגרפיקה של Windows\"}"
+  ],
   "282": [],
   "287": [],
   "289": [],
@@ -231,13 +263,27 @@
   "196": [],
   "200": [],
   "204": [],
-  "215": [],
-  "216": [],
-  "217": [],
-  "218": [],
-  "219": [],
-  "220": [],
-  "221": []
+  "215": [
+   "{\"name\": \"Browsers\", \"label_he\": \"דפדפנים\", \"bytes\": cat_map[\"Browsers\"], \"formatted\": self.format_bytes(cat_map[\"Browsers\"]), \"percent\": round(cat_map[\"Browsers\"] / total_ram * 100.0, 1) if total_ram else 0, \"color\": \"#38bdf8\"}"
+  ],
+  "216": [
+   "{\"name\": \"Development\", \"label_he\": \"כלי פיתוח\", \"bytes\": cat_map[\"Development\"], \"formatted\": self.format_bytes(cat_map[\"Development\"]), \"percent\": round(cat_map[\"Development\"] / total_ram * 100.0, 1) if total_ram else 0, \"color\": \"#a855f7\"}"
+  ],
+  "217": [
+   "{\"name\": \"Communication\", \"label_he\": \"תקשורת והודעות\", \"bytes\": cat_map[\"Communication\"], \"formatted\": self.format_bytes(cat_map[\"Communication\"]), \"percent\": round(cat_map[\"Communication\"] / total_ram * 100.0, 1) if total_ram else 0, \"color\": \"#ec4899\"}"
+  ],
+  "218": [
+   "{\"name\": \"System\", \"label_he\": \"שירותי מערכת Windows\", \"bytes\": cat_map[\"System\"], \"formatted\": self.format_bytes(cat_map[\"System\"]), \"percent\": round(cat_map[\"System\"] / total_ram * 100.0, 1) if total_ram else 0, \"color\": \"#64748b\"}"
+  ],
+  "219": [
+   "{\"name\": \"Background & Services\", \"label_he\": \"תהליכי רקע ואבטחה\", \"bytes\": cat_map[\"Background & Services\"], \"formatted\": self.format_bytes(cat_map[\"Background & Services\"]), \"percent\": round(cat_map[\"Background & Services\"] / total_ram * 100.0, 1) if total_ram else 0, \"color\": \"#f59e0b\"}"
+  ],
+  "220": [
+   "{\"name\": \"User Apps\", \"label_he\": \"תוכנות משתמש\", \"bytes\": cat_map[\"User Apps\"], \"formatted\": self.format_bytes(cat_map[\"User Apps\"]), \"percent\": round(cat_map[\"User Apps\"] / total_ram * 100.0, 1) if total_ram else 0, \"color\": \"#10b981\"}"
+  ],
+  "221": [
+   "{\"name\": \"Kernel Non-Paged\", \"label_he\": \"קרנל ודרייברים (Non-Paged)\", \"bytes\": kernel_nonpaged, \"formatted\": self.format_bytes(kernel_nonpaged), \"percent\": round(kernel_nonpaged / total_ram * 100.0, 1) if total_ram else 0, \"color\": \"#ef4444\"}"
+  ]
  },
  "backend/disk_health.py": {
   "141": [],
@@ -581,8 +627,12 @@
   "109": [],
   "110": [],
   "113": [],
-  "315": [],
-  "318": [],
+  "315": [
+   "{\"success\": False, \"message\": \"לא ניתן לסגור תהליכי ליבה קריטיים של מערכת ההפעלה (System / Idle).\"}"
+  ],
+  "318": [
+   "{\"success\": False, \"message\": \"לא ניתן לסגור את Polaris מתוך עצמו.\"}"
+  ],
   "332": [
    "{proc_name}"
   ],
@@ -596,7 +646,7 @@
    "{proc_name}"
   ],
   "380": [
-   "{pid}"
+   "{\"success\": True, \"message\": f\"התהליך {pid}"
   ],
   "384": [
    "{proc_name}"
@@ -617,23 +667,27 @@
    "{exe_name}"
   ],
   "502": [
-   "{pid}"
+   "{\"success\": True, \"message\": f\"זיכרון העבודה של תהליך {pid}"
   ],
   "503": [
-   "{pid}"
+   "{\"success\": False, \"message\": f\"לא ניתן היה לשחרר זיכרון לתהליך {pid}"
   ],
-  "513": [],
+  "513": [
+   "{\"success\": False, \"message\": \"שם התהליך אינו חוקי והפעולה בוטלה.\"}"
+  ],
   "549": [
    "{freed_str}",
    "{name}",
    "{trimmed_count}"
   ],
   "551": [
-   "{name}"
+   "{\"success\": True, \"message\": f\"זיכרון העבודה של {name}"
   ]
  },
  "backend/server.py": {
-  "207": [],
+  "207": [
+   "{\"success\": False, \"error\": \"שגיאה פנימית בשרת. הפרטים נרשמו ביומן.\"}"
+  ],
   "310": [
    "{s}"
   ],
@@ -780,7 +834,9 @@
   "582": [
    "{temp}"
   ],
-  "586": [],
+  "586": [
+   "{\"Good\": \"תקין\", \"Caution\": \"אזהרה\", \"Bad\": \"סכנה\", \"Unknown\": \"לא ידוע\"}"
+  ],
   "592": []
  },
  "backend/smart_engine.py": {
@@ -857,12 +913,16 @@
    "{count}"
   ],
   "539": [],
-  "554": [],
+  "554": [
+   "{\"success\": False, \"message\": \"תהליך תחזוקה כבר פועל כעת.\"}"
+  ],
   "564": [],
   "574": [
-   "{e}"
+   "{\"success\": False, \"message\": f\"לא ניתן להפעיל את תהליך התחזוקה: {e}"
   ],
-  "576": [],
+  "576": [
+   "{\"success\": True, \"message\": \"תהליך תחזוקה הופעל ברקע.\"}"
+  ],
   "588": [
    "{e}"
   ],
@@ -1051,11 +1111,21 @@
    "{names}"
   ],
   "987": [],
-  "1017": [],
-  "1032": [],
-  "1035": [],
-  "1036": [],
-  "1127": [],
+  "1017": [
+   "{\"success\": False, \"error\": \"יצירת נקודת שחזור דורשת הרשאות מנהל\"}"
+  ],
+  "1032": [
+   "{\"success\": False, \"error\": \"PowerShell לא החזיר תשובה (ייתכן שהפעולה חרגה מזמן ההמתנה)\"}"
+  ],
+  "1035": [
+   "{\"success\": True, \"message\": \"נקודת שחזור מערכת נוצרה בהצלחה\"}"
+  ],
+  "1036": [
+   "{\"success\": False, \"error\": first.get(\"error\") or \"יצירת נקודת השחזור נכשלה\"}"
+  ],
+  "1127": [
+   "{\"success\": False, \"error\": \"פעולת הסרה אחרת כבר פועלת. המתן לסיומה.\"}"
+  ],
   "1142": [
    "{app.get('name')}",
    "{app.get('version', '')}"
@@ -1063,11 +1133,15 @@
   "1143": [
    "{app.get('publisher') or '—'}"
   ],
-  "1144": [],
+  "1144": [
+   "{'אפליקציית Store' if app.get('type') == 'uwp' else 'Win32'}"
+  ],
   "1146": [
    "{app['install_location']}"
   ],
-  "1147": [],
+  "1147": [
+   "{'מנהל' if elevated else 'משתמש רגיל'}"
+  ],
   "1148": [],
   "1150": [
    "{scan_mode}"
@@ -1077,7 +1151,7 @@
   ],
   "1164": [],
   "1185": [
-   "{e}"
+   "{\"success\": False, \"error\": f\"לא ניתן להפעיל את תהליך ההסרה: {e}"
   ],
   "1194": [],
   "1278": [],
@@ -1164,8 +1238,12 @@
   ],
   "1553": [],
   "1554": [],
-  "1572": [],
-  "1573": [],
+  "1572": [
+   "{', '.join(name_tokens) or '(אין)'}"
+  ],
+  "1573": [
+   "{', '.join(pub_tokens)}"
+  ],
   "1575": [
    "{len(shared_dlls)}"
   ],
@@ -1243,7 +1321,9 @@
   "2588": [
    "{getattr(res, 'returncode', '?')}"
   ],
-  "2631": [],
+  "2631": [
+   "{\"id\": i, \"reason\": \"הפריט אינו מוכר למנוע (לא הופק בסריקה הנוכחית)\"}"
+  ],
   "2643": [],
   "2656": [
    "{len(items)}"
@@ -1255,7 +1335,9 @@
    "{session_dir}"
   ],
   "2665": [],
-  "2693": [],
+  "2693": [
+   "{\"path\": path, \"name\": name, \"reason\": \"דרושות הרשאות מנהל\"}"
+  ],
   "2694": [
    "{path}"
   ],
@@ -1268,7 +1350,9 @@
    "{name}",
    "{path}"
   ],
-  "2715": [],
+  "2715": [
+   "{\"path\": path, \"name\": name, \"reason\": err or \"מחיקה נכשלה\"}"
+  ],
   "2716": [
    "{err or 'מחיקה נכשלה'}",
    "{name}",
@@ -1292,7 +1376,9 @@
   "2758": [
    "{svc_name}"
   ],
-  "2760": [],
+  "2760": [
+   "{\"path\": path, \"name\": name, \"reason\": err or \"מחיקה נכשלה\"}"
+  ],
   "2761": [
    "{err or 'מחיקה נכשלה'}",
    "{path}"
@@ -1304,7 +1390,9 @@
   "2773": [
    "{path}"
   ],
-  "2775": [],
+  "2775": [
+   "{\"path\": path, \"name\": name, \"reason\": err or \"מחיקה נכשלה\"}"
+  ],
   "2776": [
    "{err or 'מחיקה נכשלה'}",
    "{path}"
@@ -1350,7 +1438,9 @@
   "2872": [
    "{task_path}"
   ],
-  "2874": [],
+  "2874": [
+   "{\"path\": task_path, \"name\": name, \"reason\": err or \"מחיקה נכשלה\"}"
+  ],
   "2875": [
    "{err or 'מחיקה נכשלה'}",
    "{task_path}"
@@ -1389,8 +1479,12 @@
   "3016": [],
   "3020": [],
   "3067": [],
-  "3137": [],
-  "3144": [],
+  "3137": [
+   "{\"success\": False, \"error\": \"לא הוזן שם תוכנה או נתיב\"}"
+  ],
+  "3144": [
+   "{\"success\": False, \"error\": \"פעולת הסרה אחרת כבר פועלת. המתן לסיומה.\"}"
+  ],
   "3259": [
    "{name}"
   ],
@@ -1441,12 +1535,16 @@
    "{n_files}",
    "{n_reg}"
   ],
-  "3436": [],
+  "3436": [
+   "{\"success\": False, \"error\": \"פעולת הסרה אחרת כבר פועלת. המתן לסיומה.\"}"
+  ],
   "3449": [
    "{app.get('name')}"
   ],
   "3452": [],
-  "3477": [],
+  "3477": [
+   "{\"success\": False, \"error\": \"פעולת הסרה אחרת כבר פועלת. המתן לסיומה.\"}"
+  ],
   "3487": [
    "{len(targets)}"
   ],
@@ -1459,37 +1557,65 @@
   ],
   "3529": [],
   "3537": [],
-  "3602": [],
-  "3606": [],
-  "3643": [],
-  "3645": [],
-  "3650": [],
-  "3722": [],
-  "3724": [],
+  "3602": [
+   "{\"success\": False, \"error\": \"המודול psutil אינו זמין — כוונת ציד מושבתת\"}"
+  ],
+  "3606": [
+   "{\"success\": False, \"error\": \"לא הוזנה מטרה\"}"
+  ],
+  "3643": [
+   "{\"success\": False, \"error\": \"התהליך אינו קיים יותר\"}"
+  ],
+  "3645": [
+   "{\"success\": False, \"error\": \"אין הרשאה לקרוא את פרטי התהליך (נסה להריץ כמנהל)\"}"
+  ],
+  "3650": [
+   "{\"success\": False, \"error\": \"לא נמצא תהליך או קובץ תואם\"}"
+  ],
+  "3722": [
+   "{\"success\": False, \"error\": \"המודול psutil אינו זמין\"}"
+  ],
+  "3724": [
+   "{\"success\": False, \"error\": \"לא התקבל מזהה תהליך (PID)\"}"
+  ],
   "3732": [
    "{pid}"
   ],
   "3734": [],
-  "3736": [],
+  "3736": [
+   "{\"success\": False, \"error\": \"אין הרשאה לסגור את התהליך (נסה להריץ כמנהל)\"}"
+  ],
   "3743": [
-   "{why}"
+   "{\"success\": False, \"error\": f\"מחיקת הקובץ נדחתה: {why}"
   ],
   "3750": [],
   "3752": [],
-  "3754": [],
+  "3754": [
+   "{\"success\": False, \"error\": \"הקובץ נעול ולא ניתן היה למחוק אותו.\"}"
+  ],
   "3756": [],
-  "3760": [],
-  "3762": [],
+  "3760": [
+   "{\"success\": False, \"error\": \"לא התקבל נתיב מטרה\"}"
+  ],
+  "3762": [
+   "{\"success\": False, \"error\": \"רישום Windows אינו זמין\"}"
+  ],
   "3795": [
    "{removed}"
   ],
   "3797": [],
-  "3801": [],
-  "3808": [
-   "{action}"
+  "3801": [
+   "{\"success\": False, \"error\": \"הנתיב אינו קיים\"}"
   ],
-  "3876": [],
-  "3880": [],
+  "3808": [
+   "{\"success\": False, \"error\": f\"פעולה לא מוכרת: {action}"
+  ],
+  "3876": [
+   "{\"success\": False, \"error\": \"מזהה גיבוי לא תקין\"}"
+  ],
+  "3880": [
+   "{\"success\": False, \"error\": \"תיקיית הגיבוי לא נמצאה\"}"
+  ],
   "3896": [
    "{(res.stderr or '').strip() or f'קוד {res.returncode}",
    "{f}"
@@ -1512,10 +1638,12 @@
    "{e}",
    "{last_error}"
   ],
-  "295": [],
+  "295": [
+   "{\"success\": False, \"message\": \"נתמך בסביבת Windows בלבד\"}"
+  ],
   "305": [],
   "308": [
-   "{str(e)}"
+   "{\"success\": False, \"message\": f\"שגיאה בפתיחת הגדרות: {str(e)}"
   ]
  },
  "frontend/app.js": {

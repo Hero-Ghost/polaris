@@ -18,7 +18,7 @@ PROCESS_KNOWLEDGE = {
         "description_he": "מנוע ההגנה בזמן אמת והאנטי-וירוס המובנה של Windows. בעת הדלקת המחשב או פתיחת תוכנות, הוא סורק קבצים, בודק חתימות וירוסים ומנטר פעילות חשודה. תקין שיצרוך בין 150MB ל-600MB של RAM בעת סריקה.",
         "description_en": "Microsoft's core built-in antivirus and real-time protection engine. On system startup and app launches, it scans memory and files for threats. Normal memory usage is 150MB-600MB.",
         "is_safe_to_kill": False,
-        "kill_impact_he": "סגירת התהליך חסומה על ידי ווינדוס לשמירה על אבטחה. סגירתו תבטל את ההגנה מפני וירוסים ורוגלות.",
+        "kill_impact_he": "סגירת התהליך חסומה על ידי Windows לשמירה על אבטחה. סגירתו תבטל את ההגנה מפני וירוסים ורוגלות.",
         "kill_impact_en": "Protected by Windows. Terminating it would disable real-time malware protection.",
         "why_in_memory_he": "נטען אוטומטית בכל הדלקה כדי לספק הגנה מתמדת על המחשב."
     },
@@ -59,12 +59,12 @@ PROCESS_KNOWLEDGE = {
         "title_he": "מארח שירותי Windows (Host Process for Windows Services)",
         "title_en": "Host Process for Windows Services (svchost)",
         "category": "שירותי מערכת Windows (System Services)",
-        "description_he": "תהליך מעטפת של מיקרוסופט המריץ שירותי מערכת שונים (כגון שמע, רשת, עדכוני Windows Update, SysMain, Bluetooth ועוד). ווינדוס מפצל שירותים למספר תהליכי svchost כדי שאם שירות אחד יקרוס, שאר המערכת תמשיך לפעול כרגיל.",
+        "description_he": "תהליך מעטפת של מיקרוסופט המריץ שירותי מערכת שונים (כגון שמע, רשת, עדכוני Windows Update, SysMain, Bluetooth ועוד). Windows מפצלת שירותים למספר תהליכי svchost כדי שאם שירות אחד יקרוס, שאר המערכת תמשיך לפעול כרגיל.",
         "description_en": "Generic host process that runs Windows services from DLLs (like Windows Update, Audio, SysMain, Networking). Windows isolates services across multiple instances for stability.",
         "is_safe_to_kill": False,
         "kill_impact_he": "סגירת svchost עלולה להשבית שמע, אינטרנט או לגרום לקריסת המחשב (מסך כחול).",
         "kill_impact_en": "Terminating svchost instances can break networking, audio, or crash the OS.",
-        "why_in_memory_he": "שירותי ליבה של ווינדוס שפועלים תמיד ברקע."
+        "why_in_memory_he": "שירותי ליבה של Windows הפועלים תמיד ברקע."
     },
     "dwm.exe": {
         "title_he": "מנהל חלונות שולחן העבודה (Desktop Window Manager)",
@@ -86,7 +86,7 @@ PROCESS_KNOWLEDGE = {
         "is_safe_to_kill": True,
         "kill_impact_he": "שורת המשימות והסמלים ייעלמו זמנית עד שייפתח מחדש.",
         "kill_impact_en": "Taskbar and desktop icons will vanish until restarted.",
-        "why_in_memory_he": "המעטפת הראשית שדרכה אתה משתמש במחשב."
+        "why_in_memory_he": "המעטפת הראשית שדרכה מתבצע כל שימוש במחשב."
     },
     "searchindexer.exe": {
         "title_he": "שירות אינדוקס החיפוש של Windows (Search Indexer)",
@@ -229,7 +229,7 @@ PROCESS_KNOWLEDGE = {
         "is_safe_to_kill": True,
         "kill_impact_he": "סוגר את הדפדפן.",
         "kill_impact_en": "Closes Edge.",
-        "why_in_memory_he": "גלישה פעילה או מצב Startup Boost של ווינדוס."
+        "why_in_memory_he": "גלישה פעילה או מצב Startup Boost של Windows."
     },
     "discord.exe": {
         "title_he": "אפליקציית תקשורת Discord",

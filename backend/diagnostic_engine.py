@@ -88,7 +88,7 @@ class DiagnosticEngine:
                 "icon": "alert-triangle",
                 "title_he": "חשד לדליפת זיכרון בדרייבר / קרנל (Non-Paged Pool)",
                 "title_en": "Suspicious Driver/Kernel Memory Leak (Non-Paged Pool)",
-                "desc_he": f"הזיכרון הבלתי-מוחלף (Non-Paged Pool) עומד על {self.format_bytes(kernel_nonpaged)}, כשהנורמה התקינה היא לרוב מתחת ל-500MB. זיכרון זה מוקצה על ידי דרייברים וחומרה ואינו משתחרר. גורמים שכיחים בווינדוס: דרייבר כרטיס רשת ישן (כגון Killer Network או שירות 'ndu.sys') או תוכנות אנטי-וירוס.",
+                "desc_he": f"הזיכרון הבלתי-מוחלף (Non-Paged Pool) עומד על {self.format_bytes(kernel_nonpaged)}, כשהנורמה התקינה היא לרוב מתחת ל-500MB. זיכרון זה מוקצה על ידי דרייברים וחומרה ואינו משתחרר. גורמים שכיחים ב-Windows: דרייבר כרטיס רשת ישן (כגון Killer Network או שירות 'ndu.sys') או תוכנות אנטי-וירוס.",
                 "desc_en": f"Non-Paged Pool is consuming {self.format_bytes(kernel_nonpaged)} (normal is typically under 500 MB). This is allocated by hardware drivers and kernel modules. Common Windows culprits: outdated network card drivers (e.g. Killer Network or 'ndu.sys' service) or third-party antivirus filters.",
                 "action_he": "מומלץ לעדכן דרייברים לכרטיס הרשת, או לבדוק ביטול שירות NDU ברג'יסטרי.",
                 "action_en": "Update network adapter drivers or investigate the Windows NDU service."
@@ -125,7 +125,7 @@ class DiagnosticEngine:
                 "icon": "info",
                 "title_he": f"זיכרון מטמון של מערכת ההפעלה ({self.format_bytes(cached_ram)})",
                 "title_en": f"Windows Standby Cache Active ({self.format_bytes(cached_ram)})",
-                "desc_he": f"חלק ניכר מהזיכרון ({self.format_bytes(cached_ram)}) מוחזק כזיכרון מטמון (Standby Cache) על ידי Windows. ווינדוס טוען לזיכרון קבצים ותוכנות שנפתחו לאחרונה כדי להאיץ את המחשב. זיכרון זה זמין וישוחרר אוטומטית ברגע שתוכנה כלשהי תדרוש זיכרון.",
+                "desc_he": f"חלק ניכר מהזיכרון ({self.format_bytes(cached_ram)}) מוחזק כזיכרון מטמון (Standby Cache) על ידי Windows. היא טוענת לזיכרון קבצים ותוכנות שנפתחו לאחרונה כדי להאיץ את המחשב. זיכרון זה זמין וישוחרר אוטומטית ברגע שתוכנה כלשהי תדרוש זיכרון.",
                 "desc_en": f"A significant portion ({self.format_bytes(cached_ram)}) is cached in Standby Memory by Windows to speed up file access and app launch. This memory is instantly reclaimed by the OS whenever any application requests it.",
                 "action_he": "מצב תקין של מערכת ההפעלה - אין סיבה לדאגה.",
                 "action_en": "Normal OS caching behavior - memory will be freed automatically."
