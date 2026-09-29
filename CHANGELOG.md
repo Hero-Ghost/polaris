@@ -1,5 +1,23 @@
 # CHANGELOG
 
+## v3.5 — מפענח Minidump בינארי עמוק, איתור דרייבר אשם מדויק ובדיקה מקוונת ברשת
+
+### תכונות חדשות
+- **מפענח בינארי טהור לקבצי Minidump ו-Kernel Crash Dumps (`minidump_parser.py`):**
+  - תמיכה מלאה ב-MDMP (32-bit ו-64-bit) ובכותרות `PAGEDU64` / `PAGEDUMP` ישירות ב-Python ללא תלות ב-WinDbg.
+  - חילוץ מדויק של קוד ה-BugCheck, ארבעת הפרמטרים, כתובת החריגה (Exception Address), ורגיסטר ה-RIP מתוך ה-Context Record.
+  - מיפוי מלא של כל המודולים והדרייברים שנטענו בזיכרון (`BaseAddress <= Address < EndAddress`) כולל גרסאות ותאריכים.
+- **מנוע היוריסטיקה מתקדם לאיתור הדרייבר האשם האמיתי (`driver_database.py`):**
+  - פתרון מסוות `ntoskrnl.exe`: חילוץ הדרייבר האמיתי שביצע את הפעולה הלא חוקית לפי חוקי BugCheck ספציפיים (0x116 GPU TDR, 0xD1/0x0A Param 4 Instruction Pointer, 0x3B ContextRecord RIP, 0x7E Param 2 Exception Address, 0x50 Trap Frame).
+  - מאגר ידע מובנה ומסווג של 150+ דרייברים (כרטיסי מסך, Wi-Fi, Ethernet, NVMe, Anti-Cheat כגון Vanguard/BattlEye/EAC, תוכנות תאורת RGB של Asus/Corsair/Gigabyte, אנטי-וירוסים).
+  - מדד ודאות ורמת סיכון מפורטים (Confidence Score) עם שרשרת ראיות טכנית.
+- **בדיקה חכמה ומאומתת ברשת (Online Intelligence - `driver_online_checker.py`):**
+  - קישורים ישירים לתיעוד הרשמי ב-Microsoft Learn, אתרי הורדת דרייברים רשמיים של היצרנים (NVIDIA, AMD, Intel, Realtek וכו'), ושאילתות חיפוש ממוקדות בגוגל וב-Microsoft Community.
+- **ממשק משתמש משודרג:**
+  - אזור גרירה ובחירת קבצים (Drag & Drop) לניתוח מהיר של כל קובץ `.dmp` מותאם אישית.
+  - כרטיס גיבור (Culprit Driver Hero Card) המציג את הדרייבר האשם, הקטגוריה והיצרן.
+  - סייר מודולים ודרייברים עם שדה סינון מהיר בזמן אמת.
+
 ## v3.4 — כפתור הסייר שדיווח הצלחה בלי לפתוח כלום, ויחידות הגודל שהתהפכו
 
 ### באגים

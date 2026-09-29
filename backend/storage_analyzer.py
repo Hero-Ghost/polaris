@@ -71,31 +71,187 @@ WDS_PALETTE = [
     "#fdcb6e",  # Sunflower
 ]
 
-# Critical system directories that must NEVER be deleted
-PROTECTED_PATHS = {
-    os.environ.get("SystemRoot", r"C:\Windows").lower(),
-    os.path.join(os.environ.get("SystemRoot", r"C:\Windows"), "System32").lower(),
-    r"c:\windows",
-    r"c:\windows\system32",
-    r"c:\boot",
-    r"c:\recovery",
-    r"c:\pagefile.sys",
-    r"c:\hiberfil.sys",
-    r"c:\swapfile.sys",
+def _norm_win_path(path):
+    """
+    Normalizes a Windows path for comparison purposes only, without touching
+    the filesystem and without depending on the host OS's own path module.
+
+    Deliberately NOT os.path.normpath: on POSIX (where this module's tests
+    run) normpath treats backslashes as ordinary characters and never
+    collapses "C:\\\\" down to "C:\\", which silently defeats every
+    drive-root / protected-path check below. This mirrors the same helper
+    already used by uninstaller_engine.py for the identical reason.
+    """
+    if not path or not isinstance(path, str):
+        return ""
+    p = path.strip().strip('"').replace('/', '\\')
+    is_unc = p.startswith('\\\\')
+    p = re.sub(r'\\{2,}', '\\\\', p)
+    if is_unc:
+        p = '\\' + p
+    return p.rstrip('\\').lower()
+
+
+PROTECTED_SEGMENT_NAMES = {
+    'windows', 'system32', 'syswow64', 'winsxs', 'boot', 'recovery',
+    'system volume information', '$recycle.bin', '$winreagent',
+    '$windows.~bt', '$windows.~ws', '$sysreset', 'programdata'
+}
+
+ROOT_SYSTEM_FILES = {
+    'pagefile.sys', 'swapfile.sys', 'hiberfil.sys', 'dumpstack.log',
+    'dumpstack.log.tmp', 'memory.dmp', 'bootmgr', 'bootnxt', 'bootstat.dat',
+    'ntldr', 'ntdetect.com', 'boot.ini'
 }
 
 
-def _is_safe_to_delete(path):
-    """Safety guard: prevents deletion of critical Windows system directories or drive roots."""
+def _build_system_protected_paths():
+    """Concrete system directories where neither the directory nor ANY file inside it may be deleted."""
+    roots = set()
+
+    def add(p):
+        n = _norm_win_path(p)
+        if n:
+            roots.add(n)
+
+    win = os.environ.get('SystemRoot', r'C:\Windows')
+    pf = os.environ.get('ProgramFiles', r'C:\Program Files')
+    pf86 = os.environ.get('ProgramFiles(x86)', r'C:\Program Files (x86)')
+    pdata = os.environ.get('ProgramData', r'C:\ProgramData')
+    system_drive = os.environ.get('SystemDrive', 'C:')
+
+    for p in (win, pf, pf86, pdata,
+              os.environ.get('PUBLIC', r'C:\Users\Public'),
+              f"{system_drive}\\pagefile.sys",
+              f"{system_drive}\\hiberfil.sys",
+              f"{system_drive}\\swapfile.sys",
+              f"{system_drive}\\Boot",
+              f"{system_drive}\\Recovery",
+              f"{system_drive}\\System Volume Information",
+              f"{system_drive}\\$WinREAgent",
+              f"{system_drive}\\$Recycle.Bin",
+              f"{system_drive}\\$Windows.~BT",
+              f"{system_drive}\\$Windows.~WS",
+              f"{system_drive}\\$SysReset"):
+        add(p)
+
+    add(os.path.join(win, 'System32'))
+    add(os.path.join(win, 'SysWOW64'))
+
+    return roots
+
+
+def _build_protected_paths():
+    """The concrete directories on *this* machine that must never be deleted as a whole."""
+    roots = set(_build_system_protected_paths())
+
+    def add(p):
+        n = _norm_win_path(p)
+        if n:
+            roots.add(n)
+
+    profile = os.environ.get('USERPROFILE', '')
+    system_drive = os.environ.get('SystemDrive', 'C:')
+    if profile:
+        trimmed = profile.rstrip('\\/')
+        parent = trimmed.rsplit('\\', 1)[0] if '\\' in trimmed else trimmed.rsplit('/', 1)[0]
+        add(parent)   # e.g. C:\Users
+        add(profile)  # e.g. C:\Users\pc
+    else:
+        add(f"{system_drive}\\Users")
+
+    return roots
+
+
+SYSTEM_PROTECTED_PATHS = _build_system_protected_paths()
+PROTECTED_PATHS = _build_protected_paths()
+
+
+def _is_path_safe_and_system(path):
+    """
+    Evaluates whether a path is safe to delete and whether it belongs to Windows system.
+    Returns: (is_safe_to_delete: bool, is_system: bool, reason: str)
+    """
     if not path or not isinstance(path, str) or not path.strip():
-        return False, "Path is empty"
-    norm = os.path.normpath(path).strip().lower()
-    if norm in PROTECTED_PATHS or len(norm) <= 3 or norm.endswith(":\\") or norm.endswith(":/"):
-        return False, f"Path '{path}' is a protected Windows root or system directory."
-    for p in PROTECTED_PATHS:
-        if norm == p or norm.startswith(p + "\\") or norm.startswith(p + "/"):
-            return False, f"Path '{path}' is inside protected Windows system folder '{p}'."
-    return True, ""
+        return False, False, "Path is empty"
+    if any(ch in path for ch in '*?'):
+        return False, False, "Path contains wildcard characters"
+    if '%' in path:
+        return False, False, "Path contains an unexpanded environment variable"
+
+    norm = _norm_win_path(path)
+    if not norm:
+        return False, False, "Path is empty"
+
+    if norm.startswith('\\\\'):
+        return False, False, f"Path '{path}' is a network (UNC) location and is not supported for deletion."
+
+    # A bare drive root ("c:" or "c:\\", with nothing after it)
+    if re.match(r'^[a-z]:\\?$', norm):
+        return False, True, f"Path '{path}' is a protected drive root and cannot be deleted as a whole."
+
+    # Check filename for root-level or critical Windows system files on ANY drive
+    parts = [p for p in norm.split('\\') if p]
+    if parts:
+        filename = parts[-1]
+        if filename in ROOT_SYSTEM_FILES:
+            return False, True, f"Path '{path}' is a protected Windows system file ({filename})."
+
+    # Check reserved system segment names anywhere in the path
+    for seg in parts:
+        if seg in PROTECTED_SEGMENT_NAMES:
+            return False, True, f"Path '{path}' contains a protected Windows system folder ('{seg}')."
+
+    # Check directories where neither the folder nor ANYTHING inside it may be deleted
+    for prot in SYSTEM_PROTECTED_PATHS:
+        if norm == prot or norm.startswith(prot + "\\"):
+            return False, True, f"Path '{path}' is inside protected system folder '{prot}'."
+        # Ancestor check: e.g. someone trying to delete an ancestor of a protected folder
+        if prot.startswith(norm + "\\"):
+            return False, True, f"Path '{path}' contains the protected system folder '{prot}' and cannot be deleted as a whole."
+
+    # Users root directory (e.g. C:\Users) and user profile roots
+    system_drive = os.environ.get('SystemDrive', 'C:')
+    users_dir = _norm_win_path(f"{system_drive}\\Users")
+    profile = _norm_win_path(os.environ.get('USERPROFILE', ''))
+    if profile:
+        trimmed = profile.rstrip('\\')
+        users_dir = trimmed.rsplit('\\', 1)[0] if '\\' in trimmed else users_dir
+
+    if norm == users_dir:
+        return False, False, f"Path '{path}' is the protected users root directory."
+
+    if profile and norm == profile:
+        return False, False, f"Path '{path}' is the protected user profile root."
+
+    if users_dir and (norm.startswith(users_dir + "\\")):
+        if profile and norm.startswith(profile + "\\"):
+            pass  # Files inside current user's profile are permitted
+        else:
+            return False, False, f"Path '{path}' is inside a protected user profile folder under '{users_dir}'."
+
+    # Reparse points (junctions, symlinks, mount points) can redirect a delete.
+    try:
+        if os.path.islink(path):
+            return False, False, f"Path '{path}' is a symbolic link / junction and will not be followed for deletion."
+        if IS_WINDOWS:
+            attrs = ctypes.windll.kernel32.GetFileAttributesW(path)
+            if attrs != -1 and (attrs & FILE_ATTRIBUTE_REPARSE_POINT):
+                return False, False, f"Path '{path}' is a reparse point (junction/symlink) and will not be followed for deletion."
+    except Exception:
+        pass
+
+    return True, False, ""
+
+
+def _is_safe_to_delete(path):
+    """
+    Safety guard: prevents deletion of critical Windows system directories,
+    drive roots, UNC roots, reparse points/symlinks, or anything that turns
+    out to be an ancestor of one of those (e.g. a client sending "C:\\").
+    """
+    is_safe, is_sys, reason = _is_path_safe_and_system(path)
+    return is_safe, reason
 
 
 class SHFILEOPSTRUCTW(ctypes.Structure):
@@ -109,6 +265,44 @@ class SHFILEOPSTRUCTW(ctypes.Structure):
         ("hNameMappings", wintypes.LPVOID),
         ("lpszProgressTitle", wintypes.LPCWSTR),
     ]
+
+
+class SHQUERYRBINFO(ctypes.Structure):
+    """
+    Used to detect whether SHFileOperationW's FOF_ALLOWUNDO actually recycled
+    an item or silently fell back to a permanent delete (which Windows does
+    without any error when the item exceeds the bin's quota, lives on a
+    volume with no Recycle Bin - removable/network media - or has recycling
+    disabled by policy). cbSize must be set before every call.
+    """
+    _fields_ = [
+        ("cbSize", wintypes.DWORD),
+        ("i64Size", ctypes.c_int64),
+        ("i64NumItems", ctypes.c_int64),
+    ]
+
+
+def _win_shell_file_op(file_op):
+    """Thin wrapper around SHFileOperationW so tests can substitute a fake
+    implementation without needing ctypes.windll, which does not exist at
+    all on a non-Windows Python (used to develop/test this module)."""
+    return ctypes.windll.shell32.SHFileOperationW(ctypes.byref(file_op))
+
+
+def _win_query_recycle_bin(drive_root, info):
+    """Thin wrapper around SHQueryRecycleBinW - see _win_shell_file_op."""
+    return ctypes.windll.shell32.SHQueryRecycleBinW(drive_root, ctypes.byref(info))
+
+
+# Win32 constants for SHEmptyRecycleBinW
+SHERB_NOCONFIRMATION = 0x00000001
+SHERB_NOPROGRESSUI = 0x00000002
+SHERB_NOSOUND = 0x00000004
+
+
+def _win_empty_recycle_bin(drive_root, flags):
+    """Thin wrapper around SHEmptyRecycleBinW - see _win_shell_file_op."""
+    return ctypes.windll.shell32.SHEmptyRecycleBinW(None, drive_root, flags)
 
 
 class StorageNode:
@@ -135,6 +329,7 @@ class StorageNode:
         self.attributes = ""
 
     def to_dict(self, include_children=False, depth=1):
+        is_safe, is_sys, prot_reason = _is_path_safe_and_system(self.path) if self.path else (False, False, "Non-actionable node")
         d = {
             "id": self.id,
             "name": self.name,
@@ -149,6 +344,9 @@ class StorageNode:
             "mtime": self.mtime,
             "extension": self.extension,
             "attributes": self.attributes,
+            "is_system": is_sys,
+            "is_safe_to_delete": is_safe,
+            "protection_reason": prot_reason,
         }
         if include_children and self.is_dir and depth > 0:
             d["children"] = [
@@ -215,6 +413,15 @@ class StorageAnalyzer:
         self.current_path = ""
         self.files_scanned = 0
         self.folders_scanned = 0
+        # Live single-number progress feed from the pdu engine, which does
+        # not distinguish files from folders while it is running - kept
+        # separate from files_scanned/folders_scanned so the live count
+        # never has to be overwritten by (and visually collapse into) the
+        # much smaller final, pruned-tree count once the scan completes.
+        self.items_seen = 0
+        # Directories the scanner could not read at all (PermissionError) -
+        # their contents are missing from every total below, not zero-sized.
+        self.access_denied_count = 0
         self.total_bytes_scanned = 0
         self.scan_targets = []
         self.pacman_frame = 0
@@ -328,6 +535,8 @@ class StorageAnalyzer:
             self.current_path = targets[0]
             self.files_scanned = 0
             self.folders_scanned = 0
+            self.items_seen = 0
+            self.access_denied_count = 0
             self.total_bytes_scanned = 0
             self.pacman_frame = 0
 
@@ -427,7 +636,12 @@ class StorageAnalyzer:
             if self.status in ("completed", "cancelled", "error"):
                 elapsed = self.elapsed_seconds
 
-            rate = (self.files_scanned + self.folders_scanned) / elapsed if elapsed > 0.5 else 0.0
+            # While pdu is running, files_scanned/folders_scanned are only
+            # set once at the very end (from the final tree) - items_seen is
+            # what actually moves during that phase, so the rate must look
+            # at whichever counter is currently the bigger, honest signal.
+            items_for_rate = max(self.files_scanned + self.folders_scanned, self.items_seen)
+            rate = items_for_rate / elapsed if elapsed > 0.5 else 0.0
             self.pacman_frame = (self.pacman_frame + 1) % 4 if self.status == "scanning" else 0
 
             # WinDirStat & SquirrelDisk parity: Volume stats calculation
@@ -451,6 +665,12 @@ class StorageAnalyzer:
                 "error_message": self.error_message,
                 "files_scanned": self.files_scanned,
                 "folders_scanned": self.folders_scanned,
+                # Live, unsplit progress feed - see the field comment in
+                # __init__. Present throughout scanning; once the scan
+                # completes it holds the same total the final tree reports,
+                # so a client can always show a number without it jumping.
+                "items_seen": self.items_seen,
+                "access_denied_count": self.access_denied_count,
                 "total_bytes_scanned": self.total_bytes_scanned,
                 "total_bytes_formatted": format_bytes(self.total_bytes_scanned),
                 "current_path": self.current_path,
@@ -575,8 +795,19 @@ class StorageAnalyzer:
                 for m in progress_pattern.finditer(buf):
                     items = int(m.group(1))
                     total_bytes = int(m.group(2))
+                    # pdu does not distinguish files from folders in this
+                    # line, so this used to be dumped into files_scanned -
+                    # making folders_scanned look stuck at 0 for the whole
+                    # scan, and then get overwritten by the much smaller,
+                    # pruned-tree count once build_node() runs, which reads
+                    # as the file count suddenly collapsing. items_seen is
+                    # the honest live total; files_scanned/folders_scanned
+                    # are left alone here and set exactly once, from the
+                    # real tree, when the scan actually finishes.
+                    erred = int(m.group(3)) if m.group(3) else 0
                     with self._lock:
-                        self.files_scanned = items
+                        self.items_seen = items
+                        self.access_denied_count = erred
                         self.total_bytes_scanned = total_bytes
                         self.pacman_frame = (self.pacman_frame + 1) % 4
                         self.elapsed_seconds = time.time() - self.start_time
@@ -664,7 +895,17 @@ class StorageAnalyzer:
                 node_path = os.path.join(parent_path, name)
                 node_name = name
 
-            is_dir = len(raw_children) > 0 or (data == 0 and os.path.isdir(node_path))
+            # Determined unconditionally from the real filesystem, not from
+            # whether pdu happened to report children: pdu drops every child
+            # under --min-ratio from the tree, so a folder whose entire
+            # content fell below that threshold arrives here with data > 0
+            # and an empty `children` list - the old
+            # `len(raw_children) > 0 or (data == 0 and os.path.isdir(...))`
+            # check then misread it as a single file (wrong extension stats,
+            # wrongly eligible for the "largest files" list and its one-click
+            # recycle button, since a folder can't actually be recycled that
+            # way).
+            is_dir = os.path.isdir(node_path)
             nid = next(self._id_counter)
 
             if is_dir:
@@ -685,6 +926,30 @@ class StorageAnalyzer:
                     c_files += c_node.file_count
                     if c_node.is_dir:
                         c_dirs += (c_node.dir_count + 1)
+
+                # pdu still counts a pruned child's bytes in this folder's
+                # `data`, even though it dropped the child itself from
+                # `children` - without a stand-in, those bytes silently
+                # vanish from the visible breakdown (the folder's own size
+                # looks larger than the sum of anything you can see inside
+                # it). `path=None` marks it as non-actionable, the same
+                # signal the treemap/sunburst rollups already use, so the
+                # frontend's existing guards refuse to offer delete/recycle
+                # on it.
+                pruned_bytes = max(0, data - c_size)
+                if pruned_bytes > 0:
+                    placeholder = StorageNode(
+                        next(self._id_counter), "<תוכן שלא נסרק>", None,
+                        is_dir=False, size=pruned_bytes, physical_size=pruned_bytes
+                    )
+                    placeholder.parent_id = nid
+                    node.children.append(placeholder)
+                    # Registered by id only (never by path, which is None
+                    # here) so resolve_node_id() can look it up and correctly
+                    # report it as non-actionable rather than "unknown id".
+                    nodes_by_id[placeholder.id] = placeholder
+                    c_size += pruned_bytes
+                    c_phys += pruned_bytes
 
                 node.size = max(data, c_size)
                 node.physical_size = c_phys
@@ -744,6 +1009,10 @@ class StorageAnalyzer:
             self.largest_files = top_heap
             self.files_scanned = total_files
             self.folders_scanned = total_folders
+            # Reflects the real, final split now that it exists - this is
+            # the "items in map" number, distinct from the live items_seen
+            # feed above (which pdu's --min-ratio pruning can make larger).
+            self.items_seen = total_files + total_folders
             self.total_bytes_scanned = root.size
             self._assign_extension_colors()
             self.status = "completed"
@@ -924,10 +1193,22 @@ class StorageAnalyzer:
 
                                     local_largest.append((size, file_node.id, entry.path, name, ext, stat_res.st_mtime))
 
-                            except (PermissionError, FileNotFoundError, OSError):
+                            except PermissionError:
+                                with self._lock:
+                                    self.access_denied_count += 1
+                                continue
+                            except (FileNotFoundError, OSError):
                                 continue
 
-                except (PermissionError, FileNotFoundError, OSError):
+                except PermissionError:
+                    # The whole directory was unreadable - its contents are
+                    # simply missing from every count below, not zero bytes.
+                    # Previously swallowed silently, so a scan run without
+                    # admin rights quietly under-reported and the gap showed
+                    # up only as unexplained "<Unknown>" space.
+                    with self._lock:
+                        self.access_denied_count += 1
+                except (FileNotFoundError, OSError):
                     pass
 
                 # Attach direct children to dir_node
@@ -1140,10 +1421,15 @@ class StorageAnalyzer:
                     children_data.append({
                         "id": -1,
                         "name": f"<{small_files_count} smaller files>",
-                        "path": node.path,
+                        # This node is a synthetic rollup, not a real file or folder -
+                        # it must never carry a real path. A real parent-folder path
+                        # here would let a "delete this" click on the aggregate wipe
+                        # out the whole containing directory instead of nothing.
+                        "path": None,
                         "size": small_files_size,
                         "size_formatted": format_bytes(small_files_size),
                         "is_dir": False,
+                        "is_aggregated": True,
                         "extension": ".misc",
                         "color": "#475569"
                     })
@@ -1238,7 +1524,9 @@ class StorageAnalyzer:
                     children_list.append({
                         "id": -1,
                         "name": f"<{smaller_items_count} Smaller Items>",
-                        "path": node.path,
+                        # Synthetic rollup slice - must never carry a real path (see
+                        # the identical fix in get_treemap_data for why).
+                        "path": None,
                         "size": smaller_items_size,
                         "size_formatted": format_bytes(smaller_items_size),
                         "value": smaller_items_size,
@@ -1279,6 +1567,7 @@ class StorageAnalyzer:
 
             for size, node_id, path, name, ext, mtime in sorted_files:
                 ext_color = self.extension_stats.get(ext, {}).get("color", "#95a5a6")
+                is_safe, is_sys, prot_reason = _is_path_safe_and_system(path)
                 result.append({
                     "id": node_id,
                     "name": name,
@@ -1288,7 +1577,10 @@ class StorageAnalyzer:
                     "extension": ext,
                     "percentage": round((size / total_size) * 100, 2),
                     "mtime": mtime,
-                    "color": ext_color
+                    "color": ext_color,
+                    "is_system": is_sys,
+                    "is_safe_to_delete": is_safe,
+                    "protection_reason": prot_reason
                 })
             return result
 
@@ -1374,7 +1666,10 @@ class StorageAnalyzer:
                                         "name": d.name,
                                         "path": d.path,
                                         "mtime": d.mtime,
-                                        "extension": d.extension
+                                        "extension": d.extension,
+                                        "is_system": _is_path_safe_and_system(d.path)[1],
+                                        "is_safe_to_delete": _is_path_safe_and_system(d.path)[0],
+                                        "protection_reason": _is_path_safe_and_system(d.path)[2],
                                     }
                                     for d in dupes
                                 ]
@@ -1388,12 +1683,47 @@ class StorageAnalyzer:
     # WinDirStat Action Suite (Safe Deletion, Explorer, Maintenance)
     # -------------------------------------------------------------------------
 
-    def perform_action(self, action, target_path):
+    def resolve_node_id(self, node_id):
+        """
+        Resolves a client-supplied node id against this analyzer's own scan
+        index. Returns the node's real path, or None if the id is missing,
+        the synthetic aggregate sentinel (-1), or was never produced by a
+        scan this process actually ran.
+
+        This is the provenance check: a client can only ever act on a path
+        that our own scanner walked and assigned an id to, never on an
+        arbitrary string it happens to send in the request body.
+        """
+        if node_id is None:
+            return None
+        try:
+            node_id = int(node_id)
+        except (TypeError, ValueError):
+            return None
+        if node_id == -1:
+            return None
+        with self._lock:
+            node = self._nodes_by_id.get(node_id)
+        return node.path if node else None
+
+    def perform_action(self, action, target_path=None, node_id=None):
         """
         Executes file system and maintenance actions with safety guards.
+
+        For the two destructive actions (recycle / delete_permanent), the
+        path actually acted on is resolved from `node_id` against this
+        analyzer's own scan index - `target_path` is never trusted for those,
+        even when both are supplied. Every other action is a read-only or
+        already-idempotent convenience (reveal in Explorer, open a terminal,
+        launch cleanmgr) and keeps accepting a raw path.
         """
-        # Guard against deleting system roots
         if action in ("recycle", "delete_permanent"):
+            resolved_path = self.resolve_node_id(node_id)
+            if resolved_path is None:
+                return False, ("הפריט לא נמצא באינדקס הסריקה הנוכחי - יש לסרוק מחדש "
+                                "ולנסות שוב (פעולת מחיקה מתבצעת רק על פריטים שנסרקו בפועל).")
+            target_path = resolved_path
+
             is_safe, reason = _is_safe_to_delete(target_path)
             if not is_safe:
                 return False, f"Action blocked: {reason}"
@@ -1414,22 +1744,35 @@ class StorageAnalyzer:
             return self._launch_cleanmgr(target_path)
         elif action == "get_vss_storage":
             return self._get_vss_storage()
+        elif action == "empty_recycle_bin":
+            return self._empty_recycle_bin(target_path)
         else:
             return False, f"Unknown action: {action}"
 
-    def delete_collected_items(self, paths):
+    def delete_collected_items(self, node_ids):
         """
         Safely deletes a collection of items (from the SquirrelDisk Deletion Collector).
-        Guarantees system path protection and moves items to Windows Recycle Bin.
+
+        Takes opaque node ids produced by this analyzer's own scan, never raw
+        client-supplied paths - each id is resolved against `_nodes_by_id`
+        before anything is touched, exactly like `perform_action` above. A
+        client that sends an id we never handed out (or one from a stale/
+        different scan) gets a rejection for that item, not a deletion.
         """
-        if not paths or not isinstance(paths, list):
-            return {"success": False, "error": "No paths provided", "deleted_count": 0, "freed_bytes": 0}
+        if not node_ids or not isinstance(node_ids, list):
+            return {"success": False, "error": "No items provided", "deleted_count": 0, "freed_bytes": 0}
 
         deleted_count = 0
         freed_bytes = 0
         errors = []
 
-        for p in paths:
+        for raw_id in node_ids:
+            p = self.resolve_node_id(raw_id)
+            if p is None:
+                errors.append({"path": None, "id": raw_id,
+                                "error": "הפריט לא נמצא באינדקס הסריקה הנוכחי"})
+                continue
+
             is_safe, reason = _is_safe_to_delete(p)
             if not is_safe:
                 errors.append({"path": p, "error": reason})
@@ -1469,12 +1812,35 @@ class StorageAnalyzer:
                 errors.append({"path": p, "error": msg})
 
         return {
-            "success": True,
+            # Honest success: previously always True even when every item was
+            # rejected or failed to delete, so a caller had no way to tell
+            # "nothing was removed" apart from "everything was removed".
+            "success": len(errors) == 0,
             "deleted_count": deleted_count,
             "freed_bytes": freed_bytes,
             "freed_formatted": format_bytes(freed_bytes),
             "errors": errors
         }
+
+    @staticmethod
+    def _query_recycle_bin(drive_root):
+        """
+        Returns the Recycle Bin's current item count for `drive_root` (e.g.
+        "C:\\"), or None if the query itself fails - which on its own is a
+        signal that the volume may not have a usable Recycle Bin at all
+        (typical for removable/network drives).
+        """
+        if not IS_WINDOWS:
+            return None
+        info = SHQUERYRBINFO()
+        info.cbSize = ctypes.sizeof(SHQUERYRBINFO)
+        try:
+            res = _win_query_recycle_bin(drive_root, info)
+        except Exception:
+            return None
+        if res != 0:
+            return None
+        return info.i64NumItems
 
     def _recycle_item(self, path):
         """Sends a file or folder to the Windows Recycle Bin via SHFileOperationW."""
@@ -1493,9 +1859,21 @@ class StorageAnalyzer:
             except Exception as e:
                 return False, str(e)
 
+        abs_path = os.path.abspath(path)
+        drive_root = os.path.splitdrive(abs_path)[0] + "\\"
+
+        # SHFileOperationW's FOF_ALLOWUNDO does not fail when recycling isn't
+        # actually possible (item too big for the bin's quota, a volume with
+        # no bin, or recycling disabled by policy) - it just permanently
+        # deletes the item and still reports success. Comparing the bin's
+        # item count before and after is how we tell which one actually
+        # happened, so the caller is never told "moved to Recycle Bin" about
+        # something that was, in fact, deleted for good.
+        count_before = self._query_recycle_bin(drive_root)
+
         try:
             # SHFileOperationW requires a double-null terminated string
-            p_from = os.path.abspath(path) + "\0\0"
+            p_from = abs_path + "\0\0"
             file_op = SHFILEOPSTRUCTW()
             file_op.hwnd = None
             file_op.wFunc = FO_DELETE
@@ -1503,13 +1881,67 @@ class StorageAnalyzer:
             file_op.pTo = None
             file_op.fFlags = FOF_ALLOWUNDO | FOF_NOCONFIRMATION | FOF_SILENT | FOF_NOERRORUI
 
-            res = ctypes.windll.shell32.SHFileOperationW(ctypes.byref(file_op))
-            if res == 0 and not file_op.fAnyOperationsAborted:
-                return True, f"Successfully moved to Recycle Bin: {os.path.basename(path)}"
-            else:
-                return False, f"Recycle Bin operation returned error code {res}"
+            res = _win_shell_file_op(file_op)
         except Exception as e:
             return False, f"Recycle Bin error: {e}"
+
+        if res != 0 or file_op.fAnyOperationsAborted:
+            return False, f"Recycle Bin operation returned error code {res}"
+
+        if os.path.exists(abs_path):
+            return False, "Recycle Bin operation reported success but the item still exists"
+
+        count_after = self._query_recycle_bin(drive_root)
+        if count_before is not None and count_after is not None and count_after <= count_before:
+            # The item is gone from its original location but the bin did not
+            # grow: Windows fell back to a permanent delete. Report that
+            # honestly instead of claiming it can still be restored.
+            return True, (f"'{os.path.basename(path)}' נמחק לצמיתות - לא ניתן היה להעביר "
+                          "אותו לסל המיחזור בכונן זה (מכסת הסל מלאה, או שהסל אינו זמין בנפח זה).")
+
+        return True, f"Successfully moved to Recycle Bin: {os.path.basename(path)}"
+
+    def _empty_recycle_bin(self, drive_root=None):
+        """
+        Permanently empties the Windows Recycle Bin via SHEmptyRecycleBinW.
+
+        `drive_root` limits this to one volume's bin (e.g. "C:\\"); a falsy
+        value empties every drive's bin, since both SHEmptyRecycleBinW and
+        SHQueryRecycleBinW treat a null path as "all drives".
+
+        This replaces the previous implementation, which shelled out to
+        `powershell -Command "Clear-RecycleBin -Force -ErrorAction
+        SilentlyContinue"` via the generic open-a-terminal action: that
+        command was launched in a **detached** PowerShell window (the same
+        action used for "open PowerShell here"), so the frontend fired the
+        request, immediately showed "emptied successfully", and never
+        actually waited for or checked the result - and SilentlyContinue
+        meant even a failure inside that detached window produced no visible
+        error. This calls the Win32 API directly and reports honestly.
+        """
+        if not IS_WINDOWS:
+            return False, "פעולה זו נתמכת רק ב-Windows"
+
+        root = drive_root or None
+        try:
+            flags = SHERB_NOCONFIRMATION | SHERB_NOPROGRESSUI | SHERB_NOSOUND
+            res = _win_empty_recycle_bin(root, flags)
+        except Exception as e:
+            return False, f"שגיאה בריקון סל המחזור: {e}"
+
+        count_after = self._query_recycle_bin(root)
+        if res != 0:
+            # A handful of Windows builds return a non-zero code when the bin
+            # was already empty rather than treating that as success - so
+            # only report failure if the bin turns out to still have items.
+            if count_after == 0:
+                return True, "סל המחזור כבר היה ריק"
+            return False, f"ריקון סל המחזור נכשל (קוד שגיאה {res})"
+
+        if count_after is not None and count_after > 0:
+            return False, f"הפעולה דיווחה על הצלחה אך סל המחזור עדיין מכיל {count_after} פריטים"
+
+        return True, "סל המחזור רוקן בהצלחה"
 
     def _delete_permanent(self, path):
         """Permanently deletes a file or directory tree."""

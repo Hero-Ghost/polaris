@@ -1,0 +1,25 @@
+{
+  "kill_switch": {
+    "enabled": false,
+    "blocked_versions": [],
+    "min_version_allowed": "3.1.0",
+    "title_he": "התוכנה הושבתה על ידי המפתח",
+    "message_he": "הגישה לתוכנה הושבתה זמנית על ידי המפתח לצורך תחזוקה, שדרוג תשתיות או ביטחון מידע. אנא נסה שוב מאוחר יותר.",
+    "allow_exit_only": true
+  },
+  "update": {
+    "latest_version": "3.5.0",
+    "release_title_he": "גרסה חדשה (3.5.0) - פענוח Minidump עמוק ובדיקה ברשת",
+    "release_notes_he": "עדכון גרסה Polaris 3.5.0:\n• מפענח בינארי טהור לקבצי Minidump ו-Kernel Dumps (ללא תלות ב-WinDbg).\n• מנוע היוריסטיקה מתקדם לאיתור הדרייבר האשם האמיתי תוך פתרון מסוות ntoskrnl.exe.\n• בדיקה מקוונת חכמה ברשת (Online Intelligence) עם קישורים ישירים ל-Microsoft Learn ואתרי היצרנים.\n• אזור גרירה ובחירת קבצים (Drag & Drop) לניתוח כל קובץ .dmp מותאם אישית.\n• סייר מודולים ודרייברים פעילים בזמן הקריסה עם שדה סינון מהיר.",
+    "download_url": "https://github.com/Hero-Ghost/polaris/releases/latest/download/Polaris.exe",
+    "mandatory": false,
+    "sha256": ""
+  },
+  "broadcast_message": {
+    "active": false,
+    "id": "notice-1",
+    "level": "info",
+    "title_he": "הודעת מערכת",
+    "message_he": "ברוכים הבאים ל-Polaris! כל הכלים פועלים בצורה תקינה."
+  }
+}

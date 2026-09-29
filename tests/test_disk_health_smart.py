@@ -122,6 +122,53 @@ class TestDiskHealthAnalyzer(unittest.TestCase):
                 self.assertIsNotNone(disk.get("wear_percent"))
                 self.assertIsNotNone(disk.get("life_remaining_percent"))
 
+    def test_analyze_disk_healthy_statuses(self):
+        analyzer = DiskHealthAnalyzer()
+        for healthy_status in ("Good", "Healthy", "OK", "Pass", "good", "healthy", "ok"):
+            disk = {
+                "name": "Test Disk",
+                "health_status": healthy_status,
+                "wear_percent": 10,
+                "read_errors": 0,
+                "write_errors": 0,
+                "media_errors": 0,
+                "critical_warning": 0,
+                "temperature_c": 35,
+                "media_type": "SSD",
+                "power_on_hours": 100,
+                "power_on_years": 0.1,
+                "volumes": []
+            }
+            findings = analyzer._analyze_disk(disk)
+            self.assertEqual(len(findings), 0, f"Expected 0 findings for status {healthy_status}, got: {findings}")
+            disk["findings"] = findings
+            tone = analyzer._disk_tone(disk)
+            self.assertEqual(tone, "ok", f"Expected tone 'ok' for status {healthy_status}, got: {tone}")
+
+    def test_analyze_disk_unhealthy_statuses(self):
+        analyzer = DiskHealthAnalyzer()
+        for bad_status in ("Bad", "Caution", "Pred Fail", "Unhealthy", "Degraded"):
+            disk = {
+                "name": "Failing Disk",
+                "health_status": bad_status,
+                "wear_percent": 10,
+                "read_errors": 0,
+                "write_errors": 0,
+                "media_errors": 0,
+                "critical_warning": 0,
+                "temperature_c": 35,
+                "media_type": "SSD",
+                "power_on_hours": 100,
+                "power_on_years": 0.1,
+                "volumes": []
+            }
+            findings = analyzer._analyze_disk(disk)
+            self.assertGreater(len(findings), 0, f"Expected finding for bad status {bad_status}")
+            self.assertEqual(findings[0]["severity"], "high")
+            disk["findings"] = findings
+            tone = analyzer._disk_tone(disk)
+            self.assertEqual(tone, "danger", f"Expected tone 'danger' for status {bad_status}, got: {tone}")
+
 
 if __name__ == "__main__":
     unittest.main()

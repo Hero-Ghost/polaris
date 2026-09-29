@@ -429,6 +429,14 @@ def _get_target_service_exe():
     return os.path.join(_get_target_dir(), "CopilotService.exe")
 
 def _get_root_exe():
+    if getattr(sys, 'frozen', False):
+        meipass = getattr(sys, '_MEIPASS', '')
+        cand = os.path.join(meipass, "CopilotToCtrl.exe")
+        if os.path.exists(cand):
+            return cand
+        cand_exe = os.path.join(os.path.dirname(sys.executable), "CopilotToCtrl.exe")
+        if os.path.exists(cand_exe):
+            return cand_exe
     base_dir = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
     return os.path.join(base_dir, "CopilotToCtrl.exe")
 
@@ -528,9 +536,17 @@ def enable_copilot_remap():
 
     target_service = _get_target_service_exe()
     if not os.path.exists(target_service):
-        ok, msg = compile_helper()
-        if not ok:
-            return {"success": False, "message": msg}
+        root_exe = _get_root_exe()
+        if root_exe and os.path.exists(root_exe):
+            os.makedirs(_get_target_dir(), exist_ok=True)
+            try:
+                shutil.copy2(root_exe, target_service)
+            except Exception:
+                pass
+        if not os.path.exists(target_service):
+            ok, msg = compile_helper()
+            if not ok:
+                return {"success": False, "message": msg}
 
     # Register in Startup (HKCU Run)
     if winreg:

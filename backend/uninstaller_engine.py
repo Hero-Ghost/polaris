@@ -121,6 +121,14 @@ UNINSTALL_STEPS = [
         "explain_en": "Looks for leftover settings folders, data and shortcuts.",
         "weight": 17, "est_seconds": 10,
     },
+    {
+        "id": "scan_scheduled_tasks",
+        "title_he": "סריקת משימות מתוזמנות",
+        "title_en": "Scheduled task scan",
+        "explain_he": "מחפש משימות מתוזמנות שנשארו מאחור — השארית הנפוצה ביותר של מנגנוני עדכון.",
+        "explain_en": "Looks for leftover scheduled tasks - the most common residue of update mechanisms.",
+        "weight": 10, "est_seconds": 6,
+    },
 ]
 STEP_BY_ID = {s["id"]: s for s in UNINSTALL_STEPS}
 
@@ -200,6 +208,16 @@ PROTECTED_REG_PATHS = {
     "hkcu\\software\\classes\\local settings",
 }
 
+SERVICES_REG_ROOT = "hklm\\system\\currentcontrolset\\services\\"
+
+# Registry Start values (REG_DWORD) that mean Windows loads this service/driver
+# before or during boot. Deleting one of these - whatever its name is - can
+# leave the machine unable to start; only Start values 2 (automatic, after
+# boot), 3 (manual/demand) and 4 (disabled) are ever safe to remove.
+SERVICE_START_BOOT = 0
+SERVICE_START_SYSTEM = 1
+SERVICE_START_TYPES_SAFE_TO_DELETE = {2, 3, 4}
+
 # Services and drivers Windows cannot survive without. Deliberately
 # over-inclusive: a missed leftover service is an annoyance, a deleted one is a
 # machine that does not boot.
@@ -223,6 +241,32 @@ CRITICAL_SERVICE_NAMES = {
     "pdc", "vdrvroot", "spaceport", "storqosflt", "fileinfo", "clfs",
     "condrv", "null", "beep", "cdrom", "cdfs", "exfat", "fastfat", "refs",
 }
+
+
+_NAME_WORD_SPLIT_RE = re.compile(r'[\s_\-\.]+')
+
+
+def _split_name_words(name):
+    """Splits a folder/registry-key/shortcut name into words on the same
+    separators used to build name_tokens/pub_tokens from the app's own name."""
+    if not name:
+        return []
+    return [w for w in _NAME_WORD_SPLIT_RE.split(name) if w]
+
+
+def _token_matches_name(token, name):
+    """
+    True only when `token` is a whole word/component of `name`, never merely
+    a substring. Uninstalling "Zoom" must not match "ZoomIt" (an unrelated
+    program with the same prefix) just because "zoom" appears inside it -
+    that exact case used to let a batch uninstall silently delete another
+    program's data folder. "Zoom Cache", "Zoom-Backup" and "zoom.old" still
+    match, since the token is a standalone word there.
+    """
+    if not token or not name:
+        return False
+    tok_l = token.lower()
+    return any(w.lower() == tok_l for w in _split_name_words(name))
 
 
 def _norm_win_path(path):
@@ -375,9 +419,8 @@ def is_reg_path_safe_to_delete(path):
         if prot.startswith(norm + '\\'):
             return False, "הענף מכיל בתוכו ענף רישום קריטי"
 
-    services_root = "hklm\\system\\currentcontrolset\\services\\"
-    if norm.startswith(services_root):
-        svc = norm[len(services_root):].split('\\', 1)[0]
+    if norm.startswith(SERVICES_REG_ROOT):
+        svc = norm[len(SERVICES_REG_ROOT):].split('\\', 1)[0]
         if svc in CRITICAL_SERVICE_NAMES:
             return False, "שירות או דרייבר חיוני של Windows"
 
@@ -1297,7 +1340,7 @@ class UninstallerEngine:
             # 3. Native Uninstaller Execution
             self._begin_step("native_uninstall")
             self._set_stage(session, "native_uninstall", None,
-                            "מפעיל את מסיר התוכנה המקורי... אנא השלם את ההסרה בחלון שנפתח.", True)
+                            "מפעיל את מסיר התוכנה המקורי... השלם את ההסרה בחלון שנפתח.", True)
 
             native_ok = False
             if app.get("type") == "uwp":
@@ -1330,7 +1373,7 @@ class UninstallerEngine:
 
             # 4. Scanning for Leftovers
             self._set_stage(session, "scanning", None,
-                            f"מבצע סריקת שאריות היוריסטית ({session['scan_mode'].capitalize()} Mode)...", True)
+                            f"מבצע סריקת שאריות מבוססת דפוסים ({session['scan_mode'].capitalize()} Mode)...", True)
 
             def scan_progress(step_msg, pct):
                 self._set_stage(session, message=step_msg)
@@ -1474,7 +1517,8 @@ class UninstallerEngine:
     # -------------------------------------------------------------------------
     # 4. Post-Uninstall Residual Scanning Engine
     # -------------------------------------------------------------------------
-    def scan_leftovers(self, app_metadata, mode="moderate", progress_cb=None, still_installed=False):
+    def scan_leftovers(self, app_metadata, mode="moderate", progress_cb=None, still_installed=False,
+                       own_folder_verified=True):
         """
         Heuristic residual scanning across Registry and Filesystem.
 
@@ -1523,6 +1567,7 @@ class UninstallerEngine:
 
         registry_leftovers = []
         file_leftovers = []
+        task_leftovers = []
 
         self.log(f"[SCAN] מילות חיפוש מהשם: {', '.join(name_tokens) or '(אין)'}"
                  + (f" · מהיצרן: {', '.join(pub_tokens)}" if pub_tokens else ""), "INFO")
@@ -1581,9 +1626,18 @@ class UninstallerEngine:
             sub("scan_files", 0.2, "סורק תיקיות התקנה, AppData ו-ProgramData")
             self._scan_filesystem_leftovers(
                 name_tokens, pub_tokens, install_loc, shared_dlls, mode,
-                file_leftovers, shared_protected, own_folder=own_folder
+                file_leftovers, shared_protected, own_folder=own_folder,
+                own_folder_verified=own_folder_verified,
             )
             self._end_step("scan_files", "done", f"{len(file_leftovers)} ממצאים")
+
+        # Scheduled Tasks Scan - the most common leftover of all: an
+        # auto-update task nothing else ever cleans up on its own.
+        if not self._skip_requested.is_set():
+            self._begin_step("scan_scheduled_tasks")
+            sub("scan_scheduled_tasks", 0.3, "סורק משימות מתוזמנות")
+            self._scan_scheduled_tasks(name_tokens, install_loc, task_leftovers)
+            self._end_step("scan_scheduled_tasks", "done", f"{len(task_leftovers)} ממצאים")
 
         if self._skip_requested.is_set():
             self.log("[WARN] הסריקה נקטעה לבקשתך — ייתכן שלא כל השאריות נמצאו.", "WARN")
@@ -1605,7 +1659,7 @@ class UninstallerEngine:
         if dropped:
             self.log(f"[SAFETY] {dropped} ממצאים נדחו על ידי שומרי הבטיחות ולא יוצעו למחיקה.", "SAFETY")
 
-        for item in registry_leftovers + file_leftovers:
+        for item in registry_leftovers + file_leftovers + task_leftovers:
             item["id"] = make_item_id(item)
             item.setdefault("risk", "low")
             if still_installed:
@@ -1615,15 +1669,18 @@ class UninstallerEngine:
 
         self._log_findings("רישום", registry_leftovers)
         self._log_findings("דיסק", file_leftovers)
+        self._log_findings("משימות מתוזמנות", task_leftovers)
 
-        self._remember_scan(registry_leftovers + file_leftovers)
+        self._remember_scan(registry_leftovers + file_leftovers + task_leftovers)
 
         return {
             "mode": mode,
             "registry": registry_leftovers,
             "files": file_leftovers,
+            "scheduled_tasks": task_leftovers,
             "total_registry_count": len(registry_leftovers),
             "total_files_count": len(file_leftovers),
+            "total_scheduled_tasks_count": len(task_leftovers),
             "shared_dlls_protected": shared_protected,
             "still_installed": still_installed,
             "is_admin": is_admin(),
@@ -1757,7 +1814,10 @@ class UninstallerEngine:
             "hive": hive_str,
             "is_bold": True,
             "risk": "low",
-            "reason": "רשומת ההתקנה של התוכנה ברשימת 'הוספה או הסרה'"
+            "reason": "רשומת ההתקנה של התוכנה ברשימת 'הוספה או הסרה'",
+            # Resolved from the app's own recorded registry_key, not a name
+            # guess - safe for unattended batch cleanup.
+            "auto_safe": True,
         })
 
     def _scan_software_keys(self, name_tokens, pub_tokens, leftovers):
@@ -1790,7 +1850,7 @@ class UninstallerEngine:
                                     )
                                 continue
 
-                            if any(tok.lower() in vendor_lower for tok in name_tokens):
+                            if any(_token_matches_name(tok, vendor_lower) for tok in name_tokens):
                                 leftovers.append({
                                     "type": "key",
                                     "path": f"{hive_name}\\{root_path}\\{vendor_key_name}",
@@ -1802,7 +1862,7 @@ class UninstallerEngine:
                                 })
                                 continue
 
-                            if pub_tokens and any(pt.lower() in vendor_lower for pt in pub_tokens):
+                            if pub_tokens and any(_token_matches_name(pt, vendor_lower) for pt in pub_tokens):
                                 self._scan_vendor_products(
                                     h_root, vendor_key_name, hive_name, root_path,
                                     name_tokens, leftovers
@@ -1826,7 +1886,7 @@ class UninstallerEngine:
                     break
                 if prod_name.lower().strip() in PROTECTED_REG_SUBKEYS:
                     continue
-                if any(tok.lower() in prod_name.lower() for tok in name_tokens):
+                if any(_token_matches_name(tok, prod_name) for tok in name_tokens):
                     leftovers.append({
                         "type": "key",
                         "path": f"{hive_name}\\{root_path}\\{vendor_key_name}\\{prod_name}",
@@ -2072,6 +2132,75 @@ class UninstallerEngine:
         finally:
             winreg.CloseKey(k)
 
+    def _scan_scheduled_tasks(self, name_tokens, install_loc, leftovers):
+        """
+        Scheduled tasks are the single most common leftover of all: almost
+        every auto-update mechanism registers one, and neither the vendor's
+        own uninstaller nor Windows itself ever removes it once the program
+        is gone - it just quietly keeps firing on its schedule forever.
+
+        Matched the same way as a service's ImagePath in
+        _scan_services_and_drivers: the task's own action command is checked
+        against the app's install folder first (strong provenance, pre-
+        selectable), falling back to a name-token match against the task's
+        name (weaker, never pre-selected). Anything under \\Microsoft\\... is
+        a built-in OS task and is never a candidate no matter what its
+        command line happens to contain.
+        """
+        clean_loc = self._usable_install_loc(install_loc)
+        if not IS_WINDOWS or (not name_tokens and not clean_loc):
+            return
+
+        ps_cmd = (
+            "Get-ScheduledTask | ForEach-Object { "
+            "$a = $_.Actions | Select-Object -First 1; "
+            "[PSCustomObject]@{ TaskName=$_.TaskName; TaskPath=$_.TaskPath; "
+            "Execute=$a.Execute; Arguments=$a.Arguments } "
+            "} | ConvertTo-Json -Compress"
+        )
+        try:
+            tasks = run_powershell_json(ps_cmd, timeout=20)
+        except Exception:
+            return
+
+        for t in tasks:
+            if self._skip_requested.is_set():
+                break
+            if not isinstance(t, dict):
+                continue
+            task_name = (t.get("TaskName") or "").strip()
+            task_folder = (t.get("TaskPath") or "\\").strip() or "\\"
+            if not task_name:
+                continue
+            # Every task Windows itself ships lives under \Microsoft\... -
+            # never a candidate, regardless of what its command line matches.
+            if task_folder.strip("\\").lower().startswith("microsoft"):
+                continue
+
+            full_path = task_folder.rstrip("\\") + "\\" + task_name if task_folder != "\\" \
+                else "\\" + task_name
+            execute = _norm_win_path(str(t.get("Execute") or ""))
+            arguments = _norm_win_path(str(t.get("Arguments") or ""))
+
+            strong_match = bool(clean_loc and (clean_loc in execute or clean_loc in arguments))
+            weak_match = bool(name_tokens and any(
+                len(tok) >= 4 and tok.lower() in task_name.lower() for tok in name_tokens
+            ))
+
+            if strong_match or weak_match:
+                leftovers.append({
+                    "type": "scheduled_task",
+                    "path": full_path,
+                    "name": task_name,
+                    # Only a command line that actually points inside the
+                    # app's own install folder is trusted enough to
+                    # pre-select - a bare name-token hit on the task's own
+                    # name is offered for review but never pre-checked.
+                    "is_bold": strong_match,
+                    "risk": "low",
+                    "reason": "משימה מתוזמנת שנשארה מאחור — לרוב מנגנון עדכון אוטומטי של התוכנה"
+                })
+
     def _scan_muicache(self, name_tokens, install_loc, leftovers):
         clean_loc = self._usable_install_loc(install_loc)
         p = r"Software\Classes\Local Settings\Software\Microsoft\Windows\Shell\MuiCache"
@@ -2106,8 +2235,75 @@ class UninstallerEngine:
         finally:
             winreg.CloseKey(k)
 
-    def _folder_leftover(self, path, display_name, reason, shared_dlls, shared_protected):
-        """Builds a folder leftover, downgrading it when it still holds shared DLLs."""
+    def _match_installed_app(self, name_or_path):
+        """
+        Looks up a client-supplied forced-uninstall target against the real
+        installed-apps list, by exact install_location or exact name.
+
+        A match means the forced flow can use the app's *actual* recorded
+        metadata (registry key, publisher) instead of guessing one from a raw
+        path - the same provenance a normal wizard uninstall already has.
+        """
+        target = (name_or_path or "").strip().strip('"')
+        if not target:
+            return None
+        norm_target = _norm_win_path(target)
+        target_lower = target.lower()
+        try:
+            apps = self.get_installed_apps()
+        except Exception:
+            apps = []
+        for app in apps:
+            loc = app.get("install_location") or ""
+            if loc and _norm_win_path(loc) == norm_target:
+                return app
+            if (app.get("name") or "").strip().lower() == target_lower:
+                return app
+        return None
+
+    @staticmethod
+    def _folder_looks_like_a_program(path, max_entries=500):
+        """
+        True when `path` plausibly holds an installed program - at least one
+        executable, library, or uninstaller - rather than being an arbitrary
+        folder (source code, documents, a media library) that a forced
+        uninstall should never be allowed to offer up for bulk deletion just
+        because the user pasted its path in.
+
+        Deliberately shallow (top two levels, capped file count): this is a
+        sanity check, not a full scan, and must stay fast on a folder with a
+        huge number of files.
+        """
+        if not path or not os.path.isdir(path):
+            return False
+        program_exts = ('.exe', '.dll', '.sys', '.msi')
+        checked = 0
+        try:
+            for root, dirs, files in os.walk(path):
+                depth = root[len(path):].count(os.sep)
+                if depth >= 2:
+                    dirs[:] = []  # don't descend further
+                for f in files:
+                    checked += 1
+                    if f.lower().endswith(program_exts):
+                        return True
+                    if checked >= max_entries:
+                        return False
+        except Exception:
+            return False
+        return False
+
+    def _folder_leftover(self, path, display_name, reason, shared_dlls, shared_protected, auto_safe=False):
+        """
+        Builds a folder leftover, downgrading it when it still holds shared DLLs.
+
+        `auto_safe` marks an item as eligible for unattended deletion in a
+        batch run - it must only ever be True for the app's own install
+        folder (found via its exact registry-recorded install_location, not
+        a name guess). Every name-matched "settings folder" / "vendor
+        folder" heuristic must leave it False so a batch run routes it to
+        human review instead of deleting it outright.
+        """
         ok, why = is_path_safe_to_delete(path)
         if not ok:
             return None
@@ -2124,18 +2320,20 @@ class UninstallerEngine:
             "is_bold": True,
             "risk": "low",
             "reason": reason,
+            "auto_safe": bool(auto_safe),
         }
         if hits:
             shared_protected.extend(h["path"] for h in hits)
             item["is_bold"] = False
             item["risk"] = "high"
+            item["auto_safe"] = False
             item["shared_dlls"] = hits[:10]
             item["reason"] = f"{reason} — מכילה {len(hits)} ספריות משותפות שתוכנות אחרות עדיין רשומות עליהן"
         return item
 
     def _scan_filesystem_leftovers(self, name_tokens, pub_tokens, install_loc,
                                    shared_dlls, mode, leftovers, shared_protected,
-                                   own_folder=None):
+                                   own_folder=None, own_folder_verified=True):
         # own_folder is "" for a preview scan of software that is still
         # installed: the install directory is then the program, not residue.
         if own_folder is None:
@@ -2149,9 +2347,17 @@ class UninstallerEngine:
         if own_folder and os.path.exists(own_folder):
             item = self._folder_leftover(
                 own_folder, os.path.basename(os.path.normpath(own_folder)),
-                "תיקיית ההתקנה הראשית של התוכנה", shared_dlls, shared_protected
+                "תיקיית ההתקנה הראשית של התוכנה", shared_dlls, shared_protected,
+                auto_safe=own_folder_verified,
             )
             if item:
+                if not own_folder_verified:
+                    # An unverified forced-uninstall target (a raw path that
+                    # doesn't match any real installed app) must never be
+                    # pre-selected for deletion, only offered for the user to
+                    # tick themselves - see _run_forced_uninstall.
+                    item["is_bold"] = False
+                    item["reason"] += " (יעד לא מאומת — נא לבדוק לפני מחיקה)"
                 leftovers.append(item)
 
         # Shortcuts belong to Safe mode as well - they are the most visible
@@ -2173,7 +2379,7 @@ class UninstallerEngine:
                 for f in files:
                     if not f.lower().endswith(".lnk"):
                         continue
-                    if not (name_tokens and any(tok.lower() in f.lower() for tok in name_tokens)):
+                    if not (name_tokens and any(_token_matches_name(tok, f) for tok in name_tokens)):
                         continue
                     full_p = os.path.join(root, f)
                     ok, _ = is_path_safe_to_delete(full_p)
@@ -2191,7 +2397,11 @@ class UninstallerEngine:
                         "size_formatted": format_bytes(sz),
                         "is_bold": True,
                         "risk": "low",
-                        "reason": "קיצור דרך (Shortcut)"
+                        "reason": "קיצור דרך (Shortcut)",
+                        # A stray shortcut is trivial to lose even if the name
+                        # match were ever wrong - unlike a folder, so it's
+                        # left eligible for batch auto-clean.
+                        "auto_safe": True,
                     })
 
         if mode == "safe":
@@ -2231,15 +2441,21 @@ class UninstallerEngine:
                                    or (own_folder and entry_norm == _norm_win_path(own_folder))):
                     continue
 
-                if name_tokens and any(tok.lower() in e_name for tok in name_tokens):
+                if name_tokens and any(_token_matches_name(tok, e_name) for tok in name_tokens):
                     item = self._folder_leftover(
                         entry.path, entry.name,
                         f"תיקיית הגדרות ונתונים ({os.path.basename(s_root)})",
                         shared_dlls, shared_protected
+                        # auto_safe left False (default): this is a name-guess
+                        # match, not the app's own recorded install location -
+                        # a batch run must send it to human review, never
+                        # delete it unattended (this is what let "Zoom" sweep
+                        # up an unrelated "ZoomIt" folder before the
+                        # word-boundary match above was added).
                     )
                     if item:
                         leftovers.append(item)
-                elif pub_tokens and any(pt.lower() in e_name for pt in pub_tokens):
+                elif pub_tokens and any(_token_matches_name(pt, e_name) for pt in pub_tokens):
                     try:
                         sub_entries = list(os.scandir(entry.path))
                     except Exception:
@@ -2252,7 +2468,7 @@ class UninstallerEngine:
                             continue
                         if sub_entry.name.lower() in PROTECTED_FOLDER_NAMES:
                             continue
-                        if not (name_tokens and any(tok.lower() in sub_entry.name.lower() for tok in name_tokens)):
+                        if not (name_tokens and any(_token_matches_name(tok, sub_entry.name) for tok in name_tokens)):
                             continue
                         item = self._folder_leftover(
                             sub_entry.path, f"{entry.name}\\{sub_entry.name}",
@@ -2265,6 +2481,131 @@ class UninstallerEngine:
     # -------------------------------------------------------------------------
     # 5. Safe Leftovers Deletion & Rollback Logging
     # -------------------------------------------------------------------------
+    @staticmethod
+    def _read_service_start_type(svc_name):
+        """
+        Reads the `Start` REG_DWORD for a service/driver key. Returns None
+        when it can't be read (missing value, no winreg, access denied) - the
+        caller must treat that as "unknown, refuse" rather than "safe".
+        """
+        if not (IS_WINDOWS and winreg) or not svc_name:
+            return None
+        try:
+            k = winreg.OpenKey(
+                winreg.HKEY_LOCAL_MACHINE,
+                f"SYSTEM\\CurrentControlSet\\Services\\{svc_name}",
+                0, winreg.KEY_READ
+            )
+        except Exception:
+            return None
+        try:
+            val, _ = winreg.QueryValueEx(k, "Start")
+            return int(val)
+        except Exception:
+            return None
+        finally:
+            winreg.CloseKey(k)
+
+    @staticmethod
+    def _delete_service_via_scm(svc_name):
+        """
+        Stops and removes a service/driver through the Service Control
+        Manager (`sc.exe`) instead of deleting its registry key directly.
+
+        A raw key delete leaves a service that is currently loaded/running
+        exactly as loaded in memory - the driver keeps running as an orphan
+        until reboot, and for a filter driver that can mean the volume it
+        filters becomes unreadable before then. Going through sc.exe asks
+        Windows itself to stop and tear the service down cleanly; sc delete
+        also removes the registry key, so no separate key deletion follows.
+        """
+        if not IS_WINDOWS:
+            return False, "פעולה זו נתמכת רק ב-Windows"
+        if not svc_name or any(ch in svc_name for ch in '"\\/'):
+            return False, "שם שירות לא תקין"
+        try:
+            run_hidden(["sc.exe", "stop", svc_name], capture_output=True, text=True, timeout=30)
+        except Exception:
+            pass  # not running, or already stopped - sc delete below is what matters
+        try:
+            res = run_hidden(["sc.exe", "delete", svc_name], capture_output=True, text=True, timeout=30)
+        except Exception as e:
+            return False, str(e)
+        if getattr(res, "returncode", 1) == 0:
+            return True, None
+        err = (getattr(res, "stdout", "") or getattr(res, "stderr", "") or "").strip()
+        return False, err or f"sc.exe delete נכשל (קוד {getattr(res, 'returncode', '?')})"
+
+    @staticmethod
+    def _export_scheduled_task_xml(task_path, session_dir):
+        """
+        Best-effort backup of a scheduled task's definition before deletion,
+        so it can be recreated later with
+        `schtasks /create /xml <file> /tn <task_path>` if removing it turns
+        out to have been a mistake. Unlike the registry backup, a failure
+        here does not block the deletion - recreating a scheduled task by
+        hand in Task Scheduler is a realistic fallback in a way that
+        recovering deleted registry data is not.
+        """
+        if not IS_WINDOWS:
+            return None
+        try:
+            res = run_hidden(
+                ["schtasks", "/query", "/tn", task_path, "/xml"],
+                capture_output=True, text=True, timeout=20
+            )
+        except Exception:
+            return None
+        if getattr(res, "returncode", 1) != 0 or not (res.stdout or "").strip():
+            return None
+        try:
+            os.makedirs(session_dir, exist_ok=True)
+            safe_name = re.sub(r'[\\/:*?"<>|]', '_', task_path.strip("\\")) or "task"
+            out_path = os.path.join(session_dir, f"task_{safe_name}.xml")
+            with open(out_path, "w", encoding="utf-8") as f:
+                f.write(res.stdout)
+            return out_path
+        except Exception:
+            return None
+
+    @staticmethod
+    def _delete_scheduled_task(task_path):
+        """Removes a scheduled task through schtasks.exe, never directly."""
+        if not IS_WINDOWS:
+            return False, "פעולה זו נתמכת רק ב-Windows"
+        if not task_path or any(ch in task_path for ch in '"|<>'):
+            return False, "נתיב משימה לא תקין"
+        try:
+            res = run_hidden(
+                ["schtasks", "/delete", "/tn", task_path, "/f"],
+                capture_output=True, text=True, timeout=30
+            )
+        except Exception as e:
+            return False, str(e)
+        if getattr(res, "returncode", 1) == 0:
+            return True, None
+        err = (getattr(res, "stdout", "") or getattr(res, "stderr", "") or "").strip()
+        return False, err or f"schtasks /delete נכשל (קוד {getattr(res, 'returncode', '?')})"
+
+    def _backup_before_delete(self, path, session_dir, backed_up_keys):
+        """
+        Exports `path` before it is deleted, and reports whether it is safe
+        to proceed with the deletion.
+
+        Previously the export's return value was checked only to decide
+        whether to *record* a successful backup - deletion went ahead either
+        way, so an export failure quietly meant "delete this with no way to
+        get it back." On Windows, a failed export must cancel the deletion.
+        Off Windows there is no registry to export at all (reg.exe/winreg
+        aren't available - this is also how the entire test suite runs), so
+        that expected, permanent "failure" must not block anything.
+        """
+        backup_path = self.backup_registry_key_tree(path, session_dir)
+        if backup_path:
+            backed_up_keys.append(path)
+            return True
+        return not IS_WINDOWS
+
     def resolve_selection(self, selected_ids=None, selected_items=None):
         """
         Maps whatever the HTTP layer received onto records this engine produced.
@@ -2324,18 +2665,22 @@ class UninstallerEngine:
                          or "ניקוי שאריות"),
             "deleted_registry": [],
             "deleted_files": [],
+            "deleted_tasks": [],
             "pending_reboot_files": [],
             "failed": [],
         }
 
         deleted_reg_count = 0
         deleted_files_count = 0
+        deleted_tasks_count = 0
         deleted_bytes = 0
+        deleted_bytes_truncated = False
         failed = []
         backed_up_keys = []
 
         reg_items = [i for i in items if i.get('type') in ('key', 'value')]
         file_items = [i for i in items if i.get('type') in ('file', 'folder')]
+        task_items = [i for i in items if i.get('type') == 'scheduled_task']
 
         # ---- Registry -------------------------------------------------------
         for item in reg_items:
@@ -2356,8 +2701,11 @@ class UninstallerEngine:
                     continue
                 # Export the parent key first, so Restore.dat can bring the
                 # value back - the JSON audit log alone was never restorable.
-                if self.backup_registry_key_tree(path, session_dir):
-                    backed_up_keys.append(path)
+                if not self._backup_before_delete(path, session_dir, backed_up_keys):
+                    failed.append({"path": path, "name": name,
+                                   "reason": "גיבוי הרישום נכשל - המחיקה בוטלה כדי לא לאבד את האפשרות לשחזור"})
+                    self.log(f"[!] גיבוי נכשל, המחיקה בוטלה: {path}\\{name}", "ERROR")
+                    continue
                 done, err = self._delete_reg_value(path, name)
                 if done:
                     deleted_reg_count += 1
@@ -2373,8 +2721,51 @@ class UninstallerEngine:
                     failed.append({"path": path, "name": name, "reason": why})
                     self.log(f"[!] נדחה: {path} — {why}", "WARN")
                     continue
-                if self.backup_registry_key_tree(path, session_dir):
-                    backed_up_keys.append(path)
+
+                norm_path = _norm_reg_path(path)
+                is_service_key = (norm_path.startswith(SERVICES_REG_ROOT)
+                                   and norm_path.count('\\') == SERVICES_REG_ROOT.count('\\'))
+
+                if is_service_key:
+                    # Taken from the original (not lowercased) path so sc.exe
+                    # and the log show the service's real-cased name.
+                    svc_name = path.rstrip('\\').split('\\')[-1]
+                    start_type = self._read_service_start_type(svc_name)
+                    if start_type is None or start_type not in SERVICE_START_TYPES_SAFE_TO_DELETE:
+                        reason = ("לא ניתן לוודא את אופן ההפעלה של השירות - נמחק רק דרך "
+                                  "Service Control Manager, ולא בוצע כדי למנוע סיכון") \
+                                 if start_type is None else \
+                                 "שירות/דרייבר שנטען באתחול המערכת - מחיקתו עלולה למנוע מהמחשב לעלות"
+                        failed.append({"path": path, "name": name, "reason": reason})
+                        self.log(f"[!] נדחה: {path} — {reason}", "WARN")
+                        continue
+
+                    if not self._backup_before_delete(path, session_dir, backed_up_keys):
+                        failed.append({"path": path, "name": name,
+                                       "reason": "גיבוי הרישום נכשל - המחיקה בוטלה כדי לא לאבד את האפשרות לשחזור"})
+                        self.log(f"[!] גיבוי נכשל, המחיקה בוטלה: {path}", "ERROR")
+                        continue
+                    # sc.exe delete removes the registry key itself once the
+                    # service is stopped - no separate _delete_reg_key_recursive
+                    # call follows, and none is attempted as a fallback: if the
+                    # SCM refuses, the raw key is left alone rather than
+                    # deleted out from under a service Windows still thinks
+                    # exists.
+                    done, err = self._delete_service_via_scm(svc_name)
+                    if done:
+                        deleted_reg_count += 1
+                        log_record["deleted_registry"].append({"type": "key", "path": path, "via": "sc.exe"})
+                        self.log(f"[✓] שירות/דרייבר הוסר דרך sc.exe: {svc_name}", "SUCCESS")
+                    else:
+                        failed.append({"path": path, "name": name, "reason": err or "מחיקה נכשלה"})
+                        self.log(f"[!] נכשל: {path} — {err or 'מחיקה נכשלה'}", "ERROR")
+                    continue
+
+                if not self._backup_before_delete(path, session_dir, backed_up_keys):
+                    failed.append({"path": path, "name": name,
+                                   "reason": "גיבוי הרישום נכשל - המחיקה בוטלה כדי לא לאבד את האפשרות לשחזור"})
+                    self.log(f"[!] גיבוי נכשל, המחיקה בוטלה: {path}", "ERROR")
+                    continue
                 done, err = self._delete_reg_key_recursive(path)
                 if done:
                     deleted_reg_count += 1
@@ -2423,7 +2814,13 @@ class UninstallerEngine:
                         self.log(f"[!] {p} נעול ולא ניתן לתזמן מחיקה באתחול.", "ERROR")
 
                 elif os.path.isdir(p):
-                    sz, _ = self._quick_dir_size(p)
+                    sz, sz_truncated = self._quick_dir_size(p)
+                    if sz_truncated:
+                        # The walk hit its file cap, so `sz` only counts the
+                        # first N files - it undercounts the folder's real
+                        # size. Remembered here so the summary can say
+                        # "freed at least X" instead of quoting it as exact.
+                        deleted_bytes_truncated = True
                     self.log(f"[$] מוחק תיקייה: {p} ({format_bytes(sz)})", "PLAN")
                     self._force_remove_tree(p)
                     if not os.path.exists(p):
@@ -2434,9 +2831,12 @@ class UninstallerEngine:
                     else:
                         remaining = self._count_remaining(p)
                         if self._schedule_reboot_folder_deletion(p):
+                            # Scheduled, not failed - counted only in
+                            # pending_reboot_files, matching the file branch
+                            # above. Double-counting this in `failed` as well
+                            # used to make failed_count overstate how many
+                            # items truly could not be handled at all.
                             log_record["pending_reboot_files"].append(p)
-                            failed.append({"path": p, "name": item.get('name', ''),
-                                           "reason": f"{remaining} קבצים נעולים בידי תוכנה פעילה — תוזמנה מחיקה באתחול"})
                             self.log(f"[i] {p}: {remaining} קבצים נעולים — תוזמנה מחיקה באתחול.", "WARN")
                         else:
                             failed.append({"path": p, "name": item.get('name', ''),
@@ -2445,6 +2845,34 @@ class UninstallerEngine:
             except Exception as e:
                 failed.append({"path": p, "name": item.get('name', ''), "reason": str(e)})
                 self.log(f"[!] {p} — {e}", "ERROR")
+
+        # ---- Scheduled Tasks -------------------------------------------------
+        for item in task_items:
+            task_path = item.get('path', '')
+            name = item.get('name', '')
+            if task_path.strip("\\").lower().startswith("microsoft"):
+                # Defense in depth: the scanner already excludes these, but a
+                # forged/stale id must never get a second chance to reach
+                # schtasks with a built-in OS task path.
+                failed.append({"path": task_path, "name": name,
+                               "reason": "משימת מערכת של Windows - אינה ניתנת למחיקה"})
+                continue
+
+            backup_path = self._export_scheduled_task_xml(task_path, session_dir)
+            if backup_path:
+                self.log(f"[SAFETY] הוגדרת המשימה גובתה אל: {backup_path}", "SAFETY")
+            else:
+                self.log(f"[!] לא ניתן היה לגבות את הגדרת המשימה {task_path} "
+                         "לפני המחיקה - ממשיך בכל זאת (ניתן ליצור מחדש ידנית ב-Task Scheduler).", "WARN")
+
+            done, err = self._delete_scheduled_task(task_path)
+            if done:
+                deleted_tasks_count += 1
+                log_record["deleted_tasks"].append(task_path)
+                self.log(f"[✓] נמחקה משימה מתוזמנת: {task_path}", "SUCCESS")
+            else:
+                failed.append({"path": task_path, "name": name, "reason": err or "מחיקה נכשלה"})
+                self.log(f"[!] נכשל: {task_path} — {err or 'מחיקה נכשלה'}", "ERROR")
 
         log_record["failed"] = failed
 
@@ -2469,15 +2897,27 @@ class UninstallerEngine:
             "session_id": session_id,
             "deleted_registry": deleted_reg_count,
             "deleted_files": deleted_files_count,
+            "deleted_tasks": deleted_tasks_count,
             "freed_bytes": deleted_bytes,
-            "freed_formatted": format_bytes(deleted_bytes),
+            # When a deleted folder's size was only estimated up to the file
+            # cap in _quick_dir_size, `freed_bytes` is a floor, not an exact
+            # figure - said honestly here instead of presenting it as exact.
+            "freed_bytes_is_lower_bound": deleted_bytes_truncated,
+            "freed_formatted": (("לפחות " if deleted_bytes_truncated else "")
+                                 + format_bytes(deleted_bytes)),
             "pending_reboot_count": len(log_record["pending_reboot_files"]),
+            "pending_reboot_files": log_record["pending_reboot_files"],
             "reboot_required": bool(log_record["pending_reboot_files"]),
             "failed": failed,
             "failed_count": len(failed),
             "rejected": rejected,
             "is_admin": elevated,
         }
+        # Honest success: previously always True even when every single item
+        # failed, so the frontend had no way to tell "nothing happened" apart
+        # from "everything was cleaned". A run that scheduled reboot deletions
+        # but had no outright failures is still a success.
+        summary["success"] = len(failed) == 0
 
         with self._lock:
             if update_session and self.active_session:
@@ -2488,7 +2928,7 @@ class UninstallerEngine:
                     + (f" · {len(failed)} פריטים לא נמחקו" if failed else "")
                 )
 
-        return {"success": True, "summary": summary, **summary}
+        return {"summary": summary, **summary}
 
     @staticmethod
     def _count_remaining(path, cap=50000):
@@ -2890,23 +3330,62 @@ class UninstallerEngine:
         if uwp_app:
             return self._run_forced_uwp_uninstall(uwp_app, name_or_path, mode)
 
-        if os.path.exists(name_or_path):
+        # Prefer a real installed-app match over guessing from the raw path -
+        # this gives the run the app's actual registry key and publisher
+        # instead of blind name/path heuristics.
+        matched_app = self._match_installed_app(name_or_path)
+        own_folder_verified = True
+
+        if matched_app:
+            name = matched_app.get("name", "") or name_or_path
+            install_loc = matched_app.get("install_location", "") or ""
+            app_metadata = {
+                "name": name,
+                "publisher": matched_app.get("publisher", "") or "",
+                "install_location": install_loc,
+                "raw_key_name": matched_app.get("raw_key_name", "") or "",
+                "registry_key": matched_app.get("registry_key", "") or "",
+            }
+        elif os.path.exists(name_or_path):
             if os.path.isdir(name_or_path):
                 install_loc = os.path.abspath(name_or_path)
                 name = os.path.basename(install_loc)
             else:
                 install_loc = os.path.dirname(os.path.abspath(name_or_path))
                 name = os.path.splitext(os.path.basename(name_or_path))[0]
+
+            # A raw path the user pasted in is not a verified install
+            # location the way a registry-recorded one is. Refuse it outright
+            # if it doesn't even look like a program folder (no .exe/.dll/
+            # .msi anywhere near the top), so pasting an arbitrary personal
+            # folder ("C:\Users\me\Projects") can never reach the review
+            # screen at all. If it DOES look like a program, it still isn't
+            # pre-selected for deletion - the user must tick it themselves.
+            if not self._folder_looks_like_a_program(install_loc):
+                self.log(f"[ERROR] הנתיב '{install_loc}' אינו נראה כתיקיית התקנה של תוכנה "
+                         "(לא נמצאו קובצי הרצה) — ההסרה הכפויה בוטלה.", "ERROR")
+                return {"success": False, "error": (
+                    "הנתיב שצוין אינו נראה כתיקיית התקנה של תוכנה (לא נמצאו קובצי הרצה בתוכה). "
+                    "כדי למנוע מחיקה בטעות של תיקייה אישית, ההסרה הכפויה לא תמשיך. "
+                    "אם זו אכן תיקיית תוכנה, ודא שהנתיב נכון ונסה שוב."
+                )}
+            own_folder_verified = False
+            app_metadata = {
+                "name": name,
+                "publisher": "",
+                "install_location": install_loc,
+                "raw_key_name": "",
+                "registry_key": "",
+            }
         else:
             name = name_or_path
-
-        app_metadata = {
-            "name": name,
-            "publisher": "",
-            "install_location": install_loc,
-            "raw_key_name": "",
-            "registry_key": "",
-        }
+            app_metadata = {
+                "name": name,
+                "publisher": "",
+                "install_location": install_loc,
+                "raw_key_name": "",
+                "registry_key": "",
+            }
 
         # The forced flow has no uninstaller to run, so it publishes a two-step
         # plan and streams into the same terminal as a normal run.
@@ -2914,6 +3393,9 @@ class UninstallerEngine:
         self.log(f"[$] יעד: {name}" + (f" · תיקייה: {install_loc}" if install_loc else " · ללא תיקייה מזוהה"), "INFO")
         self.log(f"[$] מצב סריקה: {mode}", "INFO")
         self.log("[?] לא מורצת שום פקודת הסרה — רק סריקה של מה שנשאר במערכת.", "INFO")
+        if install_loc and not own_folder_verified:
+            self.log("[?] תיקיית היעד לא אומתה מול רשומת התקנה קיימת - היא תוצג לבדיקה "
+                     "אך לא תסומן מראש למחיקה.", "SAFETY")
         # force_skip_native so the printed plan does not advertise a step that
         # is then immediately marked as skipped one line later.
         self._plan_steps(
@@ -2924,7 +3406,7 @@ class UninstallerEngine:
 
         self._start_heartbeat()
         try:
-            leftovers = self.scan_leftovers(app_metadata, mode=mode)
+            leftovers = self.scan_leftovers(app_metadata, mode=mode, own_folder_verified=own_folder_verified)
         finally:
             self._stop_heartbeat.set()
 
@@ -3063,11 +3545,18 @@ class UninstallerEngine:
                 leftovers = self.scan_leftovers(app, mode=mode, still_installed=not removed)
                 all_items = leftovers.get("registry", []) + leftovers.get("files", [])
 
-                # Only ordinary application residue is cleaned unattended.
-                # Services, drivers, COM registration and MSI bookkeeping are
-                # handed back for a human to look at.
-                auto = [i for i in all_items if i.get("is_bold") and i.get("risk") == "low"]
-                review = [i for i in all_items if i.get("risk") == "high" or not i.get("is_bold")]
+                # Only items with a definite provenance - the app's own
+                # install folder, its own Uninstall registry key, and
+                # shortcuts - are cleaned unattended. Everything else,
+                # including every name-heuristic "settings folder" / "vendor
+                # folder" / "matching registry key" match, is a guess and is
+                # handed back for a human to look at, no matter how low-risk
+                # it looks otherwise. (A name guess is exactly what let a
+                # batch uninstall of "Zoom" once sweep up the unrelated
+                # "ZoomIt" folder.)
+                auto = [i for i in all_items if i.get("auto_safe")]
+                auto_ids = {id(i) for i in auto}
+                review = [i for i in all_items if id(i) not in auto_ids]
                 needs_review.extend(review)
 
                 cleaned = 0
@@ -3110,7 +3599,7 @@ class UninstallerEngine:
     # -------------------------------------------------------------------------
     def resolve_hunter_target(self, process_name_or_pid_or_path):
         if psutil is None:
-            return {"success": False, "error": "המודול psutil אינו זמין — כוונת ציד מושבתת"}
+            return {"success": False, "error": "המודול psutil אינו זמין — מיקוד ידני מושבת"}
 
         target = (process_name_or_pid_or_path or "").strip().strip('"')
         if not target:

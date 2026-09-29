@@ -21,7 +21,21 @@ const API_TOKEN = (document.querySelector('meta[name="polaris-token"]') || {}).c
       init.headers.set('X-Polaris-Token', API_TOKEN);
       init.cache = 'no-store';
     }
-    return nativeFetch(input, init);
+    return nativeFetch(input, init).then(async (response) => {
+      if (response.status === 403) {
+        try {
+          const clone = response.clone();
+          const data = await clone.json();
+          if (data && data.message && (data.message.includes('הושבתה') || data.message.includes('מפתח'))) {
+            window._isAppKilled = true;
+            if (typeof triggerKillSwitch === 'function') {
+              triggerKillSwitch({ message_he: data.message });
+            }
+          }
+        } catch (_) {}
+      }
+      return response;
+    });
   };
 })();
 
@@ -124,7 +138,7 @@ const I18N = {
     navStartup: "תוכנות אתחול",
     navCrashes: "קריסות ומסך כחול",
     navGroupTools: "כלים",
-    navTools: "כלי מקלדת",
+    navTools: "כלים שימושיים",
     navSettings: "הגדרות",
 
     /* Consolidated Categories */
@@ -139,7 +153,7 @@ const I18N = {
     catHardwareTitle: "חומרה והתקנים",
     catHardwareDesc: "מנהל ההתקנים, תקינות הדרייברים ובריאות הסוללה",
     catSettingsTitle: "כלים והגדרות",
-    catSettingsDesc: "התאמת מקלדת (מיפוי מקש Copilot) והגדרות התוכנה",
+    catSettingsDesc: "כלים שימושיים (איפוס OneDrive, מיפוי Copilot) והגדרות התוכנה",
 
     navPerformance: "משאבים וביצועים",
     navStorageGroup: "כוננים ואחסון",
@@ -167,8 +181,8 @@ const I18N = {
     scrStartupDesc: "מה עולה יחד עם המחשב וכמה זה מאט את ההפעלה",
     scrCrashesTitle: "קריסות ומסך כחול",
     scrCrashesDesc: "פענוח BSOD, קודי BugCheck וכיבויי פתע",
-    scrToolsTitle: "כלי מקלדת",
-    scrToolsDesc: "מיפוי מקש Copilot ל-Ctrl ימני",
+    scrToolsTitle: "כלים שימושיים",
+    scrToolsDesc: "איפוס Microsoft OneDrive, שחזור מטמון אייקונים וארגז כלי IT לארגונים",
     scrSettingsTitle: "הגדרות",
     scrSettingsDesc: "שפה, קצב רענון, ייצוא נתונים ופרטי גרסה",
 
@@ -360,6 +374,112 @@ const I18N = {
     descCopilotFeat2: "מותקן ב-AppData בצורה מבודדת, כך שניתן למחוק או להעביר את קובץ ההתקנה בחופשיות.",
     lblCopilotFeat3: "קבוע לאחר הפעלה מחדש",
     descCopilotFeat3: "תומך בהחזקה רציפה: Ctrl+C, Ctrl+V, קיצורי עריכה וגיימינג.",
+
+    /* OneDrive reset */
+    onedriveTitle: "איפוס Microsoft OneDrive",
+    onedriveDesc: "סוגר את OneDrive, מוחק את מפתח הרגיסטרי של החשבונות (Accounts) ומנקה מטמון הגדרות מקומי כדי לאפשר התחברות נקייה מחדש.",
+    btnResetOneDrive: "איפוס ONE DRIVE",
+    openOneDriveApp: "פתח את OneDrive",
+    onedriveStatusRunning: "פעיל ברקע",
+    onedriveStatusStopped: "סגור",
+    lblOneDriveFeat1: "סגירת תהליך מיידית",
+    descOneDriveFeat1: "עוצר בכפייה את תהליכי OneDrive.exe לשחרור נעילות קבצים ורגיסטרי.",
+    lblOneDriveFeat2: "מחיקת Accounts ברגיסטרי",
+    descOneDriveFeat2: "מוחק את HKCU\\Software\\Microsoft\\OneDrive\\Accounts ומנתק את כל החשבונות.",
+    lblOneDriveFeat3: "ניקוי מטמון ואתחול נקי",
+    descOneDriveFeat3: "מנקה הגדרות תקועות במטמון ומאפשר התחברות מחדש. קובצי המשתמש לא יימחקו.",
+    confirmOneDriveTitle: "אישור איפוס Microsoft OneDrive",
+    confirmOneDriveDesc: "פעולה זו תסגור את OneDrive, תמחק את כל הגדרות החשבונות המחוברים ברגיסטרי (Accounts) ותנקה את מטמון ההגדרות המקומי.\n\nקובצי המשתמש המסונכרנים בדיסק ובענן לא יימחקו.\n\nהאם להמשיך באיפוס?",
+    btnConfirmReset: "אפס את OneDrive",
+
+    /* Icon Cache Rebuild */
+    iconCacheTitle: "בנייה מחדש של מטמון האייקונים (Icon Cache)",
+    iconCacheDesc: "סוגר את סייר הקבצים, מוחק את מסדי הנתונים iconcache ו-thumbcache המושחתים, מפעיל מחדש את Explorer ומרענן את כל האייקונים והתצוגות המקדימות.",
+    btnRebuildIconCache: "בנה מחדש מטמון אייקונים",
+    lblIconCacheFeat1: "סגירת Explorer לשחרור נעילות",
+    descIconCacheFeat1: "עוצר מבוקרת את explorer.exe כדי לאפשר מחיקה של קובצי המטמון הנעולים.",
+    lblIconCacheFeat2: "מחיקת IconCache ו-Thumbcache",
+    descIconCacheFeat2: "מוחק את קובצי מסד הנתונים של האייקונים ב-AppData ומאלץ את Windows ליצור אותם מחדש.",
+    lblIconCacheFeat3: "רענון Shell מיידי (ללא אתחול)",
+    descIconCacheFeat3: "משדר SHChangeNotify ומפעיל מחדש את שולחן העבודה. מתקן אייקונים לבנים באופן מיידי.",
+    confirmIconCacheTitle: "אישור בנייה מחדש של מטמון האייקונים",
+    confirmIconCacheDesc: "פעולה זו תסגור לרגע את סייר הקבצים (Explorer), תמחק את כל קובצי מטמון האייקונים והתמונות הממוזערות הפגומים, ותפעיל מחדש את שולחן העבודה.\n\nהמסך עשוי להבהב לרגע קל בלבד. האם להמשיך?",
+    btnConfirmRebuildIcon: "בנה מחדש עכשיו",
+
+    /* Enterprise IT Toolkit */
+    enterpriseSuiteTitle: "ארגז כלי IT לארגונים (Enterprise IT Toolkit)",
+    enterpriseSuiteDesc: "פתרונות מיידיים לתקלות IT נפוצות בארגונים מבוססי Active Directory, Entra ID, GPO, M365, שרתי קבצים ורשת ארגונית.",
+    enterpriseBadge: "10 כלי עבודה",
+
+    toolKerberosTitle: "איפוס כרטיסי Kerberos (שחרור הרשאות שיתוף)",
+    toolKerberosBadge: "Active Directory",
+    toolKerberosDesc: "מחיל הרשאות Active Directory חדשות לתיקיות רשת ללא צורך באתחול או התנתקות.",
+    toolKerberosBtn: "אפס כרטיסי Kerberos",
+    confirmKerberosTitle: "אישור איפוס כרטיסי Kerberos",
+    confirmKerberosDesc: "פעולה זו תמחק את כרטיסי ה-Kerberos המאוחסנים במחשב (klist purge) ותרענן את טבלת השמות של NetBIOS.\n\nהפעולה מאפשרת למשתמש לקבל באופן מיידי הרשאות שיתוף חדשות שהוגדרו ב-Active Directory ללא צורך באתחול.\n\nהאם להמשיך?",
+
+    toolGpoTitle: "איפוס וסנכרון מאולץ של Group Policy (GPO)",
+    toolGpoBadge: "Group Policy",
+    toolGpoDesc: "מוחק מטמון מקומי פגום ומבצע gpupdate /force מלא מול שרת ה-Domain Controller לאכיפת מדיניות עדכנית.",
+    toolGpoBtn: "סנכרן GPO מחדש",
+    confirmGpoTitle: "אישור סנכרון Group Policy",
+    confirmGpoDesc: "פעולה זו תמחק קובצי GPO מקומיים פגומים ותפעיל פקודת gpupdate /force מלאה מול שרתי ה-Domain Controller.\n\nהאם להמשיך?",
+
+    toolCredsTitle: "ניקוי סיסמאות ישנות למניעת נעילת משתמש (Account Lockout)",
+    toolCredsBadge: "אבטחת חשבון",
+    toolCredsDesc: "מוחק מ-Credential Manager סיסמאות דומיין ו-M365 ישנות שגורמות לנעילת חשבון חוזרת ונשנית.",
+    toolCredsBtn: "נקה אישורים ישנים",
+    confirmCredsTitle: "אישור ניקוי סיסמאות ישנות",
+    confirmCredsDesc: "פעולה זו תמחק מנהל האישורים (Credential Manager) סיסמאות ישנות של רשת ארגונית, שרתי דומיין ושירותי Office.\n\nזהו הפתרון הנפוץ ביותר לתופעת Account Lockout חוזרת ונשנית בארגונים.\n\nהאם להמשיך?",
+
+    toolEntraTitle: "תיקון לולאת אימות Entra ID / WAM Broker",
+    toolEntraBadge: "Microsoft 365",
+    toolEntraDesc: "פותר שגיאות CAA50021, CAA2000B ותקיעות של Teams ו-Office בלולאת התחברות באמצעות איפוס ה-BrokerPlugin.",
+    toolEntraBtn: "אפס מנגנון אימות Entra",
+    confirmEntraTitle: "אישור איפוס מנגנון אימות Entra ID",
+    confirmEntraDesc: "פעולה זו תסגור תהליכי Teams ו-Office ותנקה את מטמון ה-WAM (Web Account Manager) של Entra ID.\n\nהפעולה מתקנת חלונות כניסה לבנים ריקים ושגיאות CAA50021. קובצי משתמש ומיילים לא יימחקו.\n\nהאם להמשיך?",
+
+    toolOutlookTitle: "איפוס הגדרות ופרופיל Outlook תקוע (SRS Purge)",
+    toolOutlookBadge: "Microsoft Outlook",
+    toolOutlookDesc: "פותר תקיעות של Outlook במסך 'Loading Profile...' או כשלים בשליחה/קבלה ללא פגיעה בתיבת הדואר.",
+    toolOutlookBtn: "אפס הגדרות Outlook",
+    confirmOutlookTitle: "אישור איפוס הגדרות Outlook",
+    confirmOutlookDesc: "פעולה זו תסגור את Outlook ותמחק את קובץ ה-SRS (הגדרות שלח/קבל) ומטמון ה-Autodiscover המקומי.\n\nתיבת הדואר, המיילים ולוח השנה לא יימחקו כלל. האם להמשיך?",
+
+    toolDrivesTitle: "שחרור כונני רשת תקועים ואיפוס SMB",
+    toolDrivesBadge: "שיתוף קבצים",
+    toolDrivesDesc: "מנתק כונני רשת תקועים עם איקס אדום (Ghost Drives) ומאתחל את ה-SMB Client לאחר התנתקות VPN.",
+    toolDrivesBtn: "שחרר כונני רשת",
+    confirmDrivesTitle: "אישור שחרור כונני רשת",
+    confirmDrivesDesc: "פעולה זו תנתק כונני רשת ממופים תקועים (net use * /delete) ותאתחל את שירות שיתוף הקבצים המקומי (LanmanWorkstation).\n\nהאם להמשיך?",
+
+    toolProxyTitle: "איפוס הגדרות Proxy ו-WinHTTP לאחר VPN",
+    toolProxyBadge: "תקשורת ו-VPN",
+    toolProxyDesc: "מחזיר גלישה ישירה ע\"י איפוס שרתי Proxy וקובצי PAC של VPN שנשארו תקועים בהגדרות המערכת.",
+    toolProxyBtn: "אפס הגדרות Proxy",
+    confirmProxyTitle: "אישור איפוס הגדרות Proxy",
+    confirmProxyDesc: "פעולה זו תאפס את הגדרות ה-Proxy של Windows וה-WinHTTP לברירת מחדל של חיבור ישיר (Direct Connection).\n\nמתאים במיוחד כאשר הגישה לאינטרנט נחסמת לאחר התנתקות מחיבור VPN.\n\nהאם להמשיך?",
+
+    toolIntuneTitle: "סנכרון מאולץ של סוכן Microsoft Intune (IME)",
+    toolIntuneBadge: "ניהול מכשירים",
+    toolIntuneDesc: "מפעיל מחדש את שירות IntuneManagementExtension ומאלץ בדיקת מדיניות והתקנת אפליקציות מיידית.",
+    toolIntuneBtn: "סנכרן Intune כעת",
+    confirmIntuneTitle: "אישור סנכרון Microsoft Intune",
+    confirmIntuneDesc: "פעולה זו תפעיל מחדש את שירות Intune Management Extension ותריץ משימת בדיקת מדיניות והפצת תוכנות מיידית.\n\nהאם להמשיך?",
+
+    toolSpoolerTitle: "איפוס שירות והורדת מסמכים תקועים (Spooler Purge)",
+    toolSpoolerBadge: "מדפסות",
+    toolSpoolerDesc: "סוגר את ה-Spooler, מוחק את כל קובצי ההדפסה התקועים בדיסק (*.spl, *.shd) ומפעיל אותו מחדש.",
+    toolSpoolerBtn: "אפס תור מדפסות",
+    confirmSpoolerTitle: "אישור איפוס תור מדפסות",
+    confirmSpoolerDesc: "פעולה זו תעצור את שירות ההדפסה של Windows, תמחק את כל מסמכי ההדפסה התקועים בתור מהדיסק, ותפעיל את השירות מחדש.\n\nהאם להמשיך?",
+
+    toolCertTitle: "איפוס מטמון תעודות אבטחה ורשימות ביטול (CRL / OCSP)",
+    toolCertBadge: "אבטחה ותעודות",
+    toolCertDesc: "מנקה את מטמון ה-CRL וה-OCSP של Windows לאימות מיידי של תעודות SSL ארגוניות שחודשו.",
+    toolCertBtn: "נקה מטמון תעודות",
+    confirmCertTitle: "אישור ניקוי מטמון תעודות אבטחה",
+    confirmCertDesc: "פעולה זו תמחק את מטמון רשימות הביטול (certutil -urlcache * delete) כדי לאפשר ל-Windows לקבל תעודות SSL ארגוניות מחודשות.\n\nהאם להמשיך?",
 
     /* Settings */
     settingsGeneral: "העדפות תצוגה",
@@ -652,7 +772,43 @@ const I18N = {
     storageMinSize: "גודל מינימלי:",
     storageBtnScanDupes: "חפש כפילויות עכשיו",
     storageDupesPrompt: "לחץ על 'חפש כפילויות עכשיו' כדי למצוא קבצים זהים שתופסים שטח כפול בדיסק.",
-    storageExportCsv: "ייצא דו״ח CSV"
+    storageExportCsv: "ייצא דו״ח CSV",
+
+    /* OEM Updates */
+    navOemUpdates: "עדכוני יצרן (OEM)",
+    oemDesc: "סריקה והתקנה אוטומטית של דרייברים ועדכוני BIOS מכלי היצרן הרשמי",
+
+    /* Windows Updates Show / Hide */
+    navWuHide: "הסתרת עדכוני Windows",
+    wuHideDesc: "חסימה ושחרור של עדכונים ספציפיים ודרייברים ב-Windows Update",
+    bannerOemPromoTitle: "עדכון דרייברים וקושחה רשמיים",
+    bannerOemPromoDesc: "הרץ סריקה והתקנה אוטומטית של דרייברים ועדכוני BIOS דרך כלי היצרן הרשמי (Dell, Lenovo, HP).",
+    btnGoToOemUpdates: "עבור לעדכוני יצרן",
+    oemHardwareTitle: "יצרן ומודל המחשב",
+    oemHardwareSub: "זיהוי אוטומטי מלוח האם ו-BIOS",
+    oemDetectedBrand: "מותג מזוהה",
+    oemModel: "דגם / סדרה",
+    oemOverride: "החלפה ידנית:",
+    oemToolTitle: "כלי העדכון הרשמי",
+    oemToolSub: "DCU / TVSU / HPIA / SDIO",
+    oemToolName: "כלי נבחר",
+    oemToolPath: "נתיב:",
+    oemActionTitle: "הפעלת עדכונים",
+    oemActionSub: "סריקה והתקנה אוטומטית מלאה",
+    oemOptTwoPasses: "סבב השלמות כפול (2 Passes)",
+    oemOptWinOptional: "כולל דרייברים מ-Windows Update",
+    btnStartOemUpdates: "הפעל עדכוני יצרן",
+    btnRunningOemUpdates: "עדכונים פועלים...",
+    oemLiveLogTitle: "מסוף ביצוע חי",
+    oemReady: "מוכן להפעלת עדכונים.",
+    btnClearLog: "נקה מסוף",
+    oemStatusInstalled: "מותקן ומוכן לשימוש",
+    oemStatusMissing: "לא מותקן (יותקן אוטומטית)",
+    oemStatusInstalling: "מתקין כלי יצרן...",
+    oemCompleted: "סבב עדכוני היצרן הושלם בהצלחה!",
+    oemError: "שגיאה במהלך עדכוני היצרן",
+    oemCancelled: "עדכוני היצרן בוטלו על ידי המשתמש",
+    oemRebootRequired: "נדרש אתחול של המחשב להשלמת התקנת הדרייברים/BIOS."
   },
 
   en: {
@@ -667,7 +823,7 @@ const I18N = {
     navStartup: "Startup Apps",
     navCrashes: "Crashes & BSOD",
     navGroupTools: "Tools",
-    navTools: "Keyboard Tools",
+    navTools: "Useful Tools",
     navSettings: "Settings",
 
     /* Consolidated Categories */
@@ -682,7 +838,7 @@ const I18N = {
     catHardwareTitle: "Hardware & Devices",
     catHardwareDesc: "Device Manager, driver health, and battery condition",
     catSettingsTitle: "Tools & Settings",
-    catSettingsDesc: "Keyboard remapping (Copilot key) and app preferences",
+    catSettingsDesc: "Useful tools (OneDrive reset, Copilot remap) and app preferences",
 
     navPerformance: "Performance & Resources",
     navStorageGroup: "Drives & Storage",
@@ -710,8 +866,8 @@ const I18N = {
     scrStartupDesc: "What boots with Windows and how much it slows startup",
     scrCrashesTitle: "Crashes & BSOD",
     scrCrashesDesc: "Blue screen decoding, BugCheck codes and power-loss events",
-    scrToolsTitle: "Keyboard Tools",
-    scrToolsDesc: "Remap the Copilot key to Right Ctrl",
+    scrToolsTitle: "Useful Tools",
+    scrToolsDesc: "Microsoft OneDrive reset, Icon Cache rebuild & Enterprise IT Toolkit",
     scrSettingsTitle: "Settings",
     scrSettingsDesc: "Language, refresh rate, data export and version details",
 
@@ -903,6 +1059,112 @@ const I18N = {
     descCopilotFeat2: "Installed in isolation under AppData, so the original installer can be moved or deleted freely.",
     lblCopilotFeat3: "Survives restarts",
     descCopilotFeat3: "Supports continuous holding: Ctrl+C, Ctrl+V, editing shortcuts and gaming modifiers.",
+
+    /* OneDrive reset */
+    onedriveTitle: "Reset Microsoft OneDrive",
+    onedriveDesc: "Closes OneDrive, deletes account configurations from the Windows Registry (Accounts), and clears local settings cache for a clean sign-in.",
+    btnResetOneDrive: "Reset ONE DRIVE",
+    openOneDriveApp: "Open OneDrive",
+    onedriveStatusRunning: "Running in background",
+    onedriveStatusStopped: "Stopped",
+    lblOneDriveFeat1: "Immediate process termination",
+    descOneDriveFeat1: "Forcefully stops OneDrive.exe to release file and registry locks.",
+    lblOneDriveFeat2: "Registry Accounts deletion",
+    descOneDriveFeat2: "Removes HKCU\\Software\\Microsoft\\OneDrive\\Accounts and unlinks all accounts.",
+    lblOneDriveFeat3: "Cache clean & fresh boot",
+    descOneDriveFeat3: "Cleans stuck settings caches for fresh setup. User synced files are never touched.",
+    confirmOneDriveTitle: "Confirm Microsoft OneDrive Reset",
+    confirmOneDriveDesc: "This will terminate OneDrive, delete all configured account settings in the Registry, and clear local settings cache.\n\nYour actual files on disk and in cloud will NOT be deleted.\n\nProceed with reset?",
+    btnConfirmReset: "Reset OneDrive",
+
+    /* Icon Cache Rebuild */
+    iconCacheTitle: "Rebuild Icon & Thumbnail Cache",
+    iconCacheDesc: "Restarts File Explorer, purges corrupted iconcache and thumbcache databases, and regenerates all file icons and previews.",
+    btnRebuildIconCache: "Rebuild Icon Cache",
+    lblIconCacheFeat1: "Explorer restart for lock release",
+    descIconCacheFeat1: "Gracefully terminates explorer.exe to safely delete locked cache files.",
+    lblIconCacheFeat2: "Purge IconCache & Thumbcache",
+    descIconCacheFeat2: "Deletes icon database files in AppData, forcing Windows to regenerate clean icons.",
+    lblIconCacheFeat3: "Instant Shell refresh (no reboot)",
+    descIconCacheFeat3: "Broadcasts SHChangeNotify and restores desktop. Fixes blank icons immediately.",
+    confirmIconCacheTitle: "Confirm Icon Cache Rebuild",
+    confirmIconCacheDesc: "This will temporarily restart File Explorer, delete all corrupted icon and thumbnail databases, and reload the Windows shell.\n\nYour desktop may flicker briefly. Do you want to proceed?",
+    btnConfirmRebuildIcon: "Rebuild Now",
+
+    /* Enterprise IT Toolkit */
+    enterpriseSuiteTitle: "Enterprise IT Toolkit",
+    enterpriseSuiteDesc: "Instant remedies for high-impact enterprise IT issues across Active Directory, Entra ID, GPO, M365, file shares and network infrastructure.",
+    enterpriseBadge: "10 Tools Available",
+
+    toolKerberosTitle: "Purge Kerberos Tickets (Share Permissions)",
+    toolKerberosBadge: "Active Directory",
+    toolKerberosDesc: "Applies new Active Directory security group permissions to network shares without rebooting or logging off.",
+    toolKerberosBtn: "Purge Kerberos Tickets",
+    confirmKerberosTitle: "Confirm Kerberos Tickets Purge",
+    confirmKerberosDesc: "This will purge locally cached Kerberos tickets (klist purge) and refresh NetBIOS names.\n\nNew AD permissions and security groups will take effect immediately without rebooting.\n\nDo you wish to proceed?",
+
+    toolGpoTitle: "Force Sync & Reset Group Policy (GPO)",
+    toolGpoBadge: "Group Policy",
+    toolGpoDesc: "Purges corrupted local policy cache and executes full gpupdate /force against the Domain Controller.",
+    toolGpoBtn: "Force GPO Sync",
+    confirmGpoTitle: "Confirm Group Policy Sync",
+    confirmGpoDesc: "This will clear corrupt local GPO caches and execute gpupdate /force against Domain Controllers.\n\nProceed?",
+
+    toolCredsTitle: "Purge Stale Credentials (Prevent Account Lockout)",
+    toolCredsBadge: "Account Security",
+    toolCredsDesc: "Cleans stale domain and Microsoft 365 saved passwords from Credential Manager causing repeated AD lockouts.",
+    toolCredsBtn: "Purge Stale Credentials",
+    confirmCredsTitle: "Confirm Stale Credentials Purge",
+    confirmCredsDesc: "This will remove stale saved enterprise and Office/M365 credentials from Credential Manager.\n\nThis stops repeated Active Directory account lockout loops. You may need to type your current password once.\n\nProceed?",
+
+    toolEntraTitle: "Reset Entra ID / WAM Broker Loop",
+    toolEntraBadge: "Microsoft 365",
+    toolEntraDesc: "Resolves CAA50021 / CAA2000B loops and Teams/Outlook login failures by resetting BrokerPlugin token storage.",
+    toolEntraBtn: "Reset Entra Auth Broker",
+    confirmEntraTitle: "Confirm Entra ID WAM Broker Reset",
+    confirmEntraDesc: "This closes Teams and Office processes, and resets the Entra ID WAM broker token cache.\n\nResolves blank login windows and CAA50021/CAA2000B errors. Synced files and emails are untouched.\n\nProceed?",
+
+    toolOutlookTitle: "Reset Outlook Profile & Send/Receive (.SRS)",
+    toolOutlookBadge: "Microsoft Outlook",
+    toolOutlookDesc: "Fixes Outlook hanging on \"Loading Profile...\" or stuck Send/Receive queues without touching mailbox data.",
+    toolOutlookBtn: "Reset Outlook Settings",
+    confirmOutlookTitle: "Confirm Outlook Settings Reset",
+    confirmOutlookDesc: "This will close Outlook and purge corrupted Send/Receive (.SRS) files and Autodiscover cache.\n\nMailbox data, emails, and calendar items are completely safe and untouched.\n\nProceed?",
+
+    toolDrivesTitle: "Reset Stuck Mapped Drives (SMB Client)",
+    toolDrivesBadge: "File Shares",
+    toolDrivesDesc: "Disconnects ghost red-X mapped drives and restarts the SMB workstation client after VPN disconnects.",
+    toolDrivesBtn: "Reset Network Drives",
+    confirmDrivesTitle: "Confirm Network Drives Reset",
+    confirmDrivesDesc: "This will disconnect stuck mapped drives (net use * /delete) and restart the local SMB workstation service.\n\nProceed?",
+
+    toolProxyTitle: "Reset Proxy & WinHTTP (Post-VPN)",
+    toolProxyBadge: "Network & VPN",
+    toolProxyDesc: "Restores direct connectivity by resetting WinHTTP system proxy and disabling leftover corporate VPN PAC files.",
+    toolProxyBtn: "Reset Proxy / WinHTTP",
+    confirmProxyTitle: "Confirm Proxy Reset",
+    confirmProxyDesc: "This resets Windows system proxy and WinHTTP to direct connection.\n\nIdeal when Internet access fails after disconnecting from enterprise VPN.\n\nProceed?",
+
+    toolIntuneTitle: "Force Microsoft Intune Agent Sync (IME)",
+    toolIntuneBadge: "Endpoint Management",
+    toolIntuneDesc: "Restarts Intune Management Extension service and triggers immediate policy & app evaluation.",
+    toolIntuneBtn: "Force Intune Sync",
+    confirmIntuneTitle: "Confirm Microsoft Intune Sync",
+    confirmIntuneDesc: "This will restart the Intune Management Extension service and trigger immediate policy evaluation and app deployment.\n\nProceed?",
+
+    toolSpoolerTitle: "Print Spooler & Queue Complete Purge",
+    toolSpoolerBadge: "Printers",
+    toolSpoolerDesc: "Stops spooler service, purges all locked print jobs from disk (*.spl, *.shd), and restarts cleanly.",
+    toolSpoolerBtn: "Purge Print Queue",
+    confirmSpoolerTitle: "Confirm Print Spooler Purge",
+    confirmSpoolerDesc: "This will stop the Windows Print Spooler, delete all locked/stuck print spool files from disk, and restart the service.\n\nProceed?",
+
+    toolCertTitle: "Purge Certificate Revocation List (CRL) Cache",
+    toolCertBadge: "Certificates & SSL",
+    toolCertDesc: "Flushes cached CRL and OCSP responses in Windows to immediately trust renewed internal SSL certs.",
+    toolCertBtn: "Purge CRL Cache",
+    confirmCertTitle: "Confirm Certificate Revocation Cache Purge",
+    confirmCertDesc: "This will purge cached certificate revocation lists (certutil -urlcache * delete) so renewed SSL certs are trusted immediately.\n\nProceed?",
 
     /* Settings */
     settingsGeneral: "Display preferences",
@@ -1195,7 +1457,43 @@ const I18N = {
     storageMinSize: "Min File Size:",
     storageBtnScanDupes: "Find Duplicates Now",
     storageDupesPrompt: "Click 'Find Duplicates Now' to discover redundant duplicate files taking up storage.",
-    storageExportCsv: "Export CSV Report"
+    storageExportCsv: "Export CSV Report",
+
+    /* OEM Updates */
+    navOemUpdates: "OEM Updates",
+    oemDesc: "Automatic scan and installation of official drivers and BIOS updates from your vendor",
+
+    /* Windows Updates Show / Hide */
+    navWuHide: "Windows Update Blocker",
+    wuHideDesc: "Show or hide specific Windows quality and driver updates",
+    bannerOemPromoTitle: "Official Driver & Firmware Updates",
+    bannerOemPromoDesc: "Run an automated scan and update of official drivers and BIOS updates via official vendor tools (Dell, Lenovo, HP).",
+    btnGoToOemUpdates: "Go to OEM Updates",
+    oemHardwareTitle: "Computer Manufacturer & Model",
+    oemHardwareSub: "Automatically detected from motherboard & BIOS",
+    oemDetectedBrand: "Detected Brand",
+    oemModel: "Model / Series",
+    oemOverride: "Manual Override:",
+    oemToolTitle: "Official Update Tool",
+    oemToolSub: "DCU / TVSU / HPIA / SDIO",
+    oemToolName: "Selected Tool",
+    oemToolPath: "Path:",
+    oemActionTitle: "Run Updates",
+    oemActionSub: "Full automated scan and installation",
+    oemOptTwoPasses: "Double completion run (2 Passes)",
+    oemOptWinOptional: "Include Windows Update optional drivers",
+    btnStartOemUpdates: "Start OEM Updates",
+    btnRunningOemUpdates: "Updates In Progress...",
+    oemLiveLogTitle: "Live Execution Terminal",
+    oemReady: "Ready to run updates.",
+    btnClearLog: "Clear Log",
+    oemStatusInstalled: "Installed & ready",
+    oemStatusMissing: "Not installed (will auto-install)",
+    oemStatusInstalling: "Installing vendor tool...",
+    oemCompleted: "OEM updates completed successfully!",
+    oemError: "Error during OEM updates",
+    oemCancelled: "OEM updates cancelled by user",
+    oemRebootRequired: "A computer restart is required to complete driver/BIOS installation."
   }
 };
 
@@ -1209,99 +1507,74 @@ function t(key) {
 // Category & Sub-tab Navigation
 // -------------------------------------------------------------
 const CATEGORIES = {
-  overview: {
-    title: 'scrOverviewTitle',
-    desc: 'scrOverviewDesc',
-    subTabs: []
-  },
-  performance: {
-    title: 'catPerformanceTitle',
-    desc: 'catPerformanceDesc',
-    defaultSubTab: 'processes',
-    subTabs: ['processes', 'memory']
-  },
-  storage: {
-    title: 'catStorageTitle',
-    desc: 'catStorageDesc',
-    defaultSubTab: 'disks',
-    subTabs: ['disks', 'storage']
-  },
-  maintenance: {
-    title: 'catMaintenanceTitle',
-    desc: 'catMaintenanceDesc',
-    defaultSubTab: 'maintenance',
-    subTabs: ['maintenance', 'uninstaller', 'startup']
-  },
-  diagnostics: {
-    title: 'catDiagnosticsTitle',
-    desc: 'catDiagnosticsDesc',
-    defaultSubTab: 'crashes',
-    subTabs: ['crashes', 'events']
-  },
-  hardware: {
-    title: 'catHardwareTitle',
-    desc: 'catHardwareDesc',
-    defaultSubTab: 'devices',
-    subTabs: ['devices', 'battery']
-  },
-  settings: {
-    title: 'catSettingsTitle',
-    desc: 'catSettingsDesc',
-    defaultSubTab: 'tools',
-    subTabs: ['tools', 'settings']
-  }
+  overview:        { title: 'navOverview',            desc: 'scrOverviewDesc',    subTabs: [] },
+  processes:       { title: 'navProcesses',           desc: 'scrProcessesDesc',   subTabs: [] },
+  memory:          { title: 'navMemory',              desc: 'scrMemoryDesc',      subTabs: [] },
+  disks:           { title: 'navDisks',               desc: 'scrDisksDesc',       subTabs: [] },
+  storage:         { title: 'navStorage',             desc: 'scrStorageDesc',     subTabs: [] },
+  maintenance:     { title: 'navMaintenance',         desc: 'scrMaintenanceDesc', subTabs: [] },
+  uninstaller:     { title: 'navUninstaller',         desc: 'scrUninstallerDesc', subTabs: [] },
+  startup:         { title: 'navStartup',             desc: 'scrStartupDesc',     subTabs: [] },
+  crashes:         { title: 'navCrashes',             desc: 'scrCrashesDesc',     subTabs: [] },
+  events:          { title: 'navEvents',              desc: 'scrEventsDesc',      subTabs: [] },
+  devices:         { title: 'navDevices',             desc: 'scrDevicesDesc',     subTabs: [] },
+  windows_updates: { title: 'navWuHide',              desc: 'wuHideDesc',         subTabs: [] },
+  oem_updates:     { title: 'navOemUpdates',          desc: 'oemDesc',            subTabs: [] },
+  battery:         { title: 'navBattery',             desc: 'batteryScanning',    subTabs: [] },
+  tools:           { title: 'navTools',               desc: 'scrToolsDesc',       subTabs: [] },
+  settings:        { title: 'navSettings',            desc: 'scrSettingsDesc',    subTabs: [] }
 };
 
 const SCREEN_TO_CATEGORY = {
   overview: 'overview',
-  performance: 'performance',
-  processes: 'performance',
-  memory: 'performance',
+  processes: 'processes',
+  memory: 'memory',
+  disks: 'disks',
   storage: 'storage',
-  disks: 'storage',
   maintenance: 'maintenance',
-  uninstaller: 'maintenance',
-  startup: 'maintenance',
-  diagnostics: 'diagnostics',
-  crashes: 'diagnostics',
-  events: 'diagnostics',
-  hardware: 'hardware',
-  devices: 'hardware',
-  battery: 'hardware',
-  tools: 'settings',
-  settings: 'settings'
+  uninstaller: 'uninstaller',
+  startup: 'startup',
+  crashes: 'crashes',
+  events: 'events',
+  devices: 'devices',
+  windows_updates: 'windows_updates',
+  oem_updates: 'oem_updates',
+  battery: 'battery',
+  tools: 'tools',
+  settings: 'settings',
+  // Backward compatibility aliases:
+  performance: 'processes',
+  hardware: 'devices'
 };
 
 const SCREENS = {
-  overview:    { title: 'scrOverviewTitle',    desc: 'scrOverviewDesc',    onEnter: () => fetchBattery() },
-  processes:   { title: 'scrProcessesTitle',   desc: 'scrProcessesDesc' },
-  memory:      { title: 'scrMemoryTitle',      desc: 'scrMemoryDesc' },
-  disks:       { title: 'scrDisksTitle',       desc: 'scrDisksDesc',       onEnter: () => fetchDiskHealth() },
-  storage:     { title: 'scrStorageTitle',     desc: 'scrStorageDesc',     onEnter: () => initStorageScreen() },
-  devices:     { title: 'scrDevicesTitle',     desc: 'scrDevicesDesc',     onEnter: () => fetchDevices() },
-  battery:     { title: 'navBattery',          desc: 'batteryScanning',    onEnter: () => fetchBattery(true) },
-  maintenance: { title: 'scrMaintenanceTitle', desc: 'scrMaintenanceDesc', onEnter: () => refreshRepairAudit() },
-  uninstaller: { title: 'scrUninstallerTitle', desc: 'scrUninstallerDesc', onEnter: () => fetchInstalledApps() },
-  startup:     { title: 'scrStartupTitle',     desc: 'scrStartupDesc',     onEnter: () => refreshRepairAudit() },
-  crashes:     { title: 'scrCrashesTitle',     desc: 'scrCrashesDesc',     onEnter: () => fetchCrashHistory() },
-  events:      { title: 'scrEventsTitle',      desc: 'scrEventsDesc',      onEnter: () => fetchEventLog() },
-  tools:       { title: 'scrToolsTitle',       desc: 'scrToolsDesc',       onEnter: () => fetchCopilotRemapStatus() },
-  settings:    { title: 'scrSettingsTitle',    desc: 'scrSettingsDesc' }
+  overview:        { title: 'navOverview',            desc: 'scrOverviewDesc',    onEnter: () => fetchBattery() },
+  processes:       { title: 'navProcesses',           desc: 'scrProcessesDesc',   onEnter: () => fetchProcesses() },
+  memory:          { title: 'navMemory',              desc: 'scrMemoryDesc',      onEnter: () => { if (timelineChart) timelineChart.resize(); if (categoryChart) categoryChart.resize(); } },
+  disks:           { title: 'navDisks',               desc: 'scrDisksDesc',       onEnter: () => fetchDiskHealth() },
+  storage:         { title: 'navStorage',             desc: 'scrStorageDesc',     onEnter: () => { initStorageScreen(); setTimeout(() => { if (typeof renderStorageSunburst === 'function') renderStorageSunburst(); }, 60); } },
+  maintenance:     { title: 'navMaintenance',         desc: 'scrMaintenanceDesc', onEnter: () => refreshRepairAudit() },
+  uninstaller:     { title: 'navUninstaller',         desc: 'scrUninstallerDesc', onEnter: () => fetchInstalledApps() },
+  startup:         { title: 'navStartup',             desc: 'scrStartupDesc',     onEnter: () => refreshRepairAudit() },
+  crashes:         { title: 'navCrashes',             desc: 'scrCrashesDesc',     onEnter: () => fetchCrashHistory() },
+  events:          { title: 'navEvents',              desc: 'scrEventsDesc',      onEnter: () => fetchEventLog() },
+  devices:         { title: 'navDevices',             desc: 'scrDevicesDesc',     onEnter: () => fetchDevices() },
+  windows_updates: { title: 'navWuHide',              desc: 'wuHideDesc',         onEnter: () => { fetchWindowsUpdates(false); fetchWuServiceStatus(); } },
+  oem_updates:     { title: 'navOemUpdates',          desc: 'oemDesc',            onEnter: () => fetchOemInfo() },
+  battery:         { title: 'navBattery',             desc: 'batteryScanning',    onEnter: () => fetchBattery(true) },
+  tools:           { title: 'navTools',               desc: 'scrToolsDesc',       onEnter: () => { fetchCopilotRemapStatus(); fetchOneDriveStatus(); fetchIconCacheStatus(); fetchEnterpriseTools(); } },
+  settings:        { title: 'navSettings',            desc: 'scrSettingsDesc' }
 };
 
 let currentNavCategory = 'overview';
-let activeSubTabs = {
-  performance: 'processes',
-  storage: 'disks',
-  maintenance: 'maintenance',
-  diagnostics: 'crashes',
-  hardware: 'devices',
-  settings: 'tools'
-};
+let activeSubTabs = {};
 
-function goToCategory(catName, targetSubTab) {
-  if (!CATEGORIES[catName]) catName = 'overview';
+function goToCategory(catName) {
+  if (!CATEGORIES[catName]) {
+    catName = SCREEN_TO_CATEGORY[catName] || 'overview';
+  }
   currentNavCategory = catName;
+  currentScreen = catName;
 
   // 1. Toggle active screen section
   document.querySelectorAll('.screen').forEach(el => {
@@ -1315,54 +1588,16 @@ function goToCategory(catName, targetSubTab) {
     btn.classList.toggle('active', isMatching);
   });
 
-  // 3. Switch sub-tab if category has sub-tabs
-  if (CATEGORIES[catName].subTabs && CATEGORIES[catName].subTabs.length > 0) {
-    const sub = targetSubTab || activeSubTabs[catName] || CATEGORIES[catName].defaultSubTab;
-    switchSubTab(catName, sub, false);
-  } else {
-    currentScreen = catName;
-    updateScreenHeader();
-    if (SCREENS[catName]?.onEnter) SCREENS[catName].onEnter();
-  }
+  // 3. Update header and trigger onEnter
+  updateScreenHeader();
+  if (SCREENS[catName]?.onEnter) SCREENS[catName].onEnter();
 
-  document.querySelector('.content').scrollTop = 0;
+  const contentEl = document.querySelector('.content');
+  if (contentEl) contentEl.scrollTop = 0;
 }
 
-function switchSubTab(catName, subTabId, shouldScroll = true) {
-  if (!CATEGORIES[catName]) return;
-  activeSubTabs[catName] = subTabId;
-  currentScreen = subTabId;
-
-  const catScreen = document.getElementById(`screen-${catName}`);
-  if (catScreen) {
-    catScreen.querySelectorAll('.subtab-btn').forEach(btn => {
-      btn.classList.toggle('active', btn.getAttribute('data-subtab') === subTabId);
-    });
-
-    catScreen.querySelectorAll('.subtab-panel').forEach(panel => {
-      panel.classList.toggle('active', panel.id === `panel-${subTabId}`);
-    });
-  }
-
-  updateScreenHeader();
-
-  // Resize charts that may have been hidden
-  if (subTabId === 'memory') {
-    if (timelineChart) timelineChart.resize();
-    if (categoryChart) categoryChart.resize();
-  }
-  if (subTabId === 'storage') {
-    setTimeout(() => {
-      if (typeof renderStorageSunburst === 'function') renderStorageSunburst();
-    }, 60);
-  }
-
-  // Trigger onEnter hook
-  if (SCREENS[subTabId]?.onEnter) SCREENS[subTabId].onEnter();
-
-  if (shouldScroll) {
-    document.querySelector('.content').scrollTop = 0;
-  }
+function switchSubTab(catName, subTabId) {
+  goToCategory(subTabId || catName);
 }
 
 // Backward compatibility: goToScreen(name) works for any screen, mapping to category & subtab
@@ -1393,11 +1628,19 @@ function updateScreenHeader() {
 // -------------------------------------------------------------
 // Initialization
 // -------------------------------------------------------------
-document.addEventListener('DOMContentLoaded', () => {
+document.addEventListener('DOMContentLoaded', async () => {
   applyStoredTheme();
   initCharts();
   applyStaticTexts();
   goToScreen('overview');
+
+  // Check remote control immediately on load
+  const controlData = await checkRemoteControlStatus(false);
+  if (controlData && controlData.is_killed) {
+    // If the app is killed, halt further initializations
+    return;
+  }
+
   fetchSystemInfo();
   fetchStats();
   fetchDiagnostics();
@@ -1407,6 +1650,12 @@ document.addEventListener('DOMContentLoaded', () => {
   refreshRepairAudit();
   fetchCrashHistory();
   fetchCopilotRemapStatus();
+  fetchOneDriveStatus();
+  fetchIconCacheStatus();
+  fetchEnterpriseTools();
+
+  // Periodically check remote kill switch and updates every 5 minutes
+  setInterval(() => checkRemoteControlStatus(false), 5 * 60 * 1000);
 
   // Stagger hardware reports so we do not hammer the CPU/disk with simultaneous PowerShell queries.
   // The live overview paints instantly, and badges populate smoothly in sequence.
@@ -1414,15 +1663,20 @@ document.addEventListener('DOMContentLoaded', () => {
   setTimeout(() => fetchDiskHealth(), 3000);
   setTimeout(() => fetchEventLog(), 5000);
   setTimeout(() => fetchDevices(), 7000);
+  setTimeout(() => fetchOemInfo(), 8500);
+  setTimeout(() => fetchWindowsUpdates(false), 9500);
 
   // Escape closes whichever modal is open.
   document.addEventListener('keydown', (e) => {
     if (e.key !== 'Escape') return;
+    if (window._isAppKilled) return; // Prevent closing kill switch modal
+    if (window._isMandatoryUpdate) return;
     closeProcModal();
     closeCrashModal();
     closeConfirmModal();
     closeTermsModal();
     closeBackupCenterModal();
+    closeUpdateModal();
     if (typeof closeHunterModal === 'function') closeHunterModal();
   });
 });
@@ -1495,6 +1749,7 @@ function toggleLanguage() {
   if (diskReport) renderDiskHealth();
   if (deviceReport) renderDevices();
   if (eventReport) renderEventLog();
+  if (oemInfo) renderOemInfo();
   if (rawStats) updateMemoryUI(rawStats);
   if (rawBattery) renderBattery(rawBattery);
   refreshRepairAudit();
@@ -1660,7 +1915,315 @@ async function fetchDiagnostics() {
   }
 }
 
+// =============================================================================
+// Windows Update Hide / Unhide
+// =============================================================================
+
+let _wuData = { available: [], hidden: [] };
+
+/**
+ * Fetch available and hidden Windows updates from the backend.
+ * @param {boolean} online - true = full network scan, false = fast local cache
+ */
+async function fetchWindowsUpdates(online = false) {
+  const btnScan   = document.getElementById('btnWuScan');
+  const btnOnline = document.getElementById('btnWuScanOnline');
+  const statusEl  = document.getElementById('wuScanStatus');
+
+  // Disable buttons while scanning
+  if (btnScan)   { btnScan.disabled = true;   btnScan.classList.add('is-busy'); }
+  if (btnOnline) { btnOnline.disabled = true; }
+  if (statusEl)  statusEl.textContent = online ? 'סורק מול שרתי Microsoft...' : 'טוען ממטמון מקומי...';
+
+  try {
+    const url = `/api/windows_updates/list?online=${online ? 1 : 0}`;
+    const res = await fetch(url);
+    if (!res.ok) throw new Error(`HTTP ${res.status}`);
+    const data = await res.json();
+    _wuData = data;
+    renderWindowsUpdates(data);
+    if (statusEl) {
+      const ts = new Date().toLocaleTimeString('he-IL');
+      statusEl.textContent = `עודכן: ${ts}`;
+    }
+    if (data.error) showToast('שגיאת Windows Update: ' + data.error, 'error');
+  } catch (e) {
+    if (statusEl) statusEl.textContent = 'שגיאת טעינה';
+    showToast('שגיאה בטעינת עדכוני Windows: ' + (e.message || e), 'error');
+  } finally {
+    if (btnScan)   { btnScan.disabled = false;   btnScan.classList.remove('is-busy'); }
+    if (btnOnline) { btnOnline.disabled = false; }
+  }
+}
+
+/**
+ * Render both lists (available + hidden) to the DOM.
+ */
+function renderWindowsUpdates(data) {
+  const available = data.available || [];
+  const hidden    = data.hidden    || [];
+
+  // Update counters and badges
+  const availCountEl  = document.getElementById('wuAvailCount');
+  const hiddenCountEl = document.getElementById('wuHiddenCount');
+  const badgeAvail    = document.getElementById('wuBadgeAvail');
+  const badgeHidden   = document.getElementById('wuBadgeHidden');
+  const badgeNav      = document.getElementById('badgeWuHidden');
+
+  if (availCountEl)  availCountEl.textContent  = available.length;
+  if (hiddenCountEl) hiddenCountEl.textContent = hidden.length;
+
+  if (badgeAvail) {
+    badgeAvail.textContent = `${available.length} ממתינים`;
+    badgeAvail.style.display = available.length ? '' : 'none';
+  }
+  if (badgeHidden) {
+    badgeHidden.textContent = `${hidden.length} חסומים`;
+    badgeHidden.style.display = hidden.length ? '' : 'none';
+  }
+  const navTag = document.getElementById('navTagWuHidden');
+  if (navTag) {
+    if (hidden.length > 0) {
+      navTag.textContent = hidden.length;
+      navTag.classList.remove('hidden');
+      navTag.classList.add('warn');
+    } else {
+      navTag.textContent = '0';
+      navTag.classList.add('hidden');
+      navTag.classList.remove('warn');
+    }
+  }
+
+  // Render available list
+  const availEl = document.getElementById('wuAvailList');
+  if (availEl) {
+    if (!available.length) {
+      availEl.innerHTML = '<p class="card-sub" style="padding:16px 20px; color:var(--muted);">אין עדכונים ממתינים שניתן להסתיר. 🎉</p>';
+    } else {
+      availEl.innerHTML = available.map(u => _wuUpdateRow(u, false)).join('');
+    }
+  }
+
+  // Render hidden list
+  const hiddenEl = document.getElementById('wuHiddenList');
+  if (hiddenEl) {
+    if (!hidden.length) {
+      hiddenEl.innerHTML = '<p class="card-sub" style="padding:16px 20px; color:var(--muted);">אין עדכונים מוסתרים כרגע.</p>';
+    } else {
+      hiddenEl.innerHTML = hidden.map(u => _wuUpdateRow(u, true)).join('');
+    }
+  }
+}
+
+/**
+ * Build an HTML row for a single update.
+ * @param {object} u - update object
+ * @param {boolean} isHidden - true if currently hidden
+ */
+function _wuUpdateRow(u, isHidden) {
+  const cats = (u.categories || []).join(', ') || '—';
+  const kbs  = (u.kb_numbers || []).join(', ') || '—';
+  const size = u.size_mb > 0 ? `${u.size_mb} MB` : '';
+  const btn  = isHidden
+    ? `<button class="btn btn-sm btn-primary" onclick="unhideWindowsUpdate('${u.id}')" title="בטל הסתרה — Windows Update יחזור לסרוק ולהתקין עדכון זה">↩ בטל הסתרה</button>`
+    : `<button class="btn btn-sm btn-danger" onclick="hideWindowsUpdate('${u.id}')" title="הסתר — Windows Update יתעלם מעדכון זה">🚫 הסתר</button>`;
+
+  return `
+    <div class="wu-row" style="display:flex; align-items:flex-start; gap:12px; padding:12px 18px; border-bottom:1px solid var(--border); flex-wrap:wrap;">
+      <div style="flex:1; min-width:200px;">
+        <div style="font-size:13px; font-weight:600; margin-bottom:3px; line-height:1.4;">${_escHtml(u.title)}</div>
+        <div style="display:flex; flex-wrap:wrap; gap:6px; font-size:11.5px; color:var(--muted);">
+          ${kbs !== '—' ? `<span class="badge badge-mono" style="font-size:10px;">${_escHtml(kbs)}</span>` : ''}
+          ${cats !== '—' ? `<span class="badge" style="font-size:10px; background:var(--surface2);">${_escHtml(cats)}</span>` : ''}
+          ${size ? `<span style="opacity:0.65;">${size}</span>` : ''}
+        </div>
+      </div>
+      <div style="flex-shrink:0; margin-top:2px;">${btn}</div>
+    </div>`;
+}
+
+/** Escape HTML special characters. */
+function _escHtml(str) {
+  return String(str || '')
+    .replace(/&/g, '&amp;')
+    .replace(/</g, '&lt;')
+    .replace(/>/g, '&gt;')
+    .replace(/"/g, '&quot;');
+}
+
+/**
+ * Hide a Windows update by ID.
+ */
+async function hideWindowsUpdate(updateId) {
+  try {
+    const res = await fetch('/api/windows_updates/hide', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ update_id: updateId })
+    });
+    if (!res.ok) throw new Error(`HTTP ${res.status}`);
+    const data = await res.json();
+    if (data.success) {
+      showToast(data.message || 'העדכון הוסתר בהצלחה ✓', 'ok');
+      await fetchWindowsUpdates(false);
+    } else {
+      showToast(data.message || 'הסתרת העדכון נכשלה', 'error');
+    }
+  } catch (e) {
+    showToast('שגיאה בהסתרת העדכון: ' + (e.message || e), 'error');
+  }
+}
+
+/**
+ * Unhide (show) a previously hidden Windows update by ID.
+ */
+async function unhideWindowsUpdate(updateId) {
+  try {
+    const res = await fetch('/api/windows_updates/unhide', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ update_id: updateId })
+    });
+    if (!res.ok) throw new Error(`HTTP ${res.status}`);
+    const data = await res.json();
+    if (data.success) {
+      showToast(data.message || 'הסתרת העדכון בוטלה בהצלחה ✓', 'ok');
+      await fetchWindowsUpdates(false);
+    } else {
+      showToast(data.message || 'ביטול הסתרת העדכון נכשל', 'error');
+    }
+  } catch (e) {
+    showToast('שגיאה בביטול הסתרת העדכון: ' + (e.message || e), 'error');
+  }
+}
+
+// =============================================================================
+// Windows Update Service Control (wuauserv)
+// =============================================================================
+
+let _wuServiceData = null;
+
+async function fetchWuServiceStatus() {
+  try {
+    const res = await fetch('/api/windows_updates/service_status');
+    if (!res.ok) return;
+    const data = await res.json();
+    _wuServiceData = data;
+    renderWuServiceStatus(data);
+  } catch (e) {
+    console.warn("Error fetching WU service status:", e);
+  }
+}
+
+function renderWuServiceStatus(data) {
+  const badgeEl = document.getElementById('wuServiceBadge');
+  const descEl = document.getElementById('wuServiceDesc');
+  const btn = document.getElementById('btnToggleWuService');
+  const btnText = document.getElementById('btnToggleWuServiceText');
+  const iconBox = document.getElementById('wuServiceIconBox');
+
+  if (!data) return;
+
+  const isDisabled = !!data.is_disabled;
+  const isRunning = !!data.is_running;
+
+  if (isDisabled) {
+    if (badgeEl) {
+      badgeEl.className = 'badge badge-warn';
+      badgeEl.textContent = 'מושבת (Disabled)';
+    }
+    if (descEl) {
+      descEl.textContent = 'שירות העדכונים מושבת לחלוטין (Disabled). Windows לא יוכל להוריד או להתקין עדכונים ברקע.';
+    }
+    if (iconBox) {
+      iconBox.style.background = 'rgba(239, 68, 68, 0.15)';
+      iconBox.style.color = '#ef4444';
+      iconBox.innerHTML = `
+        <svg fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24" style="width:20px;height:20px;">
+          <path stroke-linecap="round" stroke-linejoin="round" d="M18.364 18.364A9 9 0 005.636 5.636m12.728 12.728A9 9 0 015.636 5.636m12.728 12.728L5.636 5.636"/>
+        </svg>
+      `;
+    }
+    if (btn) {
+      btn.className = 'btn btn-sm btn-solid-success';
+    }
+    if (btnText) {
+      btnText.textContent = 'הפעל והחזר שירות עדכונים';
+    }
+  } else {
+    if (badgeEl) {
+      badgeEl.className = isRunning ? 'badge badge-success' : 'badge badge-mono';
+      badgeEl.textContent = isRunning ? 'פעיל ורץ (Running)' : 'זמין (Manual)';
+    }
+    if (descEl) {
+      descEl.textContent = 'שירות העדכונים זמין/פעיל. השבתת השירות תעצור ותמנע מ-Windows להוריד או להתקין עדכונים.';
+    }
+    if (iconBox) {
+      iconBox.style.background = 'rgba(16, 185, 129, 0.14)';
+      iconBox.style.color = '#10b981';
+      iconBox.innerHTML = `
+        <svg fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24" style="width:20px;height:20px;">
+          <path stroke-linecap="round" stroke-linejoin="round" d="M13 10V3L4 14h7v7l9-11h-7z"/>
+        </svg>
+      `;
+    }
+    if (btn) {
+      btn.className = 'btn btn-sm btn-outline-danger';
+    }
+    if (btnText) {
+      btnText.textContent = 'כבה והשבת שירות עדכונים';
+    }
+  }
+}
+
+async function toggleWuService() {
+  const btn = document.getElementById('btnToggleWuService');
+  const btnText = document.getElementById('btnToggleWuServiceText');
+
+  const currentlyDisabled = _wuServiceData && _wuServiceData.is_disabled;
+  const targetAction = currentlyDisabled ? 'enable' : 'disable';
+
+  if (btn) {
+    btn.disabled = true;
+    btn.classList.add('is-busy');
+  }
+  if (btnText) {
+    btnText.textContent = currentlyDisabled ? 'מפעיל שירות...' : 'משבית שירות...';
+  }
+
+  try {
+    const res = await fetch('/api/windows_updates/service_toggle', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ action: targetAction })
+    });
+    const data = await res.json();
+    if (data.success) {
+      showToast(data.message, 'ok');
+      if (data.status_info) {
+        _wuServiceData = data.status_info;
+        renderWuServiceStatus(data.status_info);
+      } else {
+        await fetchWuServiceStatus();
+      }
+    } else {
+      showToast(data.message || 'הפעולה נכשלה', 'error');
+      await fetchWuServiceStatus();
+    }
+  } catch (err) {
+    showToast('שגיאה בשינוי מצב שירות: ' + (err.message || err), 'error');
+    await fetchWuServiceStatus();
+  } finally {
+    if (btn) {
+      btn.disabled = false;
+      btn.classList.remove('is-busy');
+    }
+  }
+}
+
+// =============================================================================
 async function fetchBattery(force = false) {
+
   const btn = document.getElementById('btnRefreshBattery');
   if (force && btn) {
     btn.disabled = true;
@@ -1704,11 +2267,15 @@ async function fetchProcesses() {
 async function optimizeMemory() {
   const btn = document.getElementById('btnOptimize');
   const txt = document.getElementById('txtBtnOptimize');
-  const originalText = txt.textContent;
+  const originalText = txt ? txt.textContent : '';
   
-  btn.disabled = true;
-  btn.classList.add('is-busy');
-  txt.textContent = t('optimizing');
+  if (btn) {
+    btn.disabled = true;
+    btn.classList.add('is-busy');
+  }
+  if (txt) {
+    txt.textContent = t('optimizing');
+  }
 
   try {
     const res = await fetch('/api/optimize', { method: 'POST' });
@@ -1727,9 +2294,13 @@ async function optimizeMemory() {
   } catch (err) {
     showToast("Error", err.message);
   } finally {
-    btn.disabled = false;
-    btn.classList.remove('is-busy');
-    txt.textContent = originalText;
+    if (btn) {
+      btn.disabled = false;
+      btn.classList.remove('is-busy');
+    }
+    if (txt) {
+      txt.textContent = originalText;
+    }
   }
 }
 
@@ -3372,6 +3943,9 @@ async function fetchCrashHistory() {
   }
 }
 
+let currentModalCrash = null;
+let currentModalModules = [];
+
 function renderCrashHistory(crashes) {
   const list = document.getElementById('crashHistoryList');
   if (!list) return;
@@ -3395,24 +3969,31 @@ function renderCrashHistory(crashes) {
     if (c.type === 'BSOD') { kind = 'bsod'; typeBadge = 'badge badge-danger'; }
     else if (c.type === 'Kernel-Power') { kind = 'power'; typeBadge = 'badge badge-warn'; }
 
+    const confBadge = c.confidence_label ? `<span class="badge badge-mono badge-xs" style="background: rgba(239,68,68,0.15); color: var(--danger); border: 1px solid rgba(239,68,68,0.3);">${esc(c.confidence_label)}</span>` : '';
+    const driverName = c.responsible_driver || 'ntoskrnl.exe';
+    const is3rdParty = driverName !== 'ntoskrnl.exe' && driverName !== 'Kernel Minidump';
+
     const card = document.createElement('div');
     card.className = `crash-card ${kind}`;
     card.innerHTML = `
       <div class="spread">
-        <div class="row-wrap" style="gap: 8px;">
+        <div class="row-wrap" style="gap: 8px; align-items: center;">
           <span class="${typeBadge} badge-mono">${esc(c.type)}</span>
-          <span class="list-title">${esc(currentLang === 'he' ? c.title_he : (c.title_en || c.title_he))}</span>
+          <span class="list-title" style="font-weight: 600;">${esc(currentLang === 'he' ? c.title_he : (c.title_en || c.title_he))}</span>
+          ${confBadge}
         </div>
-        <div class="row" style="gap: 8px;">
+        <div class="row" style="gap: 8px; align-items: center;">
           <span class="mono faint" style="font-size: 11px;">${esc(c.timestamp)}</span>
-          <button class="btn btn-xs" onclick="openCrashDetailModal('${crashKey}')">${esc(t('crashDetailsBtn'))}</button>
+          <button class="btn btn-xs btn-accent" onclick="openCrashDetailModal('${crashKey}')">${esc(t('crashDetailsBtn'))}</button>
         </div>
       </div>
 
       <div class="crash-meta">
-        <div class="row-wrap" style="gap: 12px; font-size: 11px;">
-          <span class="muted">${esc(t('crashCodeShort'))} <code class="tone-accent">${esc(c.bugcheck_code || 'N/A')}</code></span>
-          <span class="muted">${esc(t('crashDriverShort'))} <code style="color: var(--info);">${esc(c.responsible_driver || 'N/A')}</code></span>
+        <div class="row-wrap" style="gap: 12px; font-size: 11px; align-items: center;">
+          <span class="muted">${esc(t('crashCodeShort'))} <code class="tone-accent" style="font-weight:700;">${esc(c.bugcheck_code || 'N/A')}</code></span>
+          <span class="muted">${esc(t('crashDriverShort'))} <code style="color: ${is3rdParty ? 'var(--danger)' : 'var(--info)'}; font-weight:700; background: rgba(255,255,255,0.06); padding: 1px 6px; border-radius: 4px;">${esc(driverName)}</code></span>
+          ${c.driver_info?.vendor ? `<span class="badge badge-mono badge-xs">${esc(c.driver_info.vendor)}</span>` : ''}
+          ${c.driver_info?.category ? `<span class="faint" style="font-size: 10.5px;">(${esc(c.driver_info.category)})</span>` : ''}
         </div>
         <p class="crash-cause">${esc(currentLang === 'he' ? c.cause_he : (c.cause_en || c.cause_he))}</p>
       </div>
@@ -3424,6 +4005,8 @@ function renderCrashHistory(crashes) {
 function openCrashDetailModal(crashId) {
   const c = crashStore.get(crashId);
   if (!c) return;
+  currentModalCrash = c;
+  currentModalModules = c.modules || [];
 
   const modal = document.getElementById('crashDetailModal');
   if (!modal) return;
@@ -3433,17 +4016,52 @@ function openCrashDetailModal(crashId) {
   document.getElementById('crashModalCause').textContent = currentLang === 'he' ? c.cause_he : (c.cause_en || c.cause_he);
   document.getElementById('crashModalSolution').textContent = currentLang === 'he' ? c.solution_he : (c.solution_en || c.solution_he);
   document.getElementById('crashModalBugcheck').textContent = `${c.bugcheck_name} (${c.bugcheck_code})`;
-  document.getElementById('crashModalDriver').textContent = c.responsible_driver || 'ntoskrnl.exe';
-  document.getElementById('crashModalRaw').textContent = c.raw_message || 'N/A';
+  
+  const paramsEl = document.getElementById('crashModalParams');
+  if (paramsEl) {
+    if (c.bugcheck_parameters && c.bugcheck_parameters.length > 0) {
+      paramsEl.textContent = c.bugcheck_parameters.join(' · ');
+    } else {
+      paramsEl.textContent = c.event_id ? `Event ID ${c.event_id}` : 'N/A';
+    }
+  }
 
-  // Translate the driver filename into the hardware it belongs to. When the
-  // file is not in the signature table this says so rather than guessing.
+  // 1. Populate Culprit Hero
+  const driverName = c.responsible_driver || 'ntoskrnl.exe';
+  const heroDriverName = document.getElementById('crashHeroDriverName');
+  if (heroDriverName) heroDriverName.textContent = driverName;
+
+  const heroDesc = document.getElementById('crashHeroDriverDesc');
+  if (heroDesc) {
+    heroDesc.textContent = c.driver_info?.desc_he || c.driver_info?.desc_en || (currentLang === 'he' ? c.cause_he : c.cause_en);
+  }
+
+  const heroCat = document.getElementById('crashHeroCategory');
+  if (heroCat) heroCat.textContent = c.driver_info?.category || 'מערכת / ליבה';
+
+  const heroVendor = document.getElementById('crashHeroVendor');
+  if (heroVendor) heroVendor.textContent = c.driver_info?.vendor ? `יצרן: ${c.driver_info.vendor}` : 'יצרן: Microsoft / Third-Party';
+
+  const heroMethod = document.getElementById('crashHeroResolutionMethod');
+  if (heroMethod) heroMethod.textContent = c.resolution_method ? `שיטת פענוח: ${c.resolution_method}` : '';
+
+  const confBadge = document.getElementById('crashModalConfidenceBadge');
+  if (confBadge) {
+    if (c.confidence_label) {
+      confBadge.textContent = c.confidence_label;
+      confBadge.style.display = 'inline-block';
+    } else {
+      confBadge.style.display = 'none';
+    }
+  }
+
+  // 2. Hardware / Driver Info
   const info = c.driver_info;
   const meaning = document.getElementById('crashDriverMeaning');
   const version = document.getElementById('crashDriverVersion');
   if (meaning) {
-    if (info && info.matched) {
-      meaning.textContent = `${loc(info, 'description')} (${info.vendor})`;
+    if (info && (info.matched || info.desc_he)) {
+      meaning.textContent = `${info.desc_he || loc(info, 'description')} (${info.vendor || 'Unknown'})`;
       meaning.className = 'panel-text';
     } else {
       meaning.textContent = t('crashDriverUnknown');
@@ -3454,8 +4072,27 @@ function openCrashDetailModal(crashId) {
     const installed = info && info.installed;
     version.textContent = installed
       ? `${t('crashDriverInstalled')}: ${installed.name} · v${installed.version} · ${installed.date}`
-      : '';
+      : (info?.version ? `גרסת דרייבר שקרס: ${info.version}` : '');
   }
+
+  // 3. Online Intelligence
+  renderModalOnlineIntel(c.online_intelligence, driverName);
+
+  // 4. Modules Explorer
+  const modPanel = document.getElementById('crashModulesPanel');
+  const modCount = document.getElementById('crashModulesCount');
+  if (modPanel && modCount) {
+    if (currentModalModules.length > 0) {
+      modPanel.style.display = 'block';
+      modCount.textContent = currentModalModules.length;
+      renderCrashModulesTable(currentModalModules);
+    } else {
+      modPanel.style.display = 'none';
+    }
+  }
+
+  // Raw Record
+  document.getElementById('crashModalRaw').textContent = c.raw_message || c.filename || (c.file_path ? `קובץ: ${c.file_path}` : 'N/A');
 
   const sevBadge = document.getElementById('crashModalSeverityBadge');
   if (sevBadge) {
@@ -3468,11 +4105,225 @@ function openCrashDetailModal(crashId) {
   modal.classList.remove('hidden');
 }
 
+function renderModalOnlineIntel(intel, driverName) {
+  const summaryEl = document.getElementById('crashOnlineSummary');
+  const linksRow = document.getElementById('crashOnlineLinksRow');
+  if (!summaryEl || !linksRow) return;
+
+  linksRow.innerHTML = '';
+
+  if (intel) {
+    summaryEl.textContent = currentLang === 'he' ? intel.online_summary_he : intel.online_summary_en;
+
+    if (intel.google_search_url) {
+      linksRow.innerHTML += `<a href="${esc(intel.google_search_url)}" target="_blank" class="btn-link-online">🌐 חיפוש פתרונות בגוגל</a>`;
+    }
+    if (intel.ms_docs_url) {
+      linksRow.innerHTML += `<a href="${esc(intel.ms_docs_url)}" target="_blank" class="btn-link-online">📖 תיעוד רשמי ב-Microsoft Learn</a>`;
+    }
+    if (intel.vendor_download_url) {
+      linksRow.innerHTML += `<a href="${esc(intel.vendor_download_url)}" target="_blank" class="btn-link-online tone-accent">📥 אתר הורדת דרייבר יצרן</a>`;
+    }
+    if (intel.ms_community_url) {
+      linksRow.innerHTML += `<a href="${esc(intel.ms_community_url)}" target="_blank" class="btn-link-online">💬 קהילת התמיכה של מיקרוסופט</a>`;
+    }
+  } else {
+    summaryEl.textContent = `לחץ על הכפתור לבדיקת מידע מאומת מהרשת עבור הדרייבר ${driverName}.`;
+    linksRow.innerHTML = `<button class="btn btn-xs btn-accent" onclick="triggerModalOnlineLookup()">🔍 בצע בדיקה מקוונת עכשיו</button>`;
+  }
+}
+
+async function triggerModalOnlineLookup() {
+  if (!currentModalCrash) return;
+  const btn = document.getElementById('btnRefreshOnlineLookup');
+  const summaryEl = document.getElementById('crashOnlineSummary');
+  if (btn) btn.textContent = 'בודק ברשת...';
+  if (summaryEl) summaryEl.textContent = 'מתחבר למאגרי מידע ומבצע תחקור רשת...';
+
+  try {
+    const driverName = currentModalCrash.responsible_driver || 'ntoskrnl.exe';
+    const code = currentModalCrash.bugcheck_code_raw || parseInt(currentModalCrash.bugcheck_code || '0', 16) || 0;
+
+    const res = await fetch('/api/crashes/online_lookup', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ driver_name: driverName, bugcheck_code: code })
+    });
+    const intel = await res.json();
+    currentModalCrash.online_intelligence = intel;
+    renderModalOnlineIntel(intel, driverName);
+    showToast(currentLang === 'he' ? "בדיקה ברשת הושלמה" : "Online Check Complete", currentLang === 'he' ? `נמצאו נתוני רשת מאומתים עבור ${driverName}` : `Found online data for ${driverName}`);
+  } catch (err) {
+    if (summaryEl) summaryEl.textContent = `שגיאה בחיבור לרשת: ${err.message}`;
+  } finally {
+    if (btn) btn.textContent = '🔍 רענן בדיקה ברשת';
+  }
+}
+
+function renderCrashModulesTable(modules) {
+  const tbody = document.getElementById('crashModulesTableBody');
+  if (!tbody) return;
+  tbody.innerHTML = '';
+
+  modules.slice(0, 100).forEach(m => {
+    const tr = document.createElement('tr');
+    tr.innerHTML = `
+      <td style="font-weight: 600; font-family: var(--font-mono);">${esc(m.name)}</td>
+      <td class="mono faint" style="font-size: 10px;">${esc(m.base_address_hex || '0x0')} - ${esc(m.end_address_hex || '0x0')}</td>
+      <td class="mono faint" style="font-size: 10.5px;">${esc(m.version || '--')}</td>
+      <td class="faint" style="font-size: 10.5px;">${esc(m.timestamp || '--')}</td>
+    `;
+    tbody.appendChild(tr);
+  });
+}
+
+function toggleCrashModulesExplorer() {
+  const content = document.getElementById('crashModulesContent');
+  const icon = document.getElementById('crashModulesToggleIcon');
+  if (!content) return;
+  const isHidden = content.style.display === 'none';
+  content.style.display = isHidden ? 'block' : 'none';
+  if (icon) icon.textContent = isHidden ? '▲ הסתר' : '▼ הצג';
+}
+
+function filterCrashModules(query) {
+  const q = query.toLowerCase().trim();
+  const filtered = currentModalModules.filter(m => m.name.toLowerCase().includes(q) || (m.path && m.path.toLowerCase().includes(q)));
+  renderCrashModulesTable(filtered);
+}
+
+// Custom Minidump drag & drop / manual analysis
+function handleDumpDragOver(e) {
+  e.preventDefault();
+  const dropzone = document.getElementById('minidumpDropzone');
+  if (dropzone) dropzone.classList.add('dragover');
+}
+
+function handleDumpDragLeave(e) {
+  e.preventDefault();
+  const dropzone = document.getElementById('minidumpDropzone');
+  if (dropzone) dropzone.classList.remove('dragover');
+}
+
+function handleDumpDrop(e) {
+  e.preventDefault();
+  const dropzone = document.getElementById('minidumpDropzone');
+  if (dropzone) dropzone.classList.remove('dragover');
+
+  if (e.dataTransfer.files && e.dataTransfer.files.length > 0) {
+    const file = e.dataTransfer.files[0];
+    if (file.name.toLowerCase().endsWith('.dmp')) {
+      analyzeCustomDumpFile(file.path || file.name);
+    } else {
+      showToast("פורמט לא נתמך", "אנא בחר קובץ עם סיומת .dmp בלבד");
+    }
+  }
+}
+
+function handleCustomDumpSelected(e) {
+  if (e.target.files && e.target.files.length > 0) {
+    const file = e.target.files[0];
+    // In pywebview or browser, get file path or name
+    analyzeCustomDumpFile(file.path || file.name);
+  }
+}
+
+async function analyzeCustomDumpFile(filePath) {
+  const resultArea = document.getElementById('customDumpResultArea');
+  if (resultArea) {
+    resultArea.style.display = 'block';
+    resultArea.innerHTML = `
+      <div class="loading" style="padding: 20px; text-align: center;">
+        <span class="tone-accent" style="font-weight: 600;">מפענח מבנה בינארי של Minidump, סורק מודולים ומצליב נתוני רשת...</span>
+      </div>`;
+  }
+
+  try {
+    const res = await fetch('/api/crashes/analyze_dump', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ file_path: filePath })
+    });
+    const data = await res.json();
+
+    if (!data.success) {
+      if (resultArea) {
+        resultArea.innerHTML = `
+          <div class="panel" style="border-color: var(--danger);">
+            <div class="tone-danger" style="font-weight: 600;">שגיאה בפענוח קובץ ה-Minidump:</div>
+            <p class="panel-text" style="margin-top: 4px;">${esc(data.error || 'קובץ הדאמפ אינו קריא או פגום')}</p>
+          </div>`;
+      }
+      return;
+    }
+
+    const culprit = data.culprit_analysis || {};
+    const driverName = culprit.responsible_driver || 'ntoskrnl.exe';
+    const conf = culprit.confidence_label || '95% ודאות';
+    const driverInfo = culprit.driver_info || {};
+    const bugcheck = culprit.bugcheck_info || {};
+
+    if (resultArea) {
+      resultArea.innerHTML = `
+        <div class="culprit-hero high-conf">
+          <div class="culprit-title">
+            <span class="row" style="gap: 6px;">
+              <svg fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24" style="width: 20px; height: 20px;">
+                <path stroke-linecap="round" stroke-linejoin="round" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"/>
+              </svg>
+              <span>תוצאת פענוח מעמיק: הדרייבר האשם שגרם לקריסה</span>
+            </span>
+            <span class="badge badge-danger mono">${esc(conf)}</span>
+          </div>
+          <div class="row-wrap" style="align-items: center; gap: 10px; margin-top: 10px;">
+            <span class="culprit-driver-name" style="font-size: 16px;">${esc(driverName)}</span>
+            <span class="badge badge-accent">${esc(driverInfo.category || 'חומרה')}</span>
+            <span class="muted font-mono" style="font-size: 11.5px;">${esc(driverInfo.vendor || '')}</span>
+          </div>
+          <p style="margin-top: 8px; font-size: 12px; line-height: 1.6;">${esc(culprit.cause_he || bugcheck.cause_he)}</p>
+          
+          <div class="grid grid-3" style="margin-top: 12px; gap: 8px; font-size: 11px;">
+            <div class="card" style="padding: 8px 10px; margin: 0; background: rgba(0,0,0,0.2);">
+              <span class="faint">קוד שגיאה:</span>
+              <div class="mono font-bold tone-accent">${esc(data.bugcheck_code)} (${esc(bugcheck.name || 'BSOD')})</div>
+            </div>
+            <div class="card" style="padding: 8px 10px; margin: 0; background: rgba(0,0,0,0.2);">
+              <span class="faint">ארכיטקטורה:</span>
+              <div class="mono">${esc(data.architecture || 'x64')}</div>
+            </div>
+            <div class="card" style="padding: 8px 10px; margin: 0; background: rgba(0,0,0,0.2);">
+              <span class="faint">מודולים שנסרקו:</span>
+              <div class="mono font-bold">${esc(data.total_modules_loaded || 0)} דרייברים</div>
+            </div>
+          </div>
+
+          <div style="margin-top: 12px; padding-top: 10px; border-top: 1px solid rgba(255,255,255,0.1);">
+            <div class="tone-ok font-bold" style="font-size: 12px;">המלצה לפתרון:</div>
+            <p style="font-size: 11.5px; white-space: pre-line; margin-top: 4px;">${esc(culprit.solution_he || bugcheck.solution_he)}</p>
+          </div>
+
+          ${culprit.online_intelligence ? `
+            <div class="online-links-row" style="margin-top: 10px;">
+              <a href="${esc(culprit.online_intelligence.google_search_url)}" target="_blank" class="btn-link-online">🌐 חיפוש פתרונות בגוגל</a>
+              <a href="${esc(culprit.online_intelligence.ms_docs_url)}" target="_blank" class="btn-link-online">📖 תיעוד Microsoft Learn</a>
+              <a href="${esc(culprit.online_intelligence.vendor_download_url)}" target="_blank" class="btn-link-online tone-accent">📥 אתר הורדת דרייבר יצרן</a>
+            </div>
+          ` : ''}
+        </div>
+      `;
+    }
+  } catch (err) {
+    if (resultArea) {
+      resultArea.innerHTML = `<div class="panel tone-danger">שגיאה בתקשורת עם השרת: ${esc(err.message)}</div>`;
+    }
+  }
+}
+
 function closeCrashModal() {
   const modal = document.getElementById('crashDetailModal');
   if (modal) {
     modal.classList.add('hidden');
-    }
+  }
 }
 
 async function scheduleMemoryDiagnostic() {
@@ -3908,6 +4759,355 @@ function renderDevices() {
 }
 
 // -------------------------------------------------------------
+// OEM / Manufacturer Updates
+// -------------------------------------------------------------
+
+let oemInfo = null;
+let oemPollTimer = null;
+let oemTimerInterval = null;
+let oemStartTime = null;
+let oemLastLogRev = 0;
+
+async function fetchOemInfo(overrideMfr) {
+  try {
+    const url = overrideMfr ? `/api/oem/info?vendor=${encodeURIComponent(overrideMfr)}` : '/api/oem/info';
+    const res = await fetch(url);
+    if (!res.ok) return;
+    oemInfo = await res.json();
+    renderOemInfo();
+
+    if (oemInfo.is_running && !oemPollTimer) {
+      resumeOemPolling();
+    }
+  } catch (err) {
+    console.error('Failed to fetch OEM info:', err);
+  }
+}
+
+function renderOemInfo() {
+  if (!oemInfo) return;
+
+  const mfr = oemInfo.selected_manufacturer || oemInfo.manufacturer || 'Universal';
+  const rawMfr = oemInfo.raw_manufacturer || mfr;
+  const model = oemInfo.model || 'Standard PC';
+  const tool = oemInfo.tool || {};
+
+  // Badge on Hardware subtabs header
+  const badgeMfr = document.getElementById('badgeOemMfr');
+  if (badgeMfr) {
+    badgeMfr.textContent = mfr;
+    badgeMfr.className = 'badge badge-sm badge-mono';
+  }
+
+  // Card 1: Hardware & System
+  const oemMfrBadge = document.getElementById('oemMfrBadge');
+  if (oemMfrBadge) {
+    oemMfrBadge.textContent = mfr;
+    oemMfrBadge.className = 'badge ' + (mfr === 'Dell' ? 'badge-primary' : (mfr === 'Lenovo' ? 'badge-accent' : (mfr === 'HP' ? 'badge-ok' : 'badge-mono')));
+  }
+
+  const elBrand = document.getElementById('oemDetectedBrand');
+  if (elBrand) elBrand.textContent = rawMfr;
+
+  const elModel = document.getElementById('oemDetectedModel');
+  if (elModel) elModel.textContent = model + (oemInfo.serial && oemInfo.serial !== 'N/A' ? ` [S/N: ${oemInfo.serial}]` : '');
+
+  const selMfr = document.getElementById('selOemManufacturer');
+  if (selMfr && !selMfr.dataset.userModified) {
+    selMfr.value = mfr;
+  }
+
+  // Card 2: Tool Status
+  const toolBadge = document.getElementById('oemToolStatusBadge');
+  if (toolBadge) {
+    if (tool.installed) {
+      toolBadge.textContent = t('oemStatusInstalled');
+      toolBadge.className = 'badge badge-ok badge-mono';
+    } else {
+      toolBadge.textContent = t('oemStatusMissing');
+      toolBadge.className = 'badge badge-warn badge-mono';
+    }
+  }
+
+  const toolName = document.getElementById('oemToolName');
+  if (toolName) toolName.textContent = tool.tool_name || '--';
+
+  const toolDesc = document.getElementById('oemToolDetailText');
+  if (toolDesc) {
+    toolDesc.textContent = currentLang === 'en' ? (tool.details_en || '') : (tool.details_he || '');
+  }
+
+  const dotnetRow = document.getElementById('oemDotnetRow');
+  if (dotnetRow) {
+    if (mfr === 'Dell') {
+      const dot8 = tool.dotnet_8_installed;
+      const dot10 = tool.dotnet_10_installed;
+      dotnetRow.innerHTML = `
+        <span class="stat-label" style="font-size: 11px;">${currentLang === 'en' ? 'Prerequisites:' : 'דרישות קדם:'}</span>
+        <span class="badge badge-sm badge-mono ${dot8 ? 'badge-ok' : 'badge-warn'}">.NET 8 ${dot8 ? '✓' : (currentLang === 'en' ? 'Auto-install' : 'יותקן')}</span>
+        <span class="badge badge-sm badge-mono ${dot10 ? 'badge-ok' : 'badge-warn'}">.NET 10 ${dot10 ? '✓' : (currentLang === 'en' ? 'Auto-install' : 'יותקן')}</span>
+      `;
+      dotnetRow.classList.remove('hidden');
+    } else {
+      dotnetRow.classList.add('hidden');
+    }
+  }
+
+  const toolPathRow = document.getElementById('oemToolPathRow');
+  const toolPath = document.getElementById('oemToolPath');
+  if (toolPathRow && toolPath) {
+    if (tool.path) {
+      toolPath.textContent = tool.path;
+      toolPath.title = tool.path;
+      toolPathRow.classList.remove('hidden');
+    } else {
+      toolPathRow.classList.add('hidden');
+    }
+  }
+
+  // Pending reboot check on initial render
+  if (oemInfo.pending_reboot) {
+    const banner = document.getElementById('oemResultBanner');
+    const desc = document.getElementById('oemResultDesc');
+    const title = document.getElementById('oemResultTitle');
+    if (banner && desc && title && !oemInfo.is_running) {
+      banner.className = 'banner banner-warn';
+      title.textContent = t('oemRebootRequired');
+      desc.textContent = t('oemRebootRequired');
+      banner.classList.remove('hidden');
+    }
+  }
+}
+
+async function onOemManufacturerChanged() {
+  const sel = document.getElementById('selOemManufacturer');
+  if (!sel) return;
+  sel.dataset.userModified = '1';
+  const val = sel.value;
+  await fetchOemInfo(val);
+}
+
+async function startOemUpdates() {
+  const sel = document.getElementById('selOemManufacturer');
+  const mfr = sel ? sel.value : 'Auto';
+  const twoPasses = document.getElementById('chkOemTwoPasses') ? document.getElementById('chkOemTwoPasses').checked : true;
+  const winOptional = document.getElementById('chkOemWinOptional') ? document.getElementById('chkOemWinOptional').checked : true;
+
+  const btnRun = document.getElementById('btnRunOemUpdates');
+  const btnCancel = document.getElementById('btnCancelOemUpdates');
+  const txtBtnRun = document.getElementById('txtBtnRunOemUpdates');
+  const resultBanner = document.getElementById('oemResultBanner');
+
+  if (resultBanner) resultBanner.classList.add('hidden');
+  if (btnRun) btnRun.disabled = true;
+  if (txtBtnRun) txtBtnRun.textContent = t('btnRunningOemUpdates');
+  if (btnCancel) btnCancel.classList.remove('hidden');
+
+  oemLastLogRev = 0;
+  clearOemTerminal();
+  startOemTimer();
+
+  try {
+    const res = await fetch('/api/oem/start', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        manufacturer: mfr,
+        options: {
+          two_passes: twoPasses,
+          include_windows_optional: winOptional
+        }
+      })
+    });
+    let data = {};
+    try {
+      data = await res.json();
+    } catch (e) {
+      data = { success: false, error: `שגיאת שרת (${res.status} ${res.statusText || ''})`.trim() };
+    }
+    if (!res.ok || !data.success) {
+      const errMsg = data.error || data.message || `שגיאת שרת (${res.status} ${res.statusText || ''})`.trim() || 'נכשל';
+      appendOemLogLine(`[!] שגיאה בהפעלת עדכונים: ${errMsg}`, 'ERROR');
+      finishOemUpdates(false, errMsg);
+      return;
+    }
+
+    resumeOemPolling();
+  } catch (err) {
+    console.error('Failed to start OEM updates:', err);
+    appendOemLogLine(`[!] שגיאת תקשורת: ${err.message}`, 'ERROR');
+    finishOemUpdates(false, err.message);
+  }
+}
+
+function startOemTimer() {
+  stopOemTimer();
+  oemStartTime = Date.now();
+  const timerEl = document.getElementById('oemTimerText');
+  oemTimerInterval = setInterval(() => {
+    if (!timerEl || !oemStartTime) return;
+    const diffSec = Math.floor((Date.now() - oemStartTime) / 1000);
+    const m = String(Math.floor(diffSec / 60)).padStart(2, '0');
+    const s = String(diffSec % 60).padStart(2, '0');
+    timerEl.textContent = `${m}:${s}`;
+  }, 1000);
+}
+
+function stopOemTimer() {
+  if (oemTimerInterval) {
+    clearInterval(oemTimerInterval);
+    oemTimerInterval = null;
+  }
+}
+
+function resumeOemPolling() {
+  if (oemPollTimer) clearInterval(oemPollTimer);
+
+  const btnRun = document.getElementById('btnRunOemUpdates');
+  const btnCancel = document.getElementById('btnCancelOemUpdates');
+  const txtBtnRun = document.getElementById('txtBtnRunOemUpdates');
+
+  if (btnRun) btnRun.disabled = true;
+  if (txtBtnRun) txtBtnRun.textContent = t('btnRunningOemUpdates');
+  if (btnCancel) btnCancel.classList.remove('hidden');
+
+  if (!oemStartTime) startOemTimer();
+
+  const poll = async () => {
+    try {
+      const res = await fetch(`/api/oem/progress?since=${oemLastLogRev}`);
+      if (!res.ok) return;
+      const data = await res.json();
+
+      // Update progress bar & text
+      const p = data.progress || 0;
+      const bar = document.getElementById('oemProgressBar');
+      if (bar) bar.style.width = `${p}%`;
+
+      const badge = document.getElementById('oemProgressBadge');
+      if (badge) badge.textContent = `${p}%`;
+
+      const stepText = document.getElementById('oemCurrentStepText');
+      if (stepText) {
+        stepText.textContent = currentLang === 'en' ? (data.step_en || data.step) : (data.step || '');
+      }
+
+      // Append new logs
+      if (data.new_logs && data.new_logs.length > 0) {
+        appendOemLogs(data.new_logs);
+      }
+      oemLastLogRev = data.log_rev || oemLastLogRev;
+
+      // Completed / Cancelled / Errored
+      if (!data.is_running) {
+        clearInterval(oemPollTimer);
+        oemPollTimer = null;
+        stopOemTimer();
+        finishOemUpdates(data.status !== 'error', data.final_results || data.step);
+      }
+    } catch (err) {
+      console.error('OEM poll error:', err);
+    }
+  };
+
+  oemPollTimer = setInterval(poll, 1200);
+  poll();
+}
+
+function finishOemUpdates(success, results) {
+  const btnRun = document.getElementById('btnRunOemUpdates');
+  const btnCancel = document.getElementById('btnCancelOemUpdates');
+  const txtBtnRun = document.getElementById('txtBtnRunOemUpdates');
+  const banner = document.getElementById('oemResultBanner');
+  const title = document.getElementById('oemResultTitle');
+  const desc = document.getElementById('oemResultDesc');
+
+  if (btnRun) btnRun.disabled = false;
+  if (txtBtnRun) txtBtnRun.textContent = t('btnStartOemUpdates');
+  if (btnCancel) btnCancel.classList.add('hidden');
+
+  stopOemTimer();
+
+  if (banner && title && desc) {
+    banner.classList.remove('hidden');
+    if (success) {
+      banner.className = 'banner banner-ok';
+      title.textContent = t('oemCompleted');
+      if (typeof results === 'object' && results !== null) {
+        const reboot = results.reboot_pending ? ` (${t('oemRebootRequired')})` : '';
+        desc.textContent = `הסתיים בהצלחה. דרייברים שעודכנו: ${results.installed_count || 0}. שגיאות: ${results.error_count || 0}.${reboot}`;
+      } else {
+        desc.textContent = String(results || '');
+      }
+    } else {
+      banner.className = 'banner banner-danger';
+      title.textContent = t('oemError');
+      desc.textContent = typeof results === 'string' ? results : t('oemError');
+    }
+  }
+
+  // Refresh general device status in case drivers were installed
+  setTimeout(() => fetchDevices(true), 3000);
+}
+
+async function cancelOemUpdates() {
+  const btnCancel = document.getElementById('btnCancelOemUpdates');
+  if (btnCancel) btnCancel.disabled = true;
+
+  try {
+    const res = await fetch('/api/oem/cancel', { method: 'POST' });
+    const data = await res.json();
+    appendOemLogLine('[!] בקשת עצירה נשלחה לשרת...', 'WARN');
+  } catch (err) {
+    console.error('Failed to cancel OEM updates:', err);
+  } finally {
+    if (btnCancel) btnCancel.disabled = false;
+  }
+}
+
+function appendOemLogs(logs) {
+  const term = document.getElementById('oemTerminal');
+  if (!term) return;
+
+  const fragment = document.createDocumentFragment();
+  for (const item of logs) {
+    const line = document.createElement('div');
+    const lvl = (item.level || 'INFO').toLowerCase();
+    line.className = `term-line term-${lvl}`;
+    line.textContent = `[${item.time || ''}] ${item.text || ''}`;
+    fragment.appendChild(line);
+  }
+  term.appendChild(fragment);
+  term.scrollTop = term.scrollHeight;
+}
+
+function appendOemLogLine(text, level = 'INFO') {
+  const term = document.getElementById('oemTerminal');
+  if (!term) return;
+  const line = document.createElement('div');
+  const now = new Date().toTimeString().split(' ')[0];
+  line.className = `term-line term-${level.toLowerCase()}`;
+  line.textContent = `[${now}] ${text}`;
+  term.appendChild(line);
+  term.scrollTop = term.scrollHeight;
+}
+
+function clearOemTerminal() {
+  const term = document.getElementById('oemTerminal');
+  if (term) term.innerHTML = '';
+  const bar = document.getElementById('oemProgressBar');
+  if (bar) bar.style.width = '0%';
+  const badge = document.getElementById('oemProgressBadge');
+  if (badge) badge.textContent = '0%';
+  const stepText = document.getElementById('oemCurrentStepText');
+  if (stepText) stepText.textContent = t('oemReady');
+  const timerText = document.getElementById('oemTimerText');
+  if (timerText) timerText.textContent = '00:00';
+  const banner = document.getElementById('oemResultBanner');
+  if (banner) banner.classList.add('hidden');
+}
+
+// -------------------------------------------------------------
 // System error log
 // -------------------------------------------------------------
 
@@ -4110,6 +5310,431 @@ async function disableCopilotRemap() {
     showToast("Error", err.message);
   } finally {
     if (btn) btn.disabled = false;
+  }
+}
+
+// -------------------------------------------------------------
+// Microsoft OneDrive Reset & Management
+// -------------------------------------------------------------
+let oneDriveStatus = null;
+
+async function fetchOneDriveStatus() {
+  try {
+    const res = await fetch('/api/onedrive/status');
+    if (!res.ok) return;
+    oneDriveStatus = await res.json();
+    renderOneDriveStatus();
+  } catch (err) {
+    console.error("Failed to fetch OneDrive status:", err);
+  }
+}
+
+function renderOneDriveStatus() {
+  const badge = document.getElementById('badgeOneDriveStatus');
+  const dot = document.getElementById('dotOneDriveStatus');
+  const txt = document.getElementById('txtOneDriveStatus');
+
+  if (!badge || !txt) return;
+
+  if (!oneDriveStatus) {
+    txt.textContent = currentLang === 'he' ? "בודק סטטוס..." : "Checking status...";
+    if (dot) dot.style.background = 'var(--text-faint)';
+    return;
+  }
+
+  const isRunning = !!oneDriveStatus.is_running;
+  const accountsExist = !!oneDriveStatus.accounts_key_exists;
+
+  if (isRunning) {
+    badge.className = 'badge badge-accent';
+    if (dot) dot.style.background = 'var(--accent)';
+    txt.textContent = t('onedriveStatusRunning');
+  } else {
+    badge.className = 'badge';
+    if (dot) dot.style.background = 'var(--text-faint)';
+    txt.textContent = accountsExist
+      ? (currentLang === 'he' ? "סגור (יש חשבונות)" : "Stopped (configured)")
+      : t('onedriveStatusStopped');
+  }
+}
+
+function confirmResetOneDrive() {
+  showConfirmDialog({
+    title: t('confirmOneDriveTitle'),
+    desc: t('confirmOneDriveDesc'),
+    confirmText: t('btnConfirmReset'),
+    confirmClass: 'btn-solid-danger',
+    onConfirm: () => executeResetOneDrive()
+  });
+}
+
+async function executeResetOneDrive() {
+  const btn = document.getElementById('btnResetOneDrive');
+  if (btn) {
+    btn.disabled = true;
+    btn.classList.add('is-busy');
+  }
+
+  showToast(
+    currentLang === 'he' ? "מאפס את OneDrive..." : "Resetting OneDrive...",
+    currentLang === 'he' ? "סוגר תהליכים, מוחק חשבונות ברגיסטרי ומנקה מטמון..." : "Terminating process, deleting registry accounts & clearing cache..."
+  );
+
+  try {
+    const res = await fetch('/api/onedrive/reset', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ clean_cache: true, relaunch: false })
+    });
+    const data = await res.json();
+
+    if (data.success) {
+      showToast(
+        currentLang === 'he' ? "איפוס OneDrive הושלם" : "OneDrive Reset Completed",
+        data.message || (currentLang === 'he' ? "OneDrive נסגר וכל הגדרות החשבונות הוסרו בהצלחה." : "OneDrive closed and account settings cleared successfully.")
+      );
+      await fetchOneDriveStatus();
+    } else {
+      showToast(
+        currentLang === 'he' ? "שגיאה באיפוס OneDrive" : "Error resetting OneDrive",
+        data.message || (currentLang === 'he' ? "נכשלה פעולת המחיקה." : "Failed to reset OneDrive."),
+        "danger"
+      );
+    }
+  } catch (err) {
+    showToast("Error", err.message, "danger");
+  } finally {
+    if (btn) {
+      btn.disabled = false;
+      btn.classList.remove('is-busy');
+    }
+  }
+}
+
+async function launchOneDriveApp() {
+  const btn = document.getElementById('btnLaunchOneDrive');
+  if (btn) btn.disabled = true;
+
+  showToast(
+    currentLang === 'he' ? "מפעיל את OneDrive..." : "Starting OneDrive...",
+    currentLang === 'he' ? "פותח את יישום OneDrive במערכת..." : "Launching OneDrive application..."
+  );
+
+  try {
+    const res = await fetch('/api/onedrive/launch', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' }
+    });
+    const data = await res.json();
+    if (data.success) {
+      showToast(
+        currentLang === 'he' ? "OneDrive הופעל" : "OneDrive Launched",
+        data.message || (currentLang === 'he' ? "יישום OneDrive הופעל בהצלחה." : "OneDrive launched successfully.")
+      );
+      setTimeout(() => fetchOneDriveStatus(), 1500);
+    } else {
+      showToast(
+        currentLang === 'he' ? "שים לב" : "Notice",
+        data.message || (currentLang === 'he' ? "לא ניתן להפעיל את OneDrive אוטומטית." : "Could not launch OneDrive."),
+        "warn"
+      );
+    }
+  } catch (err) {
+    showToast("Error", err.message, "danger");
+  } finally {
+    if (btn) btn.disabled = false;
+  }
+}
+
+// -------------------------------------------------------------
+// Confirmation Dialog Helper
+// -------------------------------------------------------------
+function showConfirmDialog(opts) {
+  const modal = document.getElementById('confirmActionModal');
+  if (!modal) {
+    if (window.confirm(opts.desc || opts.title || "Confirm?")) {
+      if (typeof opts.onConfirm === 'function') opts.onConfirm();
+    }
+    return;
+  }
+
+  const titleEl = document.getElementById('confirmModalTitle');
+  const descEl = document.getElementById('confirmModalDesc');
+  const execBtn = document.getElementById('btnConfirmActionExec');
+
+  if (titleEl) titleEl.textContent = opts.title || (currentLang === 'he' ? "אישור פעולה" : "Confirm Action");
+  if (descEl) descEl.textContent = opts.desc || (currentLang === 'he' ? "האם אתה בטוח שברצונך להמשיך?" : "Are you sure you want to proceed?");
+
+  if (execBtn) {
+    execBtn.textContent = opts.confirmText || (currentLang === 'he' ? "אישור" : "Confirm");
+    execBtn.className = `btn btn-sm ${opts.confirmClass || 'btn-danger'}`;
+    execBtn.onclick = () => {
+      closeConfirmModal();
+      if (typeof opts.onConfirm === 'function') opts.onConfirm();
+    };
+  }
+
+  modal.classList.remove('hidden');
+}
+
+function closeConfirmModal() {
+  const modal = document.getElementById('confirmActionModal');
+  if (modal) modal.classList.add('hidden');
+}
+
+// -------------------------------------------------------------
+// Icon & Thumbnail Cache Rebuild (Enterprise IT)
+// -------------------------------------------------------------
+let iconCacheStatus = null;
+
+async function fetchIconCacheStatus() {
+  try {
+    const res = await fetch('/api/icon_cache/status');
+    if (!res.ok) return;
+    iconCacheStatus = await res.json();
+    renderIconCacheStatus();
+  } catch (err) {
+    console.error("Failed to fetch icon cache status:", err);
+  }
+}
+
+function renderIconCacheStatus() {
+  const badge = document.getElementById('badgeIconCacheStatus');
+  const dot = document.getElementById('dotIconCacheStatus');
+  const txt = document.getElementById('txtIconCacheStatus');
+
+  if (!badge || !txt) return;
+
+  if (!iconCacheStatus || !iconCacheStatus.success) {
+    txt.textContent = currentLang === 'he' ? "בודק מטמון..." : "Checking cache...";
+    if (dot) dot.style.background = 'var(--text-faint)';
+    return;
+  }
+
+  const count = iconCacheStatus.file_count || 0;
+  const size = iconCacheStatus.formatted_size || "0 B";
+
+  if (count > 0) {
+    badge.className = 'badge badge-accent';
+    if (dot) dot.style.background = 'var(--accent)';
+    txt.textContent = currentLang === 'he'
+      ? `${count} קבצים (${size})`
+      : `${count} files (${size})`;
+  } else {
+    badge.className = 'badge badge-ok';
+    if (dot) dot.style.background = 'var(--ok)';
+    txt.textContent = currentLang === 'he' ? "נקי ומעודכן" : "Clean & up to date";
+  }
+}
+
+function confirmRebuildIconCache() {
+  showConfirmDialog({
+    title: t('confirmIconCacheTitle'),
+    desc: t('confirmIconCacheDesc'),
+    confirmText: t('btnConfirmRebuildIcon'),
+    confirmClass: 'btn-solid-primary',
+    onConfirm: () => executeRebuildIconCache()
+  });
+}
+
+async function executeRebuildIconCache() {
+  const btn = document.getElementById('btnRebuildIconCache');
+  if (btn) {
+    btn.disabled = true;
+    btn.classList.add('is-busy');
+  }
+
+  showToast(
+    currentLang === 'he' ? "בונה מחדש מטמון אייקונים..." : "Rebuilding Icon Cache...",
+    currentLang === 'he'
+      ? "סוגר את סייר הקבצים, מוחק קובצי db ישנים ומרענן את ה-Shell..."
+      : "Restarting File Explorer, deleting old db caches and refreshing Shell..."
+  );
+
+  try {
+    const res = await fetch('/api/icon_cache/rebuild', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' }
+    });
+    const data = await res.json();
+
+    if (data.success) {
+      showToast(
+        currentLang === 'he' ? "מטמון האייקונים נבנה מחדש" : "Icon Cache Rebuilt",
+        data.message || (currentLang === 'he' ? "האייקונים והתצוגות המקדימות רועננו בהצלחה." : "Icons and previews refreshed successfully.")
+      );
+      await fetchIconCacheStatus();
+    } else {
+      showToast(
+        currentLang === 'he' ? "שגיאה בבנייה מחדש" : "Error Rebuilding Cache",
+        data.message || (currentLang === 'he' ? "פעולת האיפוס נכשלה." : "Failed to rebuild icon cache."),
+        "danger"
+      );
+    }
+  } catch (err) {
+    showToast("Error", err.message, "danger");
+  } finally {
+    if (btn) {
+      btn.disabled = false;
+      btn.classList.remove('is-busy');
+    }
+  }
+}
+
+// -------------------------------------------------------------
+// Enterprise IT Toolkit Suite (Active Directory, GPO, M365, SMB, etc.)
+// -------------------------------------------------------------
+const ENTERPRISE_TOOL_META = {
+  kerberos_purge: {
+    confirmTitleKey: 'confirmKerberosTitle',
+    confirmDescKey: 'confirmKerberosDesc',
+    btnConfirmKey: 'toolKerberosBtn',
+    btnConfirmClass: 'btn-solid-primary',
+    toastProgressHe: 'מאפס כרטיסי Kerberos ו-NetBIOS...',
+    toastProgressEn: 'Purging Kerberos and NetBIOS tickets...'
+  },
+  gpo_reset: {
+    confirmTitleKey: 'confirmGpoTitle',
+    confirmDescKey: 'confirmGpoDesc',
+    btnConfirmKey: 'toolGpoBtn',
+    btnConfirmClass: 'btn-solid-primary',
+    toastProgressHe: 'מסנכרן Group Policy מול שרת הדומיין...',
+    toastProgressEn: 'Synchronizing Group Policy with Domain Controller...'
+  },
+  credentials_purge: {
+    confirmTitleKey: 'confirmCredsTitle',
+    confirmDescKey: 'confirmCredsDesc',
+    btnConfirmKey: 'toolCredsBtn',
+    btnConfirmClass: 'btn-solid-danger',
+    toastProgressHe: 'מנקה אישורים וסיסמאות ישנות מ-Credential Manager...',
+    toastProgressEn: 'Purging stale credentials from Credential Manager...'
+  },
+  entra_wam_reset: {
+    confirmTitleKey: 'confirmEntraTitle',
+    confirmDescKey: 'confirmEntraDesc',
+    btnConfirmKey: 'toolEntraBtn',
+    btnConfirmClass: 'btn-solid-primary',
+    toastProgressHe: 'מאפס מנגנון אימות Entra ID WAM Broker...',
+    toastProgressEn: 'Resetting Entra ID WAM Broker token cache...'
+  },
+  outlook_srs_reset: {
+    confirmTitleKey: 'confirmOutlookTitle',
+    confirmDescKey: 'confirmOutlookDesc',
+    btnConfirmKey: 'toolOutlookBtn',
+    btnConfirmClass: 'btn-solid-primary',
+    toastProgressHe: 'מאפס הגדרות שלח/קבל ומטמון Outlook...',
+    toastProgressEn: 'Purging Outlook .SRS file and Autodiscover cache...'
+  },
+  network_drives_reset: {
+    confirmTitleKey: 'confirmDrivesTitle',
+    confirmDescKey: 'confirmDrivesDesc',
+    btnConfirmKey: 'toolDrivesBtn',
+    btnConfirmClass: 'btn-solid-primary',
+    toastProgressHe: 'מנתק כונני רשת תקועים ומאתחל שירות SMB...',
+    toastProgressEn: 'Disconnecting stuck mapped drives & restarting SMB...'
+  },
+  proxy_reset: {
+    confirmTitleKey: 'confirmProxyTitle',
+    confirmDescKey: 'confirmProxyDesc',
+    btnConfirmKey: 'toolProxyBtn',
+    btnConfirmClass: 'btn-solid-primary',
+    toastProgressHe: 'מאפס הגדרות Proxy ו-WinHTTP לחיבור ישיר...',
+    toastProgressEn: 'Resetting proxy and WinHTTP configurations...'
+  },
+  intune_sync: {
+    confirmTitleKey: 'confirmIntuneTitle',
+    confirmDescKey: 'confirmIntuneDesc',
+    btnConfirmKey: 'toolIntuneBtn',
+    btnConfirmClass: 'btn-solid-primary',
+    toastProgressHe: 'מסנכרן סוכן Microsoft Intune (IME)...',
+    toastProgressEn: 'Triggering Microsoft Intune agent synchronization...'
+  },
+  print_spooler_purge: {
+    confirmTitleKey: 'confirmSpoolerTitle',
+    confirmDescKey: 'confirmSpoolerDesc',
+    btnConfirmKey: 'toolSpoolerBtn',
+    btnConfirmClass: 'btn-solid-primary',
+    toastProgressHe: 'עוצר Spooler, מנקה תור הדפסה ומפעיל מחדש...',
+    toastProgressEn: 'Stopping Spooler, purging spool files and restarting...'
+  },
+  cert_crl_purge: {
+    confirmTitleKey: 'confirmCertTitle',
+    confirmDescKey: 'confirmCertDesc',
+    btnConfirmKey: 'toolCertBtn',
+    btnConfirmClass: 'btn-solid-primary',
+    toastProgressHe: 'מנקה מטמון רשימות ביטול תעודות (CRL / OCSP)...',
+    toastProgressEn: 'Flushing Certificate Revocation List (CRL) cache...'
+  }
+};
+
+let enterpriseToolsList = [];
+
+async function fetchEnterpriseTools() {
+  try {
+    const res = await fetch('/api/enterprise_tools/list');
+    if (!res.ok) return;
+    const data = await res.json();
+    if (data && Array.isArray(data.tools)) {
+      enterpriseToolsList = data.tools;
+    }
+  } catch (err) {
+    console.error("Failed to fetch enterprise tools list:", err);
+  }
+}
+
+function confirmRunEnterpriseTool(toolId) {
+  const meta = ENTERPRISE_TOOL_META[toolId] || {};
+  showConfirmDialog({
+    title: meta.confirmTitleKey ? t(meta.confirmTitleKey) : (currentLang === 'he' ? "אישור ביצוע כלי IT" : "Confirm Tool Execution"),
+    desc: meta.confirmDescKey ? t(meta.confirmDescKey) : (currentLang === 'he' ? "האם להמשיך בהפעלת הכלי?" : "Do you want to proceed?"),
+    confirmText: meta.btnConfirmKey ? t(meta.btnConfirmKey) : (currentLang === 'he' ? "הפעל כלי" : "Execute Tool"),
+    confirmClass: meta.btnConfirmClass || 'btn-solid-primary',
+    onConfirm: () => executeEnterpriseTool(toolId)
+  });
+}
+
+async function executeEnterpriseTool(toolId) {
+  const meta = ENTERPRISE_TOOL_META[toolId] || {};
+  const btn = document.getElementById(`btnRunTool_${toolId}`);
+  if (btn) {
+    btn.disabled = true;
+    btn.classList.add('is-busy');
+  }
+
+  showToast(
+    currentLang === 'he' ? "מבצע פעולת IT..." : "Executing IT utility...",
+    currentLang === 'he'
+      ? (meta.toastProgressHe || "מעבד את הפקודה ומחיל שינויים במערכת...")
+      : (meta.toastProgressEn || "Processing command and applying system changes...")
+  );
+
+  try {
+    const res = await fetch('/api/enterprise_tools/run', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ tool_id: toolId })
+    });
+    const data = await res.json();
+
+    if (data.success) {
+      showToast(
+        currentLang === 'he' ? "פעולת ה-IT הושלמה" : "Enterprise Tool Completed",
+        data.message || (currentLang === 'he' ? "הפעולה בוצעה בהצלחה." : "Action executed successfully.")
+      );
+    } else {
+      showToast(
+        currentLang === 'he' ? "שגיאה בביצוע הפעולה" : "Execution Error",
+        data.message || (currentLang === 'he' ? "הפעולה נכשלה." : "Tool execution failed."),
+        "danger"
+      );
+    }
+  } catch (err) {
+    showToast("Error", err.message, "danger");
+  } finally {
+    if (btn) {
+      btn.disabled = false;
+      btn.classList.remove('is-busy');
+    }
   }
 }
 
@@ -7947,4 +9572,327 @@ function formatBytesRawJS(bytes) {
   const units = ['B', 'KB', 'MB', 'GB', 'TB'];
   const i = Math.max(0, Math.min(units.length - 1, Math.floor(Math.log(bytes) / Math.log(1024))));
   return `${(bytes / Math.pow(1024, i)).toFixed(i > 0 ? 1 : 0)} ${units[i]}`;
+}
+
+// -------------------------------------------------------------
+// Remote Control & Auto-Updater Engine
+// -------------------------------------------------------------
+window._isAppKilled = false;
+window._isMandatoryUpdate = false;
+window._latestRemoteUpdate = null;
+let updateDownloadPollTimer = null;
+
+async function checkRemoteControlStatus(force = false) {
+  try {
+    const res = await fetch(`/api/remote_control/status?force=${force ? 'true' : 'false'}`);
+    const data = await res.json();
+    handleRemoteControlData(data);
+    return data;
+  } catch (err) {
+    console.warn("Remote control check error:", err);
+    return null;
+  }
+}
+
+function handleRemoteControlData(data) {
+  if (!data) return;
+
+  // 1. Kill Switch Evaluation
+  if (data.is_killed) {
+    window._isAppKilled = true;
+    triggerKillSwitch(data.kill_info || {});
+    return;
+  } else {
+    window._isAppKilled = false;
+    const killModal = document.getElementById('killSwitchModal');
+    if (killModal) killModal.classList.add('hidden');
+  }
+
+  // 2. Update Evaluation
+  const updateInfo = data.update_info || {};
+  window._currentAppVersion = data.current_version || '3.1.0';
+  window._latestRemoteUpdate = updateInfo;
+  window._isMandatoryUpdate = !!updateInfo.mandatory;
+
+  const btnIndicator = document.getElementById('btnUpdateIndicator');
+  const indicatorText = document.getElementById('updateIndicatorText');
+  const alertBox = document.getElementById('settingsUpdateAlertBox');
+  const statusBadge = document.getElementById('settingsUpdateStatusBadge');
+  const lastChecked = document.getElementById('settingsLastCheckedTime');
+  const verDisplay = document.getElementById('settingsCurrentVersionDisplay');
+  const inputUrl = document.getElementById('inputControlUrl');
+
+  if (verDisplay && data.current_version) {
+    verDisplay.textContent = data.current_version;
+  }
+  if (lastChecked && data.last_checked_iso) {
+    lastChecked.textContent = data.last_checked_iso;
+  }
+  if (inputUrl && data.control_url && !inputUrl.value) {
+    inputUrl.value = data.control_url;
+  }
+
+  if (data.has_update) {
+    if (btnIndicator) {
+      btnIndicator.classList.remove('hidden');
+      if (indicatorText) indicatorText.textContent = `עדכון חדש: v${updateInfo.latest_version}`;
+    }
+    if (alertBox) {
+      alertBox.classList.remove('hidden');
+      const desc = document.getElementById('settingsUpdateAlertDesc');
+      if (desc) desc.textContent = `גרסה ${updateInfo.latest_version} זמינה להורדה ישירה מ-GitHub Releases.`;
+    }
+    if (statusBadge) {
+      statusBadge.innerHTML = `<span class="badge badge-warn" style="font-weight: 600;">זמין עדכון ${updateInfo.latest_version}</span>`;
+    }
+
+    // Auto-open update modal if mandatory
+    if (window._isMandatoryUpdate) {
+      openUpdateModal();
+    }
+  } else {
+    if (btnIndicator) btnIndicator.classList.add('hidden');
+    if (alertBox) alertBox.classList.add('hidden');
+    if (statusBadge) {
+      statusBadge.innerHTML = `<span class="badge badge-success">מעודכן לגרסה האחרונה</span>`;
+    }
+  }
+
+  // 3. Optional Broadcast Announcement
+  if (data.broadcast_message && data.broadcast_message.active && data.broadcast_message.message_he) {
+    const bId = `polaris_bcast_${data.broadcast_message.id}`;
+    if (!localStorage.getItem(bId)) {
+      showToast(data.broadcast_message.title_he || "הודעת מערכת", data.broadcast_message.message_he, data.broadcast_message.level || "info");
+      localStorage.setItem(bId, '1');
+    }
+  }
+}
+
+function triggerKillSwitch(killInfo) {
+  const modal = document.getElementById('killSwitchModal');
+  const title = document.getElementById('killSwitchTitle');
+  const msg = document.getElementById('killSwitchMessage');
+
+  if (title && killInfo.title_he) title.textContent = killInfo.title_he;
+  if (msg && killInfo.message_he) msg.textContent = killInfo.message_he;
+
+  if (modal) modal.classList.remove('hidden');
+}
+
+async function exitPolaris() {
+  try {
+    const btn = document.querySelector('#killSwitchModal button');
+    if (btn) {
+      btn.disabled = true;
+      btn.style.opacity = '0.7';
+      btn.innerHTML = '<span>סוגר את התוכנה...</span>';
+    }
+  } catch (e) {}
+
+  try {
+    fetch('/api/exit', { method: 'POST' }).catch(() => {});
+    fetch('/api/exit').catch(() => {});
+  } catch (e) {}
+
+  try {
+    const xhr = new XMLHttpRequest();
+    xhr.open('POST', '/api/exit', true);
+    xhr.send();
+  } catch (e) {}
+
+  setTimeout(() => {
+    try { window.close(); } catch (e) {}
+  }, 200);
+}
+
+function openUpdateModal() {
+  const modal = document.getElementById('updateModal');
+  if (!modal) return;
+
+  const currentVerEl = document.getElementById('updateCurrentVer');
+  const newVerEl = document.getElementById('updateNewVer');
+  const notesEl = document.getElementById('updateReleaseNotes');
+  const closeBtn = document.getElementById('btnCloseUpdateModal');
+  const laterBtn = document.getElementById('btnUpdateLater');
+
+  const update = window._latestRemoteUpdate || {};
+  if (currentVerEl) currentVerEl.textContent = window._currentAppVersion || '3.1.0';
+  if (newVerEl) newVerEl.textContent = update.latest_version || '3.2.0';
+  if (notesEl) notesEl.textContent = update.release_notes_he || 'עדכון גרסה שוטף מ-GitHub Releases.';
+
+  if (window._isMandatoryUpdate) {
+    if (closeBtn) closeBtn.style.display = 'none';
+    if (laterBtn) laterBtn.style.display = 'none';
+  } else {
+    if (closeBtn) closeBtn.style.display = '';
+    if (laterBtn) laterBtn.style.display = '';
+  }
+
+  modal.classList.remove('hidden');
+  modal.style.display = 'flex';
+}
+
+function closeUpdateModal() {
+  if (window._isMandatoryUpdate) return;
+  const modal = document.getElementById('updateModal');
+  if (modal) {
+    modal.classList.add('hidden');
+    modal.style.display = 'none';
+  }
+}
+
+async function startUpdateDownload() {
+  const startBtn = document.getElementById('btnStartDownloadUpdate');
+  const progressSec = document.getElementById('updateProgressSection');
+  const statusText = document.getElementById('updateProgressStatusText');
+  const percentEl = document.getElementById('updateProgressPercent');
+  const barEl = document.getElementById('updateProgressBar');
+  const sizeInfo = document.getElementById('updateSizeInfo');
+  const applyBtn = document.getElementById('btnApplyUpdateNow');
+
+  if (startBtn) {
+    startBtn.disabled = true;
+    startBtn.innerHTML = `<span>מתחיל הורדה...</span>`;
+  }
+  if (progressSec) progressSec.classList.remove('hidden');
+
+  try {
+    const res = await fetch('/api/remote_control/start_download', { method: 'POST' });
+    const data = await res.json();
+    if (!data.success) {
+      showToast("שגיאה בהורדה", data.message, "danger");
+      if (startBtn) {
+        startBtn.disabled = false;
+        startBtn.innerHTML = `<span>הורד והתקן עדכון עכשיו</span>`;
+      }
+      return;
+    }
+
+    if (updateDownloadPollTimer) clearInterval(updateDownloadPollTimer);
+    updateDownloadPollTimer = setInterval(async () => {
+      try {
+        const pRes = await fetch('/api/remote_control/update_progress');
+        const p = await pRes.json();
+
+        if (percentEl) percentEl.textContent = `${p.percent}%`;
+        if (barEl) barEl.style.width = `${p.percent}%`;
+
+        if (p.total_bytes > 0 && sizeInfo) {
+          const mbDown = (p.downloaded_bytes / (1024 * 1024)).toFixed(1);
+          const mbTotal = (p.total_bytes / (1024 * 1024)).toFixed(1);
+          sizeInfo.textContent = `${mbDown} MB מתוך ${mbTotal} MB`;
+        }
+
+        if (p.status === 'downloading') {
+          if (statusText) statusText.textContent = `מוריד עדכון מ-GitHub Releases... (${p.percent}%)`;
+        } else if (p.status === 'verifying') {
+          if (statusText) statusText.textContent = "מאמת שלמות קובץ וחתימת אבטחה...";
+        } else if (p.status === 'ready') {
+          clearInterval(updateDownloadPollTimer);
+          updateDownloadPollTimer = null;
+          if (statusText) statusText.textContent = "הקובץ מוכן להתקנה! לחץ להפעלה מחדש.";
+          if (startBtn) startBtn.classList.add('hidden');
+          if (applyBtn) applyBtn.classList.remove('hidden');
+          showToast("העדכון מוכן", "קובץ העדכון הורד בהצלחה. לחץ להפעלה מחדש.", "success");
+        } else if (p.status === 'error') {
+          clearInterval(updateDownloadPollTimer);
+          updateDownloadPollTimer = null;
+          if (statusText) statusText.textContent = `שגיאה: ${p.error}`;
+          if (startBtn) {
+            startBtn.disabled = false;
+            startBtn.innerHTML = `<span>נסה שוב</span>`;
+          }
+          showToast("שגיאה בהורדת עדכון", p.error, "danger");
+        }
+      } catch (pollErr) {
+        console.warn("Poll error:", pollErr);
+      }
+    }, 450);
+
+  } catch (err) {
+    showToast("שגיאה", err.message, "danger");
+    if (startBtn) {
+      startBtn.disabled = false;
+      startBtn.innerHTML = `<span>הורד והתקן עדכון עכשיו</span>`;
+    }
+  }
+}
+
+async function applyUpdateRestart() {
+  const applyBtn = document.getElementById('btnApplyUpdateNow');
+  if (applyBtn) {
+    applyBtn.disabled = true;
+    applyBtn.innerHTML = `<span>מפעיל מחדש...</span>`;
+  }
+  showToast("מעדכן", "מפעיל את התוכנה מחדש עם הגרסה העדכנית...", "info");
+
+  try {
+    const res = await fetch('/api/remote_control/apply_update', { method: 'POST' });
+    const data = await res.json();
+    if (!data.success) {
+      showToast("שגיאה בהחלת עדכון", data.message, "danger");
+      if (applyBtn) applyBtn.disabled = false;
+    }
+  } catch (err) {
+    // In frozen mode the server drops and terminates as the batch restarts it
+  }
+}
+
+async function checkRemoteUpdates(manual = true) {
+  const btn = document.getElementById('btnCheckUpdatesNow');
+  if (btn && manual) {
+    btn.disabled = true;
+    btn.classList.add('is-busy');
+  }
+
+  const data = await checkRemoteControlStatus(true);
+
+  if (btn && manual) {
+    btn.disabled = false;
+    btn.classList.remove('is-busy');
+  }
+
+  if (manual) {
+    if (!data || data.offline) {
+      showToast("בדיקת עדכונים", "לא ניתן היה ליצור קשר עם שרת הבקרה (בדוק חיבור אינטרנט או כתובת).", "warn");
+    } else if (data.is_killed) {
+      showToast("אבטחה", "התוכנה הושבתה על ידי המפתח.", "danger");
+    } else if (data.has_update) {
+      showToast("עדכון זמין!", `נמצא עדכון גרסה חדש: ${data.update_info.latest_version}`, "success");
+      openUpdateModal();
+    } else {
+      showToast("התוכנה מעודכנת", `הגרסה שברשותך (${data.current_version}) היא הגרסה העדכנית ביותר.`, "success");
+    }
+  }
+}
+
+async function saveControlUrl() {
+  const input = document.getElementById('inputControlUrl');
+  if (!input) return;
+  const newUrl = input.value.trim();
+
+  try {
+    const res = await fetch('/api/remote_control/set_url', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ url: newUrl })
+    });
+    const data = await res.json();
+    if (data.success) {
+      showToast("כתובת נשמרה", "כתובת הבקרה מרחוק עודכנה ונשמרה בהצלחה.", "success");
+      handleRemoteControlData(data.status);
+    } else {
+      showToast("שגיאה", "שמירת הכתובת נכשלה.", "danger");
+    }
+  } catch (err) {
+    showToast("שגיאה", err.message, "danger");
+  }
+}
+
+function resetDefaultControlUrl() {
+  const input = document.getElementById('inputControlUrl');
+  if (input) {
+    input.value = "https://gist.githubusercontent.com/Hero-Ghost/22bc7b324e2a5118384d3413490ef636/raw/app_control.json";
+    saveControlUrl();
+  }
 }

@@ -254,6 +254,11 @@ class DiskHealthAnalyzer:
 
         health_status = s_info.get("status", health) if s_info else health
 
+        health_upper = health_status.strip().upper()
+        is_healthy = health_upper in ("HEALTHY", "GOOD", "OK", "PASS", "PASSED")
+        status_he = s_info.get("status_he", "תקין" if is_healthy else health_status)
+        status_en = s_info.get("status_en", "Good" if is_healthy else health_status)
+
         disk = {
             "device_id": device_id,
             "name": name,
@@ -284,8 +289,8 @@ class DiskHealthAnalyzer:
             "volumes": volumes,
             "attributes": s_info.get("attributes", []) if s_info else [],
             "smart_supported": bool(s_info and s_info.get("attributes")),
-            "status_he": s_info.get("status_he", "תקין" if health_status in ("Healthy", "Good") else health_status),
-            "status_en": s_info.get("status_en", "Good" if health_status in ("Healthy", "Good") else health_status),
+            "status_he": status_he,
+            "status_en": status_en,
         }
 
         disk["findings"] = self._analyze_disk(disk)
@@ -315,14 +320,18 @@ class DiskHealthAnalyzer:
         findings = []
         name = disk["name"]
 
-        if disk["health_status"] not in ("Healthy", "Unknown", ""):
+        status_val = str(disk.get("health_status") or "").strip()
+        status_upper = status_val.upper()
+        # "Healthy", "Good", "OK", "Pass", "Passed" indicate normal healthy operation
+        healthy_set = {"HEALTHY", "GOOD", "OK", "PASS", "PASSED", "UNKNOWN", ""}
+        if status_upper not in healthy_set:
             findings.append(_finding(
                 "high",
                 f"Windows מדווח על מצב לא תקין בכונן {name}",
                 f"Windows reports an unhealthy state on {name}",
-                f"מצב הכונן לפי מערכת ההפעלה הוא \"{disk['health_status']}\". "
+                f"מצב הכונן לפי מערכת ההפעלה הוא \"{status_val}\". "
                 "זהו דיווח של הכונן עצמו, לא הערכה של Polaris.",
-                f"The operating system reports the drive state as \"{disk['health_status']}\". "
+                f"The operating system reports the drive state as \"{status_val}\". "
                 "This comes from the drive itself, not from a Polaris estimate.",
                 "גבה את הקבצים החשובים עכשיו, לפני כל פעולת תחזוקה אחרת.",
                 "Back up important files now, before any other maintenance.",
@@ -449,12 +458,13 @@ class DiskHealthAnalyzer:
         return findings
 
     def _disk_tone(self, disk):
-        severities = {f["severity"] for f in disk["findings"]}
+        severities = {f["severity"] for f in disk.get("findings", [])}
         if "high" in severities:
             return "danger"
         if "medium" in severities:
             return "warn"
-        if disk["health_status"] == "Healthy":
+        status_upper = str(disk.get("health_status") or "").strip().upper()
+        if status_upper in ("HEALTHY", "GOOD", "OK", "PASS", "PASSED"):
             return "ok"
         return "neutral"
 

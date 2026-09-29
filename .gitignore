@@ -5,3 +5,6 @@ build/
 dist/
 *.exe
 graphify-out/
+squirreldisk_src/
+*.bak
+

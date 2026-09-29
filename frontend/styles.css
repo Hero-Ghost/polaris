@@ -14,6 +14,8 @@
    1. Tokens — dark is the default theme
    ---------------------------------------------------------------------- */
 :root {
+  color-scheme: dark;
+
   /* Surfaces: a deep blue-black ramp. Panels sit *above* the backdrop, so
      each step adds light rather than removing it. */
   --bg:            #070910;
@@ -102,6 +104,7 @@
    in both themes. The handful of places that hard-code a translucent black are
    re-stated at the end of this block. */
 :root[data-theme="light"] {
+  color-scheme: light;
   --bg:            #f4f6fb;
   --bg-elevated:   #ffffff;
   --panel:         #ffffff;
@@ -535,12 +538,12 @@ table { border-collapse: collapse; }
 .nav-item {
   display: flex;
   align-items: center;
-  gap: 11px;
+  gap: 9px;
   width: 100%;
-  padding: 8.5px 11px;
+  padding: 7px 10px;
   border-radius: var(--r-sm);
   color: var(--text-dim);
-  font-size: 13px;
+  font-size: 12.5px;
   font-weight: 500;
   text-align: start;
   transition: background var(--fast), color var(--fast), box-shadow var(--fast);
@@ -1385,9 +1388,12 @@ table { border-collapse: collapse; }
 }
 .input-clear:hover { color: var(--text); background: var(--panel-3); }
 
+select,
 .select {
   padding: 6.5px 11px;
-  background: rgba(255, 255, 255, 0.055);
+  background: var(--panel-2);
+  color: var(--text);
+  color-scheme: dark;
   border: 1px solid var(--line-strong);
   border-radius: var(--r-xs);
   font-size: 12px;
@@ -1395,8 +1401,38 @@ table { border-collapse: collapse; }
   cursor: pointer;
   transition: border-color var(--fast), box-shadow var(--fast);
 }
-:root[data-theme="light"] .select { background: #fff; }
-.select:focus { outline: none; border-color: var(--accent-dim); box-shadow: 0 0 0 3px var(--accent-wash); }
+
+:root[data-theme="light"] select,
+:root[data-theme="light"] .select {
+  background: #ffffff;
+  color: var(--text);
+  color-scheme: light;
+}
+
+select:focus,
+.select:focus {
+  outline: none;
+  border-color: var(--accent-dim);
+  box-shadow: 0 0 0 3px var(--accent-wash);
+}
+
+.select-sm {
+  padding: 4px 8px;
+  font-size: 11.5px;
+}
+
+select option,
+.select option {
+  background-color: #171b28;
+  color: #eef1f8;
+  padding: 6px 10px;
+}
+
+:root[data-theme="light"] select option,
+:root[data-theme="light"] .select option {
+  background-color: #ffffff;
+  color: #0f1420;
+}
 
 
 /* -------------------------------------------------------------------------
@@ -2156,6 +2192,103 @@ table { border-collapse: collapse; }
   -webkit-box-orient: vertical;
   overflow: hidden;
 }
+
+/* Culprit Driver Hero Card */
+.culprit-hero {
+  margin-top: 10px;
+  padding: 12px 14px;
+  border-radius: var(--r-sm);
+  background: linear-gradient(135deg, rgba(239, 68, 68, 0.12) 0%, rgba(220, 38, 38, 0.04) 100%);
+  border: 1px solid rgba(239, 68, 68, 0.35);
+  box-shadow: 0 4px 14px rgba(239, 68, 68, 0.08);
+}
+:root[data-theme="light"] .culprit-hero {
+  background: linear-gradient(135deg, rgba(239, 68, 68, 0.08) 0%, rgba(220, 38, 38, 0.02) 100%);
+}
+
+.culprit-hero.high-conf {
+  border-color: rgba(239, 68, 68, 0.6);
+}
+
+.culprit-title {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+  font-weight: 700;
+  font-size: 13px;
+  color: var(--danger);
+}
+
+.culprit-driver-name {
+  font-family: var(--font-mono);
+  font-size: 15px;
+  color: #fff;
+  background: rgba(239, 68, 68, 0.25);
+  padding: 2px 8px;
+  border-radius: var(--r-xs);
+  border: 1px solid rgba(239, 68, 68, 0.4);
+}
+:root[data-theme="light"] .culprit-driver-name {
+  color: #991b1b;
+  background: rgba(239, 68, 68, 0.15);
+}
+
+/* Dropzone for Minidump files */
+.dropzone-dmp {
+  border: 2px dashed var(--line-strong);
+  border-radius: var(--r);
+  padding: 18px 20px;
+  text-align: center;
+  background: rgba(255, 255, 255, 0.02);
+  cursor: pointer;
+  transition: all var(--fast);
+}
+.dropzone-dmp:hover, .dropzone-dmp.dragover {
+  border-color: var(--accent);
+  background: rgba(59, 130, 246, 0.06);
+  transform: scale(1.005);
+}
+
+/* Online Intelligence Card */
+.online-intel-card {
+  margin-top: 12px;
+  padding: 12px 14px;
+  border-radius: var(--r-sm);
+  background: rgba(59, 130, 246, 0.08);
+  border: 1px solid rgba(59, 130, 246, 0.25);
+}
+:root[data-theme="light"] .online-intel-card {
+  background: rgba(59, 130, 246, 0.04);
+}
+
+.online-links-row {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  margin-top: 10px;
+}
+
+.btn-link-online {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  padding: 5px 10px;
+  font-size: 11.5px;
+  font-weight: 500;
+  border-radius: var(--r-xs);
+  text-decoration: none;
+  background: rgba(255, 255, 255, 0.07);
+  border: 1px solid var(--line);
+  color: var(--text);
+  transition: all var(--fast);
+}
+.btn-link-online:hover {
+  background: var(--accent);
+  color: #fff;
+  border-color: var(--accent);
+}
+
 
 
 /* -------------------------------------------------------------------------
@@ -3664,7 +3797,46 @@ details.raw > .code-block { margin-top: 8px; max-height: 170px; }
 }
 
 /* -------------------------------------------------------------------------
-   22. Motion preferences
+   22. Terminal & Live Logs (OEM Updates)
+   ---------------------------------------------------------------------- */
+.terminal {
+  background: rgba(10, 14, 23, 0.88);
+  border: 1px solid var(--line-strong);
+  border-radius: var(--r-sm);
+  padding: 12px 14px;
+  font-family: var(--mono);
+  font-size: 11.5px;
+  line-height: 1.6;
+  color: #cfd6e6;
+  user-select: text;
+  box-shadow: inset 0 2px 8px rgba(0, 0, 0, 0.45);
+}
+:root[data-theme="light"] .terminal {
+  background: #181d28;
+  color: #d1d7e0;
+  border-color: #313a4d;
+}
+.term-line {
+  white-space: pre-wrap;
+  word-break: break-word;
+}
+.term-line.term-info {
+  color: #94a3b8;
+}
+.term-line.term-warn {
+  color: #fbbf24;
+}
+.term-line.term-error {
+  color: #f87171;
+  font-weight: 600;
+}
+.term-line.term-success {
+  color: #34d399;
+  font-weight: 600;
+}
+
+/* -------------------------------------------------------------------------
+   23. Motion preferences
    ---------------------------------------------------------------------- */
 @media (prefers-reduced-motion: reduce) {
   *, *::before, *::after {
@@ -3680,3 +3852,53 @@ details.raw > .code-block { margin-top: 8px; max-height: 170px; }
   .list-row:hover, .crash-card:hover, .evt-card:hover,
   .scan-mode-card:hover { transform: none; }
 }
+
+/* -------------------------------------------------------------------------
+   24. Remote Control & Auto-Updater Styles
+   ---------------------------------------------------------------------- */
+.btn-update-indicator {
+  background: rgba(16, 185, 129, 0.14);
+  color: #10b981;
+  border: 1px solid rgba(16, 185, 129, 0.35);
+  font-weight: 600;
+  animation: pulse-update 2.5s infinite ease-in-out;
+}
+.btn-update-indicator:hover {
+  background: rgba(16, 185, 129, 0.25);
+  border-color: #10b981;
+  color: #fff;
+}
+@keyframes pulse-update {
+  0%, 100% { box-shadow: 0 0 0 0 rgba(16, 185, 129, 0.4); }
+  50% { box-shadow: 0 0 12px 2px rgba(16, 185, 129, 0.3); }
+}
+
+.modal-backdrop {
+  position: fixed;
+  inset: 0;
+  z-index: 99999 !important;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 24px;
+  background: rgba(4, 6, 12, 0.78);
+  backdrop-filter: blur(8px) saturate(130%);
+  -webkit-backdrop-filter: blur(8px) saturate(130%);
+  animation: fade-in 0.16s ease-out;
+}
+.modal-backdrop.hidden {
+  display: none !important;
+}
+
+.kill-switch-backdrop {
+  z-index: 999999 !important;
+  user-select: none;
+}
+.kill-switch-pulse {
+  animation: kill-pulse 2s infinite ease-in-out;
+}
+@keyframes kill-pulse {
+  0%, 100% { transform: scale(1); opacity: 0.9; }
+  50% { transform: scale(1.06); opacity: 1; filter: drop-shadow(0 0 16px rgba(255, 77, 77, 0.6)); }
+}
+

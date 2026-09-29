@@ -7,7 +7,7 @@ import sys
 import os
 import argparse
 
-APP_VERSION = "3.1"
+APP_VERSION = "3.3.0"
 
 # When PyInstaller builds a windowed (--noconsole) executable there is no
 # console attached and sys.stdout / sys.stderr are None, which makes every

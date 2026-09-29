@@ -20,14 +20,19 @@ from backend.win_utils import popen_hidden, is_admin, open_keyboard_settings
 
 # Determine base paths (supports standard Python run and PyInstaller bundle)
 if getattr(sys, 'frozen', False):
-    exe_dir = os.path.dirname(sys.executable)
-    local_frontend = os.path.join(exe_dir, 'frontend')
-    if os.path.exists(local_frontend):
-        FRONTEND_DIR = local_frontend
-        BASE_DIR = exe_dir
+    meipass = getattr(sys, '_MEIPASS', None)
+    if meipass and os.path.exists(os.path.join(meipass, 'frontend')) and not os.environ.get('POLARIS_DEV'):
+        BASE_DIR = meipass
+        FRONTEND_DIR = os.path.join(meipass, 'frontend')
     else:
-        BASE_DIR = getattr(sys, '_MEIPASS', exe_dir)
-        FRONTEND_DIR = os.path.join(BASE_DIR, 'frontend')
+        exe_dir = os.path.dirname(sys.executable)
+        local_frontend = os.path.join(exe_dir, 'frontend')
+        if os.path.exists(local_frontend):
+            FRONTEND_DIR = local_frontend
+            BASE_DIR = exe_dir
+        else:
+            BASE_DIR = meipass or exe_dir
+            FRONTEND_DIR = os.path.join(BASE_DIR, 'frontend')
 else:
     BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
     FRONTEND_DIR = os.path.join(BASE_DIR, 'frontend')
@@ -44,10 +49,29 @@ from backend.event_log import EventLogAnalyzer
 from backend.battery_analyzer import BatteryAnalyzer
 from backend.uninstaller_engine import UninstallerEngine
 from backend.storage_analyzer import StorageAnalyzer
+from backend.oem_update_manager import OemUpdateManager
+from backend.windows_update_manager import WindowsUpdateManager
 from backend.copilot_remapper import (
     get_copilot_remap_status,
     enable_copilot_remap,
     disable_copilot_remap
+)
+from backend.onedrive_manager import (
+    get_onedrive_status,
+    reset_onedrive,
+    launch_onedrive
+)
+from backend.icon_cache_manager import (
+    get_icon_cache_stats,
+    rebuild_icon_cache
+)
+from backend.enterprise_it_manager import (
+    get_enterprise_tools_list,
+    execute_enterprise_tool
+)
+from backend.remote_control_manager import (
+    RemoteControlManager,
+    APP_VERSION
 )
 
 analyzer = MemoryAnalyzer()
@@ -61,6 +85,9 @@ event_log = EventLogAnalyzer()
 battery_analyzer = BatteryAnalyzer()
 uninstaller_engine = UninstallerEngine()
 storage_analyzer = StorageAnalyzer()
+oem_mgr = OemUpdateManager()
+wu_mgr = WindowsUpdateManager()
+remote_control = RemoteControlManager(current_version=APP_VERSION)
 
 # ---------------------------------------------------------------------------
 # Security
@@ -157,8 +184,15 @@ class PolarisHandler(BaseHTTPRequestHandler):
             return refuse("Invalid Host header - Polaris only serves 127.0.0.1.")
         if not self._origin_is_local():
             return refuse("Cross-origin requests are not permitted.")
-        if path.startswith('/api/') and not self._token_is_valid():
-            return refuse("Missing or invalid session token.")
+        if path == '/api/exit':
+            return True
+        if path.startswith('/api/'):
+            if not self._token_is_valid():
+                return refuse("Missing or invalid session token.")
+            if remote_control.is_app_killed():
+                # Allow status retrieval and exit endpoints even when killed, reject all other /api/ calls
+                if path not in ('/api/remote_control/status', '/api/exit'):
+                    return refuse("התוכנה הושבתה מרחוק על ידי המפתח.")
         return True
 
     def send_json_response(self, data, status_code=200):
@@ -355,7 +389,11 @@ class PolarisHandler(BaseHTTPRequestHandler):
             for crash in crash_data.get('crashes', []):
                 driver_file = crash.get('responsible_driver')
                 if driver_file:
-                    crash['driver_info'] = device_mgr.identify_driver(driver_file)
+                    dev_info = device_mgr.identify_driver(driver_file)
+                    if not crash.get('driver_info'):
+                        crash['driver_info'] = dev_info
+                    elif dev_info and dev_info.get('installed'):
+                        crash['driver_info']['installed'] = dev_info['installed']
 
             self.send_json_response(crash_data)
             return
@@ -366,6 +404,19 @@ class PolarisHandler(BaseHTTPRequestHandler):
 
         elif path == '/api/devices':
             self.send_json_response(device_mgr.get_report())
+            return
+
+        elif path == '/api/oem/info' or path == '/api/oem_updates/info':
+            mfr_override = query.get('vendor', [None])[0] or query.get('manufacturer', [None])[0]
+            self.send_json_response(oem_mgr.get_oem_info(override_manufacturer=mfr_override))
+            return
+
+        elif path == '/api/oem/progress' or path == '/api/oem_updates/progress':
+            try:
+                since = int(query.get('since', ['0'])[0])
+            except (TypeError, ValueError):
+                since = 0
+            self.send_json_response(oem_mgr.get_progress(since_log_id=since))
             return
 
         elif path == '/api/events':
@@ -385,10 +436,38 @@ class PolarisHandler(BaseHTTPRequestHandler):
             self.send_json_response(get_copilot_remap_status())
             return
 
+        elif path == '/api/onedrive/status':
+            self.send_json_response(get_onedrive_status())
+            return
+
+        elif path == '/api/icon_cache/status':
+            self.send_json_response(get_icon_cache_stats())
+            return
+
+        elif path == '/api/enterprise_tools/list':
+            self.send_json_response({"tools": get_enterprise_tools_list()})
+            return
+
         elif path == '/api/battery':
             force = query.get('force', ['false'])[0].lower() == 'true'
             self.send_json_response(battery_analyzer.get_report(force=force))
             return
+
+        elif path == '/api/windows_updates/list':
+            # online=1 triggers a full scan against Microsoft's servers (slow)
+            # online=0 (default) uses the local WU cache (fast, no network)
+            online = query.get('online', ['0'])[0].strip() in ('1', 'true')
+            self.send_json_response(wu_mgr.get_updates(online=online))
+            return
+
+        elif path == '/api/windows_updates/hidden':
+            self.send_json_response(wu_mgr.get_hidden_updates())
+            return
+
+        elif path == '/api/windows_updates/service_status':
+            self.send_json_response(wu_mgr.get_service_status())
+            return
+
 
         elif path == '/api/uninstaller/apps':
             # The uninstaller screen sends force=1, not force=true, so a strict
@@ -492,6 +571,25 @@ class PolarisHandler(BaseHTTPRequestHandler):
                 self.send_json_response({"report": report})
                 return
 
+        elif path == '/api/remote_control/status':
+            force = query.get('force', ['false'])[0].lower() == 'true'
+            status = remote_control.check_remote_control(force=force)
+            self.send_json_response(status)
+            return
+
+        elif path == '/api/remote_control/update_progress':
+            status = remote_control.get_status()
+            self.send_json_response(status.get('download_state', {}))
+            return
+
+        elif path == '/api/exit':
+            self.send_json_response({"success": True, "message": "סוגר את Polaris..."})
+            def _delayed_exit_get():
+                time.sleep(0.15)
+                os._exit(0)
+            threading.Thread(target=_delayed_exit_get, daemon=True).start()
+            return
+
         self._reject(404, "Not found")
 
     def _dispatch_post(self):
@@ -535,9 +633,56 @@ class PolarisHandler(BaseHTTPRequestHandler):
             self.send_json_response(res)
             return
 
+        elif path == '/api/oem/start' or path == '/api/oem_updates/start':
+            mfr = post_data.get('manufacturer')
+            opts = post_data.get('options')
+            res = oem_mgr.start_oem_updates_async(mfr, opts)
+            self.send_json_response(res)
+            return
+
+        elif path == '/api/oem/cancel' or path == '/api/oem_updates/cancel':
+            res = oem_mgr.cancel_updates()
+            self.send_json_response(res)
+            return
+
         elif path == '/api/memory_diagnostic':
             res = crash_analyzer.trigger_memory_diagnostic()
             self.send_json_response(res)
+            return
+
+        elif path == '/api/crashes/analyze_dump' or path == '/api/crash_analyze_file':
+            file_path = post_data.get('file_path')
+            if not file_path:
+                self.send_json_response({"success": False, "error": "Missing file_path parameter"})
+                return
+            res = crash_analyzer.analyze_custom_dump(file_path)
+            self.send_json_response(res)
+            return
+
+        elif path == '/api/crashes/online_lookup':
+            driver_name = post_data.get('driver_name', '')
+            bugcheck_code = post_data.get('bugcheck_code')
+            res = crash_analyzer.lookup_driver_online(driver_name, bugcheck_code)
+            self.send_json_response(res)
+            return
+
+        elif path == '/api/crashes/list_dumps':
+            minidump_dir = os.path.expandvars(r"%SystemRoot%\Minidump")
+            found_files = []
+            if os.path.exists(minidump_dir):
+                import glob
+                for f in glob.glob(os.path.join(minidump_dir, "*.dmp")):
+                    try:
+                        st = os.stat(f)
+                        found_files.append({
+                            "name": os.path.basename(f),
+                            "path": f,
+                            "size_kb": round(st.st_size / 1024, 1),
+                            "modified": datetime.fromtimestamp(st.st_mtime).strftime("%Y-%m-%d %H:%M:%S")
+                        })
+                    except Exception:
+                        pass
+            self.send_json_response({"success": True, "files": found_files})
             return
 
         elif path == '/api/kill':
@@ -582,6 +727,32 @@ class PolarisHandler(BaseHTTPRequestHandler):
 
         elif path == '/api/copilot_remap/disable':
             res = disable_copilot_remap()
+            self.send_json_response(res)
+            return
+
+        elif path == '/api/onedrive/reset':
+            relaunch = bool(post_data.get('relaunch', False))
+            clean_cache = bool(post_data.get('clean_cache', True))
+            res = reset_onedrive(relaunch=relaunch, clean_cache=clean_cache)
+            self.send_json_response(res)
+            return
+
+        elif path == '/api/onedrive/launch':
+            res = launch_onedrive()
+            self.send_json_response(res)
+            return
+
+        elif path == '/api/icon_cache/rebuild':
+            res = rebuild_icon_cache()
+            self.send_json_response(res)
+            return
+
+        elif path == '/api/enterprise_tools/run':
+            tool_id = post_data.get('tool_id')
+            if tool_id:
+                res = execute_enterprise_tool(str(tool_id))
+            else:
+                res = {"success": False, "message": "Missing tool_id parameter"}
             self.send_json_response(res)
             return
 
@@ -687,20 +858,88 @@ class PolarisHandler(BaseHTTPRequestHandler):
         elif path == '/api/storage/action':
             action = post_data.get('action')
             target_path = post_data.get('target_path')
-            if not action or not target_path:
-                self.send_json_response({"success": False, "message": "Missing action or target_path"})
+            node_id = post_data.get('node_id')
+            if not action or (not target_path and node_id is None):
+                self.send_json_response({"success": False, "message": "Missing action or target"})
                 return
-            success, message = storage_analyzer.perform_action(action, target_path)
+            success, message = storage_analyzer.perform_action(action, target_path, node_id=node_id)
             self.send_json_response({"success": success, "message": message})
             return
 
         elif path == '/api/storage/collector/delete':
-            paths = post_data.get('paths', [])
-            res = storage_analyzer.delete_collected_items(paths)
+            # Opaque node ids from our own scan, resolved server-side - see
+            # StorageAnalyzer.delete_collected_items for why raw paths are no
+            # longer accepted here.
+            ids = post_data.get('ids', [])
+            res = storage_analyzer.delete_collected_items(ids)
             self.send_json_response(res)
             return
 
+        elif path == '/api/windows_updates/hide':
+            # Body: {"update_id": "<guid>"} or {"kb": "KB1234567"}
+            update_id = post_data.get('update_id', '').strip()
+            kb = post_data.get('kb', '').strip()
+            if update_id:
+                res = wu_mgr.set_update_hidden(update_id, hide=True)
+            elif kb:
+                res = wu_mgr.set_update_hidden_by_kb(kb, hide=True)
+            else:
+                res = {"success": False, "message": "חסר מזהה עדכון (update_id או kb)."}
+            self.send_json_response(res)
+            return
+
+        elif path == '/api/windows_updates/unhide':
+            # Body: {"update_id": "<guid>"} or {"kb": "KB1234567"}
+            update_id = post_data.get('update_id', '').strip()
+            kb = post_data.get('kb', '').strip()
+            if update_id:
+                res = wu_mgr.set_update_hidden(update_id, hide=False)
+            elif kb:
+                res = wu_mgr.set_update_hidden_by_kb(kb, hide=False)
+            else:
+                res = {"success": False, "message": "חסר מזהה עדכון (update_id או kb)."}
+            self.send_json_response(res)
+            return
+
+        elif path == '/api/windows_updates/service_toggle':
+            action = post_data.get('action')
+            res = wu_mgr.toggle_service(action=action)
+            self.send_json_response(res)
+            return
+
+        elif path == '/api/remote_control/check':
+            status = remote_control.check_remote_control(force=True)
+            self.send_json_response(status)
+            return
+
+        elif path == '/api/remote_control/set_url':
+            url = post_data.get('url', '').strip()
+            ok = remote_control.set_control_url(url)
+            status = remote_control.check_remote_control(force=True)
+            self.send_json_response({"success": ok, "status": status})
+            return
+
+        elif path == '/api/remote_control/start_download':
+            custom_url = post_data.get('download_url', '').strip() or None
+            res = remote_control.start_download_update(custom_url=custom_url)
+            self.send_json_response(res)
+            return
+
+        elif path == '/api/remote_control/apply_update':
+            res = remote_control.apply_update()
+            self.send_json_response(res)
+            return
+
+        elif path == '/api/exit':
+            self.send_json_response({"success": True, "message": "סוגר את Polaris..."})
+            def _delayed_exit():
+                time.sleep(0.4)
+                os._exit(0)
+            threading.Thread(target=_delayed_exit, daemon=True).start()
+            return
+
         self._reject(404, "Not found")
+
 
     # -- static serving -----------------------------------------------------
 
@@ -749,6 +988,12 @@ class PolarisHandler(BaseHTTPRequestHandler):
                     + SESSION_TOKEN.encode('ascii') + b'">',
                     1
                 )
+                if remote_control.is_app_killed():
+                    content = content.replace(
+                        b'id="killSwitchModal" class="modal-backdrop kill-switch-backdrop hidden"',
+                        b'id="killSwitchModal" class="modal-backdrop kill-switch-backdrop"',
+                        1
+                    )
 
             self._responded = True
             self.send_response(200)
@@ -780,6 +1025,7 @@ def get_system_info():
     return {
         "is_admin": admin,
         "is_frozen": bool(getattr(sys, 'frozen', False)),
+        "app_version": APP_VERSION,
         "platform": platform.platform(),
         "python_version": platform.python_version(),
         "hostname": platform.node(),
@@ -869,6 +1115,9 @@ def start_server(port=None, open_browser=False, block=True):
     print(f"  Listening on: {url}")
     print(f"  Administrator: {'yes' if is_admin() else 'no (some repair tools will prompt)'}")
     print(f"==================================================")
+
+    # Initial non-blocking check for remote kill switch and updates
+    threading.Thread(target=lambda: remote_control.check_remote_control(force=False), daemon=True).start()
 
     if open_browser:
         threading.Timer(0.8, lambda: open_standalone_window(url)).start()

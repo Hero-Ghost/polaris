@@ -1,9 +1,9 @@
 # -*- mode: python ; coding: utf-8 -*-
 from PyInstaller.utils.hooks import collect_all
 
-datas = [('C:/Users/pc/Desktop/RAM/frontend', 'frontend'), ('C:/Users/pc/Desktop/RAM/CopilotToCtrl.exe', '.')]
+datas = [('C:/Users/pc/Desktop/RAM/frontend', 'frontend'), ('C:/Users/pc/Desktop/RAM/app_icon.ico', '.'), ('C:/Users/pc/Desktop/RAM/CopilotToCtrl.exe', '.')]
 binaries = [('C:/Users/pc/Desktop/RAM/bin/pdu.exe', 'bin')]
-hiddenimports = ['webview', 'clr_loader', 'backend', 'backend.memory_analyzer', 'backend.process_manager', 'backend.diagnostic_engine', 'backend.knowledge_base', 'backend.system_revitalizer', 'backend.crash_analyzer', 'backend.copilot_remapper', 'backend.device_manager', 'backend.disk_health', 'backend.smart_engine', 'backend.smart_database', 'backend.event_log', 'backend.battery_analyzer', 'backend.uninstaller_engine', 'backend.storage_analyzer', 'backend.win_utils', 'backend.server']
+hiddenimports = ['webview', 'clr_loader', 'backend', 'backend.memory_analyzer', 'backend.process_manager', 'backend.diagnostic_engine', 'backend.knowledge_base', 'backend.system_revitalizer', 'backend.crash_analyzer', 'backend.copilot_remapper', 'backend.device_manager', 'backend.disk_health', 'backend.smart_engine', 'backend.smart_database', 'backend.event_log', 'backend.battery_analyzer', 'backend.uninstaller_engine', 'backend.storage_analyzer', 'backend.oem_update_manager', 'backend.onedrive_manager', 'backend.icon_cache_manager', 'backend.enterprise_it_manager', 'backend.windows_update_manager', 'backend.remote_control_manager', 'backend.minidump_parser', 'backend.driver_database', 'backend.driver_online_checker', 'backend.win_utils', 'backend.server', 'win32com', 'pythoncom']
 tmp_ret = collect_all('webview')
 datas += tmp_ret[0]; binaries += tmp_ret[1]; hiddenimports += tmp_ret[2]
 
