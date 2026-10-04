@@ -131,8 +131,18 @@ class RemoteControlManager:
     def set_control_url(self, new_url: str) -> bool:
         """Sets and persists a custom GitHub Raw / Gist URL for remote control."""
         clean_url = (new_url or '').strip()
-        if not clean_url:
-            clean_url = DEFAULT_CONTROL_URL
+        if not clean_url or clean_url == DEFAULT_CONTROL_URL:
+            self.control_url = DEFAULT_CONTROL_URL
+            try:
+                if os.path.isfile(self.config_path):
+                    os.remove(self.config_path)
+                if os.path.isfile(self.cache_path):
+                    os.remove(self.cache_path)
+            except Exception:
+                pass
+            self._last_check_time = 0.0
+            return True
+
         self.control_url = clean_url
         try:
             with open(self.config_path, 'w', encoding='utf-8') as f:
