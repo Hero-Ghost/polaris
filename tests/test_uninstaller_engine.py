@@ -1239,6 +1239,7 @@ class TestServiceDeletionViaSCM(unittest.TestCase):
     def test_demand_start_service_goes_through_scm(self):
         self._patch(ue, "is_admin", lambda: True)
         self._patch(UninstallerEngine, "_read_service_start_type", staticmethod(lambda svc: 3))
+        self._patch(UninstallerEngine, "backup_registry_key_tree", lambda self, p, d: r"C:\fake\backup.reg")
         called = []
         self._patch(UninstallerEngine, "_delete_service_via_scm",
                     staticmethod(lambda svc: (called.append(svc), (True, None))[1]))
@@ -1388,9 +1389,9 @@ class TestScheduledTaskLeftovers(unittest.TestCase):
         self.assertEqual(leftovers, [])
 
     def test_off_windows_scan_is_a_no_op(self):
-        # IS_WINDOWS is already False in this sandbox - just confirms the
-        # method doesn't try to call run_powershell_json (which itself
-        # already returns [] off-Windows, but the point is it isn't reached).
+        # Explicitly patch IS_WINDOWS to False so this test is deterministic
+        # across all environments, including Windows development machines.
+        self._patch(ue, "IS_WINDOWS", False)
         called = []
         self._patch(ue, "run_powershell_json", lambda cmd, timeout=20: called.append(1) or [])
         leftovers = []
@@ -1635,6 +1636,7 @@ class TestRegistryBackupBeforeDelete(unittest.TestCase):
 
     def test_off_windows_a_failed_export_does_not_block_deletion(self):
         self._patch(ue, "is_admin", lambda: True)
+        self._patch(ue, "IS_WINDOWS", False)
         self._patch(UninstallerEngine, "backup_registry_key_tree", lambda self, p, d: None)
         self._patch(UninstallerEngine, "_delete_reg_key_recursive",
                     lambda self, p: (True, None))

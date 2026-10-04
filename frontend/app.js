@@ -1678,6 +1678,9 @@ document.addEventListener('DOMContentLoaded', async () => {
     closeBackupCenterModal();
     closeUpdateModal();
     if (typeof closeHunterModal === 'function') closeHunterModal();
+    if (typeof closeForcedModal === 'function') closeForcedModal();
+    if (typeof closeUninstallWizard === 'function') closeUninstallWizard();
+    if (typeof closeStorageContextMenu === 'function') closeStorageContextMenu();
   });
 });
 
@@ -7828,6 +7831,14 @@ function lightenColor(color, percent) {
   if (color.startsWith('hsl')) {
     return color.replace(/(\d+)%\)/, (m, l) => `${Math.min(100, parseInt(l, 10) + percent)}%)`);
   }
+  if (typeof hexToRgb === 'function') {
+    const { r, g, b } = hexToRgb(color);
+    const factor = percent / 100;
+    const newR = Math.min(255, Math.floor(r + (255 - r) * factor));
+    const newG = Math.min(255, Math.floor(g + (255 - g) * factor));
+    const newB = Math.min(255, Math.floor(b + (255 - b) * factor));
+    return `rgb(${newR}, ${newG}, ${newB})`;
+  }
   return color;
 }
 
@@ -8969,14 +8980,6 @@ function drawTreemapLabels() {
   storageCtx.restore();
 }
 
-function lightenColor(color, percent) {
-  const { r, g, b } = hexToRgb(color);
-  const factor = percent / 100;
-  const newR = Math.min(255, Math.floor(r + (255 - r) * factor));
-  const newG = Math.min(255, Math.floor(g + (255 - g) * factor));
-  const newB = Math.min(255, Math.floor(b + (255 - b) * factor));
-  return `rgb(${newR}, ${newG}, ${newB})`;
-}
 
 // Treemap Mouse Event Handlers
 function findTreemapBlockAt(mouseX, mouseY) {

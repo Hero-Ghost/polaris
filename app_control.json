@@ -8,9 +8,9 @@
     "allow_exit_only": true
   },
   "update": {
-    "latest_version": "3.5.0",
-    "release_title_he": "גרסה חדשה (3.5.0) - פענוח Minidump עמוק ובדיקה ברשת",
-    "release_notes_he": "עדכון גרסה Polaris 3.5.0:\n• מפענח בינארי טהור לקבצי Minidump ו-Kernel Dumps (ללא תלות ב-WinDbg).\n• מנוע היוריסטיקה מתקדם לאיתור הדרייבר האשם האמיתי תוך פתרון מסוות ntoskrnl.exe.\n• בדיקה מקוונת חכמה ברשת (Online Intelligence) עם קישורים ישירים ל-Microsoft Learn ואתרי היצרנים.\n• אזור גרירה ובחירת קבצים (Drag & Drop) לניתוח כל קובץ .dmp מותאם אישית.\n• סייר מודולים ודרייברים פעילים בזמן הקריסה עם שדה סינון מהיר.",
+    "latest_version": "3.6.0",
+    "release_title_he": "גרסה חדשה (3.6.0) - ייצוב מערך הבדיקות, הקשחת עדכונים ושיפורי ממשק",
+    "release_notes_he": "עדכון גרסה Polaris 3.6.0:\n• 100% מעבר של 273 בדיקות היחידה (כולל תיקון שירותי SCM ומשימות מתוזמנות בסביבת Windows).\n• הקשחת אבטחה מחמירה במנגנון העדכון האוטומטי: חובת אימות SHA-256 והגבלה בלעדית לדומיין GitHub Releases הרשמי.\n• איחוד פונקציות צביעת HSL/Hex בממשק מפת הדיסק והסאנברסט.\n• תמיכה מקיפה במקש Escape לסגירת כל המודאלים (אשף הסרה, הסרה כפויה ותפריטי הקשר).\n• שדרוג תיעוד המערכת לכל 16 המסכים והרכיבים.",
     "download_url": "https://github.com/Hero-Ghost/polaris/releases/latest/download/Polaris.exe",
     "mandatory": false,
     "sha256": ""

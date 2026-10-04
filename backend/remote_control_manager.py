@@ -16,8 +16,8 @@ import subprocess
 import threading
 from typing import Dict, Any, Optional, Tuple
 
-APP_VERSION = "3.5.0"
-CURRENT_VERSION_TUPLE = (3, 5, 0)
+APP_VERSION = "3.6.0"
+CURRENT_VERSION_TUPLE = (3, 6, 0)
 
 DEFAULT_CONTROL_URL = (
     "https://gist.githubusercontent.com/Hero-Ghost/22bc7b324e2a5118384d3413490ef636/raw/app_control.json"
@@ -292,7 +292,7 @@ class RemoteControlManager:
         }
 
     def start_download_update(self, custom_url: Optional[str] = None) -> Dict[str, Any]:
-        """Starts asynchronous download of the update executable."""
+        """Starts asynchronous download of the update executable with strict validation."""
         with self._lock:
             if self._download_state["in_progress"]:
                 return {"success": False, "message": "הורדת העדכון כבר מתבצעת כעת."}
@@ -300,6 +300,32 @@ class RemoteControlManager:
             url = custom_url or self._cached_status.get('update_info', {}).get('download_url')
             if not url:
                 return {"success": False, "message": "לא הוגדר קישור להורדת קובץ העדכון (download_url)."}
+
+            # Validate HTTPS scheme
+            try:
+                parsed = urllib.parse.urlparse(url)
+            except Exception:
+                return {"success": False, "message": "כתובת הקישור להורדה אינה תקינה."}
+
+            if parsed.scheme.lower() != 'https':
+                return {"success": False, "message": "הורדת עדכון מותרת אך ורק דרך חיבור מאובטח (HTTPS)."}
+
+            # Restrict update sources to official GitHub domains
+            hostname = (parsed.hostname or '').lower()
+            trusted_domains = (
+                'github.com',
+                'raw.githubusercontent.com',
+                'gist.githubusercontent.com',
+                'objects.githubusercontent.com',
+                'github-releases.githubusercontent.com'
+            )
+            if not any(hostname == td or hostname.endswith('.' + td) for td in trusted_domains):
+                return {"success": False, "message": f"הורדת עדכון נדחתה: הדומיין {hostname} אינו ברשימת המקורות המורשים של Polaris."}
+
+            # Enforce mandatory SHA256 checksum for executable files
+            expected_sha256 = self._cached_status.get('update_info', {}).get('sha256', '').lower().strip()
+            if not expected_sha256 or len(expected_sha256) != 64 or not all(c in '0123456789abcdef' for c in expected_sha256):
+                return {"success": False, "message": "לא הוגדרה חתימת אבטחה (SHA256) רשמית לקובץ העדכון. ההורדה נחסמה כדי להגן על המערכת."}
 
             self._download_state.update({
                 "in_progress": True,
@@ -311,11 +337,11 @@ class RemoteControlManager:
                 "target_file": ""
             })
 
-        worker = threading.Thread(target=self._download_worker, args=(url,), daemon=True)
+        worker = threading.Thread(target=self._download_worker, args=(url, expected_sha256), daemon=True)
         worker.start()
         return {"success": True, "message": "הורדת העדכון החלה ברקע."}
 
-    def _download_worker(self, url: str):
+    def _download_worker(self, url: str, expected_sha256: str):
         temp_dir = os.environ.get('TEMP', os.environ.get('TMP', ''))
         target_file = os.path.join(temp_dir, f"Polaris_Update_{int(time.time())}.exe")
 
@@ -347,19 +373,17 @@ class RemoteControlManager:
                             self._download_state["total_bytes"] = total_bytes
                             self._download_state["percent"] = percent
 
-            # Optional SHA256 check
-            expected_sha256 = self._cached_status.get('update_info', {}).get('sha256', '').lower().strip()
-            if expected_sha256:
-                with self._lock:
-                    self._download_state["status"] = "verifying"
+            # Mandatory SHA256 integrity check
+            with self._lock:
+                self._download_state["status"] = "verifying"
 
-                hasher = hashlib.sha256()
-                with open(target_file, 'rb') as f:
-                    for chunk in iter(lambda: f.read(65536), b''):
-                        hasher.update(chunk)
-                computed_hash = hasher.hexdigest().lower()
-                if computed_hash != expected_sha256:
-                    raise ValueError(f"חתימת האבטחה (SHA256) של הקובץ אינה תואמת. הקובץ עלול להיות פגום.")
+            hasher = hashlib.sha256()
+            with open(target_file, 'rb') as f:
+                for chunk in iter(lambda: f.read(65536), b''):
+                    hasher.update(chunk)
+            computed_hash = hasher.hexdigest().lower()
+            if computed_hash != expected_sha256:
+                raise ValueError("חתימת האבטחה (SHA256) של הקובץ אינה תואמת לחתימה הרשמית. הקובץ נמחק כדי להגן על המערכת.")
 
             with self._lock:
                 self._download_state["in_progress"] = False

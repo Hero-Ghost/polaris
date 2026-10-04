@@ -1,5 +1,24 @@
 # CHANGELOG
 
+## v3.6 — ייצוב מלא של מערך הבדיקות, הקשחת מנגנון עדכונים ושיפורי ממשק
+
+### בדיקות ויציבות
+- **100% מעבר של 273 בדיקות היחידה (`unittest discover -s tests`):**
+  - תוקנה תאימות הבדיקות להרצה בסביבת Windows אמיתית עבור שירותי SCM (`test_demand_start_service_goes_through_scm`) ע"י בידוד הגיבוי.
+  - סומלץ מצב off-Windows מפורש בבדיקות משימות מתוזמנות וגיבוי רישום (`test_off_windows_scan_is_a_no_op`, `test_off_windows_a_failed_export_does_not_block_deletion`).
+
+### אבטחה
+- **הקשחת מנגנון העדכון האוטומטי (`remote_control_manager.py`):**
+  - חובת חיבור HTTPS מוצפן לכל הורדת עדכון.
+  - הגבלת מקורות ההורדה אך ורק לדומיינים הרשמיים של GitHub (`github.com`, `raw.githubusercontent.com`, `objects.githubusercontent.com`).
+  - אכיפת אימות שלמות קבצים באמצעות גיבוב SHA-256 (64 hex characters) לפני מתן אפשרות להתקנה. קבצים ללא התאמה נמחקים מיידית.
+
+### ממשק ו-Frontend
+- **איחוד פונקציות עיבוד צבעים ב-`app.js`:**
+  - פונקציית `lightenColor` אוחדה לתמיכה מלאה הן בערכי `hsl(...)` (עבור Sunburst) והן בערכי Hex/RGB (עבור Treemap), ונמחקה ההגדרה הכפולה שדרסה את ההתנהגות.
+- **נגישות ומודאלים:**
+  - הרחבת מאזין מקש `Escape` לסגירת אשף ההסרה (`modalUninstallWizard`), חלון ההסרה הכפויה (`modalForcedUninstall`) ותפריטי ההקשר של ניתוח האחסון.
+
 ## v3.5 — מפענח Minidump בינארי עמוק, איתור דרייבר אשם מדויק ובדיקה מקוונת ברשת
 
 ### תכונות חדשות
