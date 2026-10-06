@@ -8,12 +8,12 @@
     "allow_exit_only": true
   },
   "update": {
-    "latest_version": "3.7.0",
-    "release_title_he": "גרסה חדשה (3.7.0) - כלי איפוס Microsoft Teams ו-Outlook לשגיאה 894893981 והודעות מרכז מסך",
-    "release_notes_he": "עדכון גרסה Polaris 3.7.0:\n• כלי איפוס ייעודי ל-Microsoft Teams: תיקון שגיאה 894893981 (Keyset does not exist), שחרור נעילות WAM Broker, OneAuth, Credential Manager ומטמון אפליקציה.\n• כלי איפוס מקיף ל-Microsoft Outlook: פתרון שגיאה 894893981, תקיעות בפרופיל ובקשות סיסמה חוזרות ע\"י ניקוי SRS, RoamCache, WAM Broker ואסימוני אימות ללא פגיעה במיילים ובקובצי PST/OST.\n• חלונית התראה במרכז המסך עם ציון והנחיה ברורה להפעלת המחשב מחדש (Restart) בעת הצורך.\n• עדכון מקיף של ארגז כלי ה-IT ל-11 כלי עבודה פעילים ומעבר מלא של כל בדיקות היחידה.",
+    "latest_version": "3.8.0",
+    "release_title_he": "גרסה חדשה (3.8.0) - זיהוי ותגיות OneDrive בסייר האחסון ואיפוס Teams ו-Outlook",
+    "release_notes_he": "עדכון גרסה Polaris 3.8.0:\n• זיהוי ותגיות OneDrive חזותיות בסייר האחסון: הצגת תגית ☁️ OneDrive ברשימת הקבצים, בעץ התיקיות, בטבלת הקבצים הגדולים ביותר, באיתור כפילויות ובמפת השטחים (Treemap / Sunburst) להבחנה מיידית בקבצים ומסמכים המסונכרנים בענן.\n• כלי איפוס ייעודי ל-Microsoft Teams: תיקון שגיאה 894893981 (Keyset does not exist), שחרור נעילות WAM Broker, OneAuth, Credential Manager ומטמון אפליקציה.\n• כלי איפוס מקיף ל-Microsoft Outlook: פתרון שגיאה 894893981, תקיעות בפרופיל ובקשות סיסמה חוזרות ע\"י ניקוי SRS, RoamCache, WAM Broker ואסימוני אימות ללא פגיעה במיילים ובקובצי PST/OST.\n• חלונית התראה במרכז המסך עם ציון והנחיה ברורה להפעלת המחשב מחדש (Restart) בעת הצורך.",
     "download_url": "https://github.com/Hero-Ghost/polaris/releases/latest/download/Polaris.exe",
     "mandatory": false,
-    "sha256": ""
+    "sha256": "75b6f28d06549fa536c4522a1f50d6062262d88e1c8cf7b976bbdc4e528ef7dd"
   },
   "broadcast_message": {
     "active": false,
