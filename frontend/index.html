@@ -1098,7 +1098,10 @@
                 <div class="storage-canvas-container" id="storageCanvasContainer">
                   <canvas id="storageTreemapCanvas" width="1000" height="460"></canvas>
                   <div class="storage-treemap-tooltip hidden" id="storageTreemapTooltip">
-                    <div class="tooltip-title" id="ttName">filename.ext</div>
+                    <div class="tooltip-title" style="display: flex; align-items: center; justify-content: space-between; gap: 8px;">
+                      <span id="ttName">filename.ext</span>
+                      <span id="ttOneDriveBadge" class="badge badge-onedrive hidden" style="font-size: 9.5px; padding: 1px 5px;">☁️ OneDrive</span>
+                    </div>
                     <div class="tooltip-row">
                       <span class="text-muted" data-i18n="storageColSize">גודל:</span>
                       <strong id="ttSize">0 B</strong>

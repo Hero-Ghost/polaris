@@ -726,6 +726,8 @@ const I18N = {
     storageHideSystem: "הסתר קבצי מערכת חיוניים",
     storageSystemBadge: "מערכת",
     storageSystemProtectedTooltip: "קובץ מערכת מוגן של Windows - לא ניתן למחיקה",
+    storageOneDriveBadge: "OneDrive",
+    storageOneDriveTooltip: "קובץ מסונכרן בענן של OneDrive",
 
     /* Terms of Use & EULA */
     termsTitle: "תקנון תנאי שימוש ורישיון (EULA)",
@@ -1418,6 +1420,8 @@ const I18N = {
     storageHideSystem: "Hide Essential System Files",
     storageSystemBadge: "System",
     storageSystemProtectedTooltip: "Protected Windows system file - cannot be deleted",
+    storageOneDriveBadge: "OneDrive",
+    storageOneDriveTooltip: "File synced with Microsoft OneDrive",
 
     /* Terms of Use & EULA */
     termsTitle: "Terms of Use & License (EULA)",
@@ -8121,7 +8125,8 @@ function handleSunburstMouseMove(e) {
     if (centerHint) {
       const rootSize = currentSunburstNode.size || 1;
       const pct = ((hit.node.size / rootSize) * 100).toFixed(1);
-      centerHint.textContent = `${pct}% ${hit.node.is_dir ? "• לחץ לצלילה" : "• קובץ"}`;
+      const oneDriveTag = isOneDriveStoragePath(hit.node.path) ? " • ☁️ OneDrive" : "";
+      centerHint.textContent = `${pct}% ${hit.node.is_dir ? "• לחץ לצלילה" : "• קובץ"}${oneDriveTag}`;
     }
 
     if (changed) {
@@ -8287,6 +8292,10 @@ function renderStorageFileList() {
     const sizeFormatted = child.size_formatted || formatBytesJS(child.size);
     const pathEsc = esc(child.path || '');
     const nameEsc = esc(child.name || '');
+    const isOneDrive = isOneDriveStoragePath(child.path);
+    const oneDriveBadgeHtml = isOneDrive
+      ? `<span class="badge badge-onedrive" style="font-size: 10px; margin-inline-start: 6px; padding: 1px 6px; vertical-align: middle;" title="${esc(t('storageOneDriveTooltip') || 'קובץ מסונכרן בענן של OneDrive')}">☁️ ${esc(t('storageOneDriveBadge') || 'OneDrive')}</span>`
+      : '';
 
     return `
       <div class="storage-fileline ${inCollector ? 'is-in-collector' : ''}"
@@ -8299,7 +8308,7 @@ function renderStorageFileList() {
            onclick="${isDir ? `zoomSunburstToNodeById(${child.id})` : ''}"
            oncontextmenu="openStorageContextMenuFromEl(event, this)">
         <span class="storage-fileline-icon">${icon}</span>
-        <span class="storage-fileline-name" title="${pathEsc}">${nameEsc}</span>
+        <span class="storage-fileline-name" title="${pathEsc}">${nameEsc}${oneDriveBadgeHtml}</span>
         <span class="storage-fileline-size mono">${sizeFormatted}</span>
         ${!isAggregated && child.path ? `
           <button class="storage-fileline-btn" onclick="event.stopPropagation(); toggleCollectorFromEl(this.parentElement)" title="${inCollector ? 'הסר מסל האיסוף' : 'הוסף לסל מחיקה'}">
@@ -8550,13 +8559,17 @@ function renderStorageTree() {
     const indentPx = depth * 16;
     const icon = node.is_dir ? (isExpanded ? '📂' : '📁') : '📄';
     const propPct = node.percentage_of_parent || node.percentage_of_total || 0;
+    const isOneDrive = isOneDriveStoragePath(node.path);
+    const oneDriveBadgeHtml = isOneDrive
+      ? `<span class="badge badge-onedrive" style="font-size: 10px; margin-inline-start: 6px; padding: 1px 6px; vertical-align: middle;" title="${esc(t('storageOneDriveTooltip') || 'קובץ מסונכרן בענן של OneDrive')}">☁️ ${esc(t('storageOneDriveBadge') || 'OneDrive')}</span>`
+      : '';
 
     rows.push(`
       <tr class="storage-tree-row ${isSelected ? 'selected' : ''}" data-node-id="${node.id}" onclick="selectStorageTreeNode(${node.id})" oncontextmenu="openStorageContextMenu(event, ${node.id})">
         <td style="padding-inline-start: ${indentPx + 8}px;">
           ${node.is_dir ? `<span class="tree-expander" onclick="event.stopPropagation(); toggleStorageTreeExpand(${node.id})">${isExpanded ? '▼' : '▶'}</span>` : '<span class="tree-expander"></span>'}
           <span class="tree-icon">${icon}</span>
-          <span class="tree-name" title="${esc(node.path)}">${esc(node.name)}</span>
+          <span class="tree-name" title="${esc(node.path)}">${esc(node.name)}</span>${oneDriveBadgeHtml}
         </td>
         <td>
           <div class="prop-bar-wrap" title="${propPct}%">
@@ -9096,6 +9109,17 @@ function handleTreemapMouseMove(e) {
     document.getElementById('ttSize').textContent = hovered.size_formatted;
     document.getElementById('ttPath').textContent = hovered.path;
 
+    const oneDriveBadge = document.getElementById('ttOneDriveBadge');
+    if (oneDriveBadge) {
+      if (isOneDriveStoragePath(hovered.path)) {
+        oneDriveBadge.classList.remove('hidden');
+        oneDriveBadge.textContent = `☁️ ${t('storageOneDriveBadge') || 'OneDrive'}`;
+        oneDriveBadge.title = t('storageOneDriveTooltip') || 'קובץ מסונכרן בענן של OneDrive';
+      } else {
+        oneDriveBadge.classList.add('hidden');
+      }
+    }
+
     let tipX = mouseX + 15;
     let tipY = mouseY + 15;
     if (tipX + 260 > rect.width) tipX = mouseX - 260;
@@ -9287,6 +9311,10 @@ function renderStorageTopFiles() {
     const badgeHtml = isSystem
       ? `<span class="badge badge-accent" style="font-size: 10px; margin-inline-start: 6px; padding: 1px 6px; vertical-align: middle; background: rgba(59, 130, 246, 0.15); color: #60a5fa; border: 1px solid rgba(59, 130, 246, 0.3);" title="${esc(f.protection_reason || 'קובץ מערכת של Windows')}">🛡️ ${t('storageSystemBadge') || 'מערכת'}</span>`
       : '';
+    const isOneDrive = isOneDriveStoragePath(f.path);
+    const oneDriveBadgeHtml = isOneDrive
+      ? `<span class="badge badge-onedrive" style="font-size: 10px; margin-inline-start: 6px; padding: 1px 6px; vertical-align: middle;" title="${esc(t('storageOneDriveTooltip') || 'קובץ מסונכרן בענן של OneDrive')}">☁️ ${esc(t('storageOneDriveBadge') || 'OneDrive')}</span>`
+      : '';
 
     const actionDeleteHtml = isProtected
       ? `<button class="btn btn-sm btn-icon btn-disabled" disabled title="${esc(f.protection_reason || t('storageSystemProtectedTooltip') || 'קובץ מערכת מוגן - לא ניתן למחיקה')}" style="opacity: 0.35; cursor: not-allowed; filter: grayscale(1);">🔒</button>`
@@ -9295,7 +9323,7 @@ function renderStorageTopFiles() {
     return `
       <tr class="storage-top-row" data-path="${esc(f.path)}" data-node-id="${f.id}" data-is-system="${isSystem ? 'true' : 'false'}" data-is-protected="${isProtected ? 'true' : 'false'}" oncontextmenu="openStorageContextMenuFromEl(event, this)">
         <td class="text-muted">${i + 1}</td>
-        <td><strong>${esc(f.name)}</strong>${badgeHtml}</td>
+        <td><strong>${esc(f.name)}</strong>${badgeHtml}${oneDriveBadgeHtml}</td>
         <td class="mono font-bold">${esc(f.size_formatted)}</td>
         <td class="mono">${f.percentage}%</td>
         <td class="mono text-muted text-xs" style="max-width: 300px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap;" title="${esc(f.path)}">${esc(f.path)}</td>
@@ -9372,12 +9400,16 @@ async function runStorageDuplicateScan() {
                   <tbody>
                     ${group.files.map(f => {
                       const isProt = f.is_safe_to_delete === false || f.is_system || isProtectedStoragePath(f.path, f);
+                      const isOneDrive = isOneDriveStoragePath(f.path);
+                      const oneDriveBadgeHtml = isOneDrive
+                        ? `<span class="badge badge-onedrive" style="font-size: 10px; margin-inline-start: 6px; padding: 1px 6px; vertical-align: middle;" title="${esc(t('storageOneDriveTooltip') || 'קובץ מסונכרן בענן של OneDrive')}">☁️ ${esc(t('storageOneDriveBadge') || 'OneDrive')}</span>`
+                        : '';
                       const deleteBtn = isProt
                         ? `<button class="btn btn-sm btn-icon btn-disabled" disabled title="קובץ מערכת מוגן - לא ניתן למחיקה" style="opacity: 0.35; cursor: not-allowed; filter: grayscale(1);">🔒</button>`
                         : `<button class="btn btn-sm btn-icon" data-path="${esc(f.path)}" onclick="performStorageActionFromEl(this, 'recycle')" title="העבר לסל המחזור">🗑️</button>`;
                       return `
                         <tr data-node-id="${f.id}">
-                          <td class="mono font-bold" style="width: 25%;">${esc(f.name)}</td>
+                          <td class="mono font-bold" style="width: 25%;">${esc(f.name)}${oneDriveBadgeHtml}</td>
                           <td class="mono text-muted text-xs">${esc(f.path)}</td>
                           <td style="width: 110px; text-align: end;">
                             <button class="btn btn-sm btn-icon" data-path="${esc(f.path)}" onclick="performStorageActionFromEl(this, 'reveal')" title="הצג בסייר">📁</button>
@@ -9455,6 +9487,17 @@ function isProtectedStoragePath(path, node = null) {
   ];
   if (parts.some(seg => protectedSegments.includes(seg))) return true;
   return false;
+}
+
+function isOneDriveStoragePath(path) {
+  if (!path || typeof path !== 'string') return false;
+  const p = path.toLowerCase().replace(/\//g, '\\');
+  // Exclude OneDrive application binaries/install directories
+  if (p.includes('\\appdata\\local\\microsoft\\onedrive') || p.includes('\\program files\\microsoft onedrive') || p.includes('\\program files (x86)\\microsoft onedrive')) {
+    return false;
+  }
+  // Matches sync folder: e.g. \Users\<User>\OneDrive, \OneDrive\, \OneDrive - Organization\
+  return /(?:^|[\\/])onedrive(?: - [^\\/]+)?(?:[\\/]|$)/i.test(p);
 }
 
 function openStorageContextMenu(e, nodeId, path = "") {
