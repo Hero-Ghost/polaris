@@ -235,6 +235,240 @@ def reset_outlook_profile_cache() -> Dict[str, Any]:
     }
 
 
+def reset_teams_cache_and_auth() -> Dict[str, Any]:
+    """
+    Comprehensively resets Microsoft Teams (New Teams and Classic) to resolve sign-in errors,
+    error 894893981 (Keyset does not exist / DPAPI token mismatch), blank login screens,
+    and corrupted local app data.
+    """
+    if not IS_WINDOWS:
+        return {"success": False, "message": "נתמך בסביבת Windows בלבד"}
+
+    # 1. Terminate all Teams processes
+    killed_count = 0
+    for proc_name in ['ms-teams.exe', 'Teams.exe', 'msteams.exe', 'msteamsupdate.exe']:
+        try:
+            res = run_hidden(['taskkill.exe', '/F', '/IM', proc_name], capture_output=True)
+            if res.returncode == 0:
+                killed_count += 1
+        except Exception:
+            pass
+
+    time.sleep(0.4)
+
+    local_app_data = os.environ.get('LOCALAPPDATA', '')
+    appdata = os.environ.get('APPDATA', '')
+
+    # 2. Reset New Teams (MSIX package: MSTeams_8wekyb3d8bbwe)
+    new_teams_cache_paths = [
+        os.path.join(local_app_data, r'Packages\MSTeams_8wekyb3d8bbwe\LocalCache\Microsoft\MSTeams'),
+        os.path.join(local_app_data, r'Packages\MSTeams_8wekyb3d8bbwe\LocalCache'),
+        os.path.join(local_app_data, r'Packages\MSTeams_8wekyb3d8bbwe\TempState'),
+        os.path.join(local_app_data, r'Packages\MSTeams_8wekyb3d8bbwe\AC\INetCache'),
+        os.path.join(local_app_data, r'Packages\MicrosoftTeams_8wekyb3d8bbwe\LocalCache'),
+    ]
+    for path in new_teams_cache_paths:
+        if os.path.exists(path):
+            try:
+                shutil.rmtree(path, ignore_errors=True)
+            except Exception:
+                pass
+
+    # Optional AppX reset for MSTeams
+    try:
+        run_hidden(
+            ['powershell.exe', '-NoProfile', '-NonInteractive', '-Command',
+             'Get-AppxPackage *MSTeams* | Reset-AppxPackage -ErrorAction SilentlyContinue'],
+            timeout=8,
+            capture_output=True
+        )
+    except Exception:
+        pass
+
+    # 3. Reset Classic Teams cache
+    classic_teams_paths = [
+        os.path.join(appdata, r'Microsoft\Teams'),
+        os.path.join(local_app_data, r'Microsoft\Teams'),
+    ]
+    for path in classic_teams_paths:
+        if os.path.isdir(path):
+            for sub in ['Cache', 'blob_storage', 'databases', 'GPUCache', 'IndexedDB', 'Local Storage', 'tmp', 'Service Worker', 'Network']:
+                sub_path = os.path.join(path, sub)
+                if os.path.exists(sub_path):
+                    try:
+                        shutil.rmtree(sub_path, ignore_errors=True)
+                    except Exception:
+                        pass
+
+    # 4. Clear WAM Broker / TokenBroker / OneAuth / IdentityCache (The core cause of 894893981)
+    wam_paths = [
+        os.path.join(local_app_data, r'Packages\Microsoft.AAD.BrokerPlugin_cw5n1h2txyewy\AC\TokenBroker\Accounts'),
+        os.path.join(local_app_data, r'Packages\Microsoft.AAD.BrokerPlugin_cw5n1h2txyewy\AC\TokenBroker\Cache'),
+        os.path.join(local_app_data, r'Packages\Microsoft.AAD.BrokerPlugin_cw5n1h2txyewy\LocalCache'),
+        os.path.join(local_app_data, r'Microsoft\TokenBroker\Accounts'),
+        os.path.join(local_app_data, r'Microsoft\TokenBroker\Cache'),
+        os.path.join(local_app_data, r'Microsoft\OneAuth'),
+        os.path.join(local_app_data, r'Microsoft\IdentityCache'),
+    ]
+    for path in wam_paths:
+        if os.path.exists(path):
+            try:
+                shutil.rmtree(path, ignore_errors=True)
+            except Exception:
+                pass
+
+    # 5. Clear Registry AAD Storage
+    try:
+        run_hidden(
+            ['reg.exe', 'delete', r'HKCU\Software\Microsoft\Windows\CurrentVersion\AAD\Storage', '/f'],
+            capture_output=True
+        )
+    except Exception:
+        pass
+
+    # 6. Purge stale Teams credentials from Credential Manager
+    deleted_creds = 0
+    try:
+        res = run_hidden(['cmdkey.exe', '/list'], capture_output=True, text=True)
+        output = res.stdout or ''
+        targets = []
+        for line in output.splitlines():
+            line_str = line.strip()
+            if line_str.startswith("Target:") or line_str.startswith("יעד:"):
+                target = line_str.split(":", 1)[1].strip()
+                target_lower = target.lower()
+                if any(k in target_lower for k in ['msteams', 'teams', 'microsoft.aad.brokerplugin']):
+                    targets.append(target)
+        for tgt in targets:
+            try:
+                run_hidden(['cmdkey.exe', f'/delete:{tgt}'], capture_output=True)
+                deleted_creds += 1
+            except Exception:
+                pass
+    except Exception:
+        pass
+
+    return {
+        "success": True,
+        "message": "איפוס Microsoft Teams הושלם בהצלחה. מטמון האפליקציה, אסימוני WAM ו-OneAuth (שגיאה 894893981) נוקו.",
+        "restart_recommended": True,
+        "restart_reason": "מומלץ לבצע הפעלה מחדש (Restart) של המחשב כדי ש-Windows ייצור מפתחות אימות והצפנה נקיים (DPAPI Keyset) עבור חשבון מיקרוסופט לפני הפעלת Teams.",
+        "processes_closed": killed_count,
+        "credentials_cleared": deleted_creds
+    }
+
+
+def reset_outlook_cache_and_auth() -> Dict[str, Any]:
+    """
+    Comprehensively resets Microsoft Outlook to resolve error 894893981 (Keyset does not exist),
+    repeated password loops, stuck 'Loading Profile...' screens, and corrupted WAM/Autodiscover cache.
+    Personal email messages, PST, and OST data files are NEVER deleted.
+    """
+    if not IS_WINDOWS:
+        return {"success": False, "message": "נתמך בסביבת Windows בלבד"}
+
+    # 1. Close Outlook processes
+    killed_count = 0
+    for proc_name in ['OUTLOOK.EXE', 'olk.exe']:
+        try:
+            res = run_hidden(['taskkill.exe', '/F', '/IM', proc_name], capture_output=True)
+            if res.returncode == 0:
+                killed_count += 1
+        except Exception:
+            pass
+
+    time.sleep(0.4)
+
+    local_app_data = os.environ.get('LOCALAPPDATA', '')
+    appdata = os.environ.get('APPDATA', '')
+
+    # 2. Delete corrupt Send/Receive (.srs) files
+    srs_dir = os.path.join(appdata, r'Microsoft\Outlook')
+    deleted_srs = 0
+    if os.path.isdir(srs_dir):
+        for srs_file in glob.glob(os.path.join(srs_dir, '*.srs')):
+            try:
+                os.remove(srs_file)
+                deleted_srs += 1
+            except OSError:
+                pass
+
+    # 3. Purge RoamCache, GlbSync, and Offline Address Books
+    outlook_cache_dirs = [
+        os.path.join(local_app_data, r'Microsoft\Outlook\RoamCache'),
+        os.path.join(local_app_data, r'Microsoft\Outlook\GlbSync'),
+        os.path.join(local_app_data, r'Packages\Microsoft.OutlookForWindows_8wekyb3d8bbwe\LocalCache'),
+        os.path.join(local_app_data, r'Packages\Microsoft.OutlookForWindows_8wekyb3d8bbwe\TempState'),
+    ]
+    for p in outlook_cache_dirs:
+        if os.path.exists(p):
+            try:
+                shutil.rmtree(p, ignore_errors=True)
+            except Exception:
+                pass
+
+    # 4. Purge WAM Broker / TokenBroker / OneAuth (Root cause of 894893981 in Outlook/M365)
+    wam_paths = [
+        os.path.join(local_app_data, r'Packages\Microsoft.AAD.BrokerPlugin_cw5n1h2txyewy\AC\TokenBroker\Accounts'),
+        os.path.join(local_app_data, r'Packages\Microsoft.AAD.BrokerPlugin_cw5n1h2txyewy\AC\TokenBroker\Cache'),
+        os.path.join(local_app_data, r'Packages\Microsoft.AAD.BrokerPlugin_cw5n1h2txyewy\LocalCache'),
+        os.path.join(local_app_data, r'Microsoft\TokenBroker\Accounts'),
+        os.path.join(local_app_data, r'Microsoft\TokenBroker\Cache'),
+        os.path.join(local_app_data, r'Microsoft\OneAuth'),
+        os.path.join(local_app_data, r'Microsoft\IdentityCache'),
+    ]
+    for path in wam_paths:
+        if os.path.exists(path):
+            try:
+                shutil.rmtree(path, ignore_errors=True)
+            except Exception:
+                pass
+
+    # 5. Clean Autodiscover cache in Registry
+    reg_paths = [
+        r'HKCU\Software\Microsoft\Office\16.0\Outlook\AutoDiscover\RedirectUrlHistory',
+        r'HKCU\Software\Microsoft\Office\15.0\Outlook\AutoDiscover\RedirectUrlHistory',
+        r'HKCU\Software\Microsoft\Windows\CurrentVersion\AAD\Storage',
+    ]
+    for rp in reg_paths:
+        try:
+            run_hidden(['reg.exe', 'delete', rp, '/f'], capture_output=True)
+        except Exception:
+            pass
+
+    # 6. Purge stale Office and Outlook credentials from Credential Manager
+    deleted_creds = 0
+    try:
+        res = run_hidden(['cmdkey.exe', '/list'], capture_output=True, text=True)
+        output = res.stdout or ''
+        targets = []
+        for line in output.splitlines():
+            line_str = line.strip()
+            if line_str.startswith("Target:") or line_str.startswith("יעד:"):
+                target = line_str.split(":", 1)[1].strip()
+                target_lower = target.lower()
+                if any(k in target_lower for k in ['microsoftoffice16', 'ms.outlook', 'outlook', 'sso_pop']):
+                    targets.append(target)
+        for tgt in targets:
+            try:
+                run_hidden(['cmdkey.exe', f'/delete:{tgt}'], capture_output=True)
+                deleted_creds += 1
+            except Exception:
+                pass
+    except Exception:
+        pass
+
+    return {
+        "success": True,
+        "message": "איפוס Microsoft Outlook הושלם בהצלחה. הגדרות הפרופיל (SRS), מטמון RoamCache ואסימוני WAM (שגיאה 894893981) נוקו ללא פגיעה במיילים.",
+        "restart_recommended": True,
+        "restart_reason": "מומלץ לבצע הפעלה מחדש (Restart) של המחשב כדי ש-Windows ייצור מפתחות אימות והצפנה נקיים (DPAPI Keyset) עבור חשבון מיקרוסופט לפני הפעלת Outlook.",
+        "processes_closed": killed_count,
+        "srs_deleted": deleted_srs,
+        "credentials_cleared": deleted_creds
+    }
+
+
 def reset_network_drives() -> Dict[str, Any]:
     """
     Disconnects hung or ghost mapped network drives (red-X drives),
@@ -446,6 +680,32 @@ ENTERPRISE_TOOLS: Dict[str, Dict[str, Any]] = {
         "btn_he": "אפס מנגנון אימות Entra",
         "btn_en": "Reset Entra Auth",
         "handler": reset_entra_id_broker
+    },
+    "teams_reset": {
+        "id": "teams_reset",
+        "category": "endpoint",
+        "title_he": "איפוס Microsoft Teams (שגיאה 894893981 / כשל כניסה)",
+        "title_en": "Reset Microsoft Teams (Fix Error 894893981 / Auth)",
+        "desc_he": "פותר כשלים בהתחברות לחשבון מיקרוסופט, מסך לבן ושגיאה 894893981 (Keyset does not exist) ע\"י ניקוי מטמון Teams, WAM Broker ואסימוני OneAuth.",
+        "desc_en": "Fixes Microsoft account sign-in failures, blank screens, and error 894893981 (Keyset does not exist) by clearing Teams cache, WAM Broker, and OneAuth tokens.",
+        "badge_he": "Microsoft Teams",
+        "badge_en": "Microsoft Teams",
+        "btn_he": "אפס את Microsoft Teams",
+        "btn_en": "Reset Microsoft Teams",
+        "handler": reset_teams_cache_and_auth
+    },
+    "outlook_reset": {
+        "id": "outlook_reset",
+        "category": "endpoint",
+        "title_he": "איפוס Microsoft Outlook (שגיאה 894893981 / פרופיל ואימות)",
+        "title_en": "Reset Microsoft Outlook (Fix Error 894893981 / Profile)",
+        "desc_he": "פותר שגיאות 894893981 (Keyset does not exist), בקשות סיסמה חוזרות ותקיעות בפרופיל ע\"י ניקוי הגדרות SRS, מטמון RoamCache, WAM Broker ואסימוני OneAuth ללא פגיעה במיילים.",
+        "desc_en": "Fixes error 894893981 (Keyset does not exist), password loops, and profile hangs by clearing SRS settings, RoamCache, WAM Broker, and OneAuth tokens without touching emails.",
+        "badge_he": "Microsoft Outlook",
+        "badge_en": "Microsoft Outlook",
+        "btn_he": "אפס את Microsoft Outlook",
+        "btn_en": "Reset Microsoft Outlook",
+        "handler": reset_outlook_cache_and_auth
     },
     "outlook_srs_reset": {
         "id": "outlook_srs_reset",

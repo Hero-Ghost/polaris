@@ -409,7 +409,7 @@ const I18N = {
     /* Enterprise IT Toolkit */
     enterpriseSuiteTitle: "ארגז כלי IT לארגונים (Enterprise IT Toolkit)",
     enterpriseSuiteDesc: "פתרונות מיידיים לתקלות IT נפוצות בארגונים מבוססי Active Directory, Entra ID, GPO, M365, שרתי קבצים ורשת ארגונית.",
-    enterpriseBadge: "10 כלי עבודה",
+    enterpriseBadge: "11 כלי עבודה",
 
     toolKerberosTitle: "איפוס כרטיסי Kerberos (שחרור הרשאות שיתוף)",
     toolKerberosBadge: "Active Directory",
@@ -439,12 +439,19 @@ const I18N = {
     confirmEntraTitle: "אישור איפוס מנגנון אימות Entra ID",
     confirmEntraDesc: "פעולה זו תסגור תהליכי Teams ו-Office ותנקה את מטמון ה-WAM (Web Account Manager) של Entra ID.\n\nהפעולה מתקנת חלונות כניסה לבנים ריקים ושגיאות CAA50021. קובצי משתמש ומיילים לא יימחקו.\n\nהאם להמשיך?",
 
-    toolOutlookTitle: "איפוס הגדרות ופרופיל Outlook תקוע (SRS Purge)",
+    toolTeamsTitle: "איפוס Microsoft Teams (שגיאה 894893981 / כשל כניסה)",
+    toolTeamsBadge: "Microsoft Teams",
+    toolTeamsDesc: "מתקן כשלים בהתחברות לחשבון מיקרוסופט, מסך לבן ושגיאה 894893981 (Keyset does not exist) ע\"י ניקוי מטמון Teams, WAM Broker ואסימוני OneAuth.",
+    toolTeamsBtn: "אפס את Microsoft Teams",
+    confirmTeamsTitle: "אישור איפוס Microsoft Teams",
+    confirmTeamsDesc: "פעולה זו תסגור תהליכי Teams, תנקה את מטמון האפליקציה המקומי (New Teams ו-Classic), ותאפס את אסימוני ה-WAM TokenBroker, OneAuth ומפתחות אימות פגומים שגורמים לשגיאה 894893981 ולחוסר יכולת להתחבר לחשבון מיקרוסופט.\n\nקובצי משתמש והודעות בענן בטוחים לחלוטין. האם להמשיך?",
+
+    toolOutlookTitle: "איפוס Microsoft Outlook (שגיאה 894893981 / פרופיל ואימות)",
     toolOutlookBadge: "Microsoft Outlook",
-    toolOutlookDesc: "פותר תקיעות של Outlook במסך 'Loading Profile...' או כשלים בשליחה/קבלה ללא פגיעה בתיבת הדואר.",
-    toolOutlookBtn: "אפס הגדרות Outlook",
-    confirmOutlookTitle: "אישור איפוס הגדרות Outlook",
-    confirmOutlookDesc: "פעולה זו תסגור את Outlook ותמחק את קובץ ה-SRS (הגדרות שלח/קבל) ומטמון ה-Autodiscover המקומי.\n\nתיבת הדואר, המיילים ולוח השנה לא יימחקו כלל. האם להמשיך?",
+    toolOutlookDesc: "פותר שגיאות 894893981 (Keyset does not exist), בקשות סיסמה חוזרות ותקיעות בפרופיל ע\"י ניקוי SRS, RoamCache, WAM Broker ואסימוני OneAuth ללא פגיעה במיילים.",
+    toolOutlookBtn: "אפס את Microsoft Outlook",
+    confirmOutlookTitle: "אישור איפוס Microsoft Outlook",
+    confirmOutlookDesc: "פעולה זו תסגור את Outlook ותנקה את קובצי ה-SRS (שליחה/קבלה), מטמון RoamCache, Autodiscover ואסימוני WAM TokenBroker ו-OneAuth הפגומים שגורמים לשגיאה 894893981.\n\nתיבות הדואר, קובצי ה-PST/OST והמיילים שמורים ובטוחים לחלוטין. האם להמשיך?",
 
     toolDrivesTitle: "שחרור כונני רשת תקועים ואיפוס SMB",
     toolDrivesBadge: "שיתוף קבצים",
@@ -1094,7 +1101,7 @@ const I18N = {
     /* Enterprise IT Toolkit */
     enterpriseSuiteTitle: "Enterprise IT Toolkit",
     enterpriseSuiteDesc: "Instant remedies for high-impact enterprise IT issues across Active Directory, Entra ID, GPO, M365, file shares and network infrastructure.",
-    enterpriseBadge: "10 Tools Available",
+    enterpriseBadge: "11 Tools Available",
 
     toolKerberosTitle: "Purge Kerberos Tickets (Share Permissions)",
     toolKerberosBadge: "Active Directory",
@@ -1124,12 +1131,19 @@ const I18N = {
     confirmEntraTitle: "Confirm Entra ID WAM Broker Reset",
     confirmEntraDesc: "This closes Teams and Office processes, and resets the Entra ID WAM broker token cache.\n\nResolves blank login windows and CAA50021/CAA2000B errors. Synced files and emails are untouched.\n\nProceed?",
 
-    toolOutlookTitle: "Reset Outlook Profile & Send/Receive (.SRS)",
+    toolTeamsTitle: "Reset Microsoft Teams (Fix Error 894893981 / Auth)",
+    toolTeamsBadge: "Microsoft Teams",
+    toolTeamsDesc: "Fixes Microsoft account sign-in failures, blank screens, and error 894893981 (Keyset does not exist) by resetting Teams cache, WAM Broker, and OneAuth.",
+    toolTeamsBtn: "Reset Microsoft Teams",
+    confirmTeamsTitle: "Confirm Microsoft Teams Reset",
+    confirmTeamsDesc: "This will terminate Teams processes, clear local app caches (New Teams & Classic), and reset corrupted WAM TokenBroker and OneAuth tokens causing error 894893981 and sign-in loops.\n\nCloud chats and files are completely safe. Proceed?",
+
+    toolOutlookTitle: "Reset Microsoft Outlook (Fix Error 894893981 / Profile)",
     toolOutlookBadge: "Microsoft Outlook",
-    toolOutlookDesc: "Fixes Outlook hanging on \"Loading Profile...\" or stuck Send/Receive queues without touching mailbox data.",
-    toolOutlookBtn: "Reset Outlook Settings",
-    confirmOutlookTitle: "Confirm Outlook Settings Reset",
-    confirmOutlookDesc: "This will close Outlook and purge corrupted Send/Receive (.SRS) files and Autodiscover cache.\n\nMailbox data, emails, and calendar items are completely safe and untouched.\n\nProceed?",
+    toolOutlookDesc: "Fixes error 894893981 (Keyset does not exist), password loops, and profile hangs by clearing SRS files, RoamCache, WAM Broker, and OneAuth without touching emails.",
+    toolOutlookBtn: "Reset Microsoft Outlook",
+    confirmOutlookTitle: "Confirm Microsoft Outlook Reset",
+    confirmOutlookDesc: "This will close Outlook, remove corrupted Send/Receive (.SRS) files, RoamCache, Autodiscover, and reset corrupted WAM TokenBroker and OneAuth tokens causing error 894893981.\n\nMailbox data, PST/OST files, and emails are completely safe. Proceed?",
 
     toolDrivesTitle: "Reset Stuck Mapped Drives (SMB Client)",
     toolDrivesBadge: "File Shares",
@@ -1674,6 +1688,7 @@ document.addEventListener('DOMContentLoaded', async () => {
     closeProcModal();
     closeCrashModal();
     closeConfirmModal();
+    if (typeof closeCenterAlertModal === 'function') closeCenterAlertModal();
     closeTermsModal();
     closeBackupCenterModal();
     closeUpdateModal();
@@ -5486,6 +5501,49 @@ function closeConfirmModal() {
 }
 
 // -------------------------------------------------------------
+// Center Screen Alert / Result Modal (with Restart Notice)
+// -------------------------------------------------------------
+function showCenterAlertModal(opts) {
+  const modal = document.getElementById('centerAlertModal');
+  if (!modal) {
+    alert((opts.title ? opts.title + '\n\n' : '') + (opts.message || ''));
+    return;
+  }
+  const titleEl = document.getElementById('centerAlertTitle');
+  const msgEl = document.getElementById('centerAlertMessage');
+  const restartBox = document.getElementById('centerAlertRestartBox');
+  const restartTitle = document.getElementById('centerAlertRestartTitle');
+  const restartDesc = document.getElementById('centerAlertRestartDesc');
+  const okBtn = document.getElementById('btnCenterAlertOk');
+
+  if (titleEl) titleEl.textContent = opts.title || (currentLang === 'he' ? "איפוס הושלם בהצלחה" : "Reset Completed Successfully");
+  if (msgEl) msgEl.textContent = opts.message || '';
+
+  if (opts.restartRecommended) {
+    if (restartBox) restartBox.style.display = 'flex';
+    if (restartTitle && opts.restartTitle) restartTitle.textContent = opts.restartTitle;
+    if (restartDesc && opts.restartDesc) restartDesc.textContent = opts.restartDesc;
+  } else {
+    if (restartBox) restartBox.style.display = 'none';
+  }
+
+  if (okBtn) {
+    okBtn.textContent = opts.okText || (currentLang === 'he' ? "אישור" : "OK");
+    okBtn.onclick = () => {
+      closeCenterAlertModal();
+      if (typeof opts.onOk === 'function') opts.onOk();
+    };
+  }
+
+  modal.classList.remove('hidden');
+}
+
+function closeCenterAlertModal() {
+  const modal = document.getElementById('centerAlertModal');
+  if (modal) modal.classList.add('hidden');
+}
+
+// -------------------------------------------------------------
 // Icon & Thumbnail Cache Rebuild (Enterprise IT)
 // -------------------------------------------------------------
 let iconCacheStatus = null;
@@ -5620,6 +5678,22 @@ const ENTERPRISE_TOOL_META = {
     toastProgressHe: 'מאפס מנגנון אימות Entra ID WAM Broker...',
     toastProgressEn: 'Resetting Entra ID WAM Broker token cache...'
   },
+  teams_reset: {
+    confirmTitleKey: 'confirmTeamsTitle',
+    confirmDescKey: 'confirmTeamsDesc',
+    btnConfirmKey: 'toolTeamsBtn',
+    btnConfirmClass: 'btn-solid-primary',
+    toastProgressHe: 'מאפס את Microsoft Teams, מנקה מטמון ואסימוני אימות WAM...',
+    toastProgressEn: 'Resetting Microsoft Teams, clearing caches & WAM auth tokens...'
+  },
+  outlook_reset: {
+    confirmTitleKey: 'confirmOutlookTitle',
+    confirmDescKey: 'confirmOutlookDesc',
+    btnConfirmKey: 'toolOutlookBtn',
+    btnConfirmClass: 'btn-solid-primary',
+    toastProgressHe: 'מאפס את Microsoft Outlook, מנקה RoamCache, SRS ואסימוני אימות WAM...',
+    toastProgressEn: 'Resetting Microsoft Outlook, clearing RoamCache, SRS & WAM auth tokens...'
+  },
   outlook_srs_reset: {
     confirmTitleKey: 'confirmOutlookTitle',
     confirmDescKey: 'confirmOutlookDesc',
@@ -5724,6 +5798,21 @@ async function executeEnterpriseTool(toolId) {
         currentLang === 'he' ? "פעולת ה-IT הושלמה" : "Enterprise Tool Completed",
         data.message || (currentLang === 'he' ? "הפעולה בוצעה בהצלחה." : "Action executed successfully.")
       );
+
+      // Pop up notification in the center of the screen (with restart advice)
+      if (data.restart_recommended || toolId === 'teams_reset' || toolId === 'outlook_reset' || toolId === 'entra_wam_reset') {
+        showCenterAlertModal({
+          title: currentLang === 'he' ? "איפוס הושלם בהצלחה" : "Reset Completed Successfully",
+          message: data.message,
+          restartRecommended: Boolean(data.restart_recommended || toolId === 'teams_reset' || toolId === 'outlook_reset'),
+          restartTitle: currentLang === 'he'
+            ? "שים לב — מומלץ לבצע הפעלה מחדש (Restart):"
+            : "Notice — System Restart Recommended:",
+          restartDesc: data.restart_reason || (currentLang === 'he'
+            ? "כדי ש-Windows ייצור מפתחות אימות והצפנה נקיים (DPAPI Keyset) עבור חשבון מיקרוסופט ויפתור את שגיאה 894893981, מומלץ להפעיל מחדש את המחשב כעת לפני פתיחת האפליקציה."
+            : "To allow Windows to generate fresh DPAPI cryptographic keysets for Microsoft accounts and resolve error 894893981, it is strongly recommended to restart your computer before launching the application.")
+        });
+      }
     } else {
       showToast(
         currentLang === 'he' ? "שגיאה בביצוע הפעולה" : "Execution Error",

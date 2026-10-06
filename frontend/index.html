@@ -2464,7 +2464,7 @@
                 <path stroke-linecap="round" stroke-linejoin="round" d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4"/>
               </svg>
               <span data-i18n="enterpriseSuiteTitle" style="font-size: 15px; font-weight: 700;">ארגז כלי IT לארגונים (Enterprise IT Toolkit)</span>
-              <span class="badge badge-accent" data-i18n="enterpriseBadge">10 כלי עבודה</span>
+              <span class="badge badge-accent" data-i18n="enterpriseBadge">11 כלי עבודה</span>
             </div>
           </div>
           <p class="card-sub" style="margin-bottom: 16px; max-width: 860px;" data-i18n="enterpriseSuiteDesc">פתרונות מיידיים לתקלות IT נפוצות בארגונים מבוססי Active Directory, Entra ID, GPO, M365, שרתי קבצים ורשת ארגונית.</p>
@@ -2567,27 +2567,51 @@
               </div>
             </div>
 
-            <!-- 5. Reset Outlook Profile & SRS Purge -->
-            <div class="card" id="cardTool_outlook_srs_reset">
+            <!-- 5. Reset Microsoft Teams (Fix Error 894893981 / Auth) -->
+            <div class="card" id="cardTool_teams_reset">
               <div class="card-head">
                 <div>
                   <div class="card-title">
-                    <span data-i18n="toolOutlookTitle">איפוס הגדרות ופרופיל Outlook תקוע (SRS Purge)</span>
-                    <span class="badge badge-accent" data-i18n="toolOutlookBadge">Microsoft Outlook</span>
+                    <span data-i18n="toolTeamsTitle">איפוס Microsoft Teams (שגיאה 894893981 / כשל כניסה)</span>
+                    <span class="badge badge-accent" data-i18n="toolTeamsBadge">Microsoft Teams</span>
                   </div>
-                  <p class="card-sub" data-i18n="toolOutlookDesc">פותר תקיעות של Outlook במסך 'Loading Profile...' או כשלים בשליחה/קבלה ללא פגיעה בתיבת הדואר.</p>
+                  <p class="card-sub" data-i18n="toolTeamsDesc">מתקן כשלים בהתחברות לחשבון מיקרוסופט, מסך לבן ושגיאה 894893981 (Keyset does not exist) ע"י ניקוי מטמון Teams, WAM Broker ואסימוני OneAuth.</p>
                 </div>
                 <div class="card-tools">
-                  <button class="btn btn-primary" id="btnRunTool_outlook_srs_reset" onclick="confirmRunEnterpriseTool('outlook_srs_reset')">
+                  <button class="btn btn-primary" id="btnRunTool_teams_reset" onclick="confirmRunEnterpriseTool('teams_reset')">
                     <svg fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24" style="width: 15px; height: 15px;">
-                      <path stroke-linecap="round" stroke-linejoin="round" d="M3 8l7.89 5.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z"/>
+                      <path stroke-linecap="round" stroke-linejoin="round" d="M17 8h2a2 2 0 012 2v6a2 2 0 01-2 2h-2v4l-4-4H9a1.994 1.994 0 01-1.414-.586m0 0L11 14h4a2 2 0 002-2V6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2v4l.586-.586z"/>
                     </svg>
-                    <span data-i18n="toolOutlookBtn">אפס הגדרות Outlook</span>
+                    <span data-i18n="toolTeamsBtn">אפס את Microsoft Teams</span>
                   </button>
                 </div>
               </div>
               <div class="card-foot">
-                <span class="mono faint">Outlook.srs · Autodiscover Cache · Mailbox Intact</span>
+                <span class="mono faint">MSTeams · WAM Broker · OneAuth · Fix 894893981 / Keyset Mismatch</span>
+              </div>
+            </div>
+
+            <!-- 6. Reset Microsoft Outlook (Fix Error 894893981 / Profile & Auth) -->
+            <div class="card" id="cardTool_outlook_reset">
+              <div class="card-head">
+                <div>
+                  <div class="card-title">
+                    <span data-i18n="toolOutlookTitle">איפוס Microsoft Outlook (שגיאה 894893981 / פרופיל ואימות)</span>
+                    <span class="badge badge-accent" data-i18n="toolOutlookBadge">Microsoft Outlook</span>
+                  </div>
+                  <p class="card-sub" data-i18n="toolOutlookDesc">פותר שגיאות 894893981 (Keyset does not exist), בקשות סיסמה חוזרות ותקיעות בפרופיל ע"י ניקוי SRS, RoamCache, WAM Broker ואסימוני OneAuth ללא פגיעה במיילים.</p>
+                </div>
+                <div class="card-tools">
+                  <button class="btn btn-primary" id="btnRunTool_outlook_reset" onclick="confirmRunEnterpriseTool('outlook_reset')">
+                    <svg fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24" style="width: 15px; height: 15px;">
+                      <path stroke-linecap="round" stroke-linejoin="round" d="M3 8l7.89 5.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z"/>
+                    </svg>
+                    <span data-i18n="toolOutlookBtn">אפס את Microsoft Outlook</span>
+                  </button>
+                </div>
+              </div>
+              <div class="card-foot">
+                <span class="mono faint">Outlook.srs · RoamCache · WAM Broker · Fix 894893981 · Mailbox Intact</span>
               </div>
             </div>
 
@@ -3003,6 +3027,38 @@
     <div class="modal-foot" style="justify-content: flex-end;">
       <button class="btn btn-sm" onclick="closeConfirmModal()" data-i18n="btnCancel">ביטול</button>
       <button class="btn btn-sm btn-solid-danger" id="btnConfirmActionExec" data-i18n="btnKill">סיום תהליך</button>
+    </div>
+  </div>
+</div>
+
+<!-- =====================================================================
+     CENTER ALERT / RESULT MODAL (with Restart Notice)
+     ===================================================================== -->
+<div id="centerAlertModal" class="modal hidden" onclick="if(event.target===this) closeCenterAlertModal()">
+  <div class="modal-card sm" style="max-width: 490px;">
+    <div class="modal-head" style="align-items: flex-start; gap: 14px;">
+      <div id="centerAlertIconWrap" style="width: 42px; height: 42px; border-radius: 50%; display: flex; align-items: center; justify-content: center; background: rgba(16, 185, 129, 0.15); color: #10b981; flex-shrink: 0;">
+        <svg fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24" style="width: 22px; height: 22px;">
+          <path stroke-linecap="round" stroke-linejoin="round" d="M5 13l4 4L19 7"/>
+        </svg>
+      </div>
+      <div class="grow">
+        <h3 class="modal-title" id="centerAlertTitle" style="font-size: 16px; font-weight: 700; margin-bottom: 4px;">איפוס הושלם בהצלחה</h3>
+        <p class="card-sub" id="centerAlertMessage" style="font-size: 13px; line-height: 1.5; white-space: pre-wrap; margin-bottom: 0;"></p>
+      </div>
+      <button class="modal-close" onclick="closeCenterAlertModal()">✕</button>
+    </div>
+    <div class="modal-body" style="padding: 14px 20px 8px 20px;">
+      <div id="centerAlertRestartBox" style="background: rgba(245, 158, 11, 0.12); border: 1px solid rgba(245, 158, 11, 0.35); border-radius: 8px; padding: 12px 14px; display: flex; align-items: flex-start; gap: 10px;">
+        <span style="font-size: 20px; line-height: 1; flex-shrink: 0;">⚠️</span>
+        <div style="font-size: 12.5px; color: #fbbf24; line-height: 1.45;">
+          <strong id="centerAlertRestartTitle">שים לב — מומלץ לבצע הפעלה מחדש (Restart):</strong>
+          <div id="centerAlertRestartDesc" style="margin-top: 4px; opacity: 0.95;">כדי לפתור סופית את שגיאה 894893981 (Keyset does not exist) ולאפשר ל-Windows לייצר מפתחות אימות והצפנה נקיים (DPAPI Keyset) עבור חשבון מיקרוסופט, מומלץ להפעיל מחדש את המחשב לפני פתיחת האפליקציה.</div>
+        </div>
+      </div>
+    </div>
+    <div class="modal-foot" style="justify-content: flex-end; padding: 12px 20px;">
+      <button class="btn btn-primary" id="btnCenterAlertOk" onclick="closeCenterAlertModal()" style="min-width: 90px;">אישור</button>
     </div>
   </div>
 </div>

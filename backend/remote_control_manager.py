@@ -16,8 +16,8 @@ import subprocess
 import threading
 from typing import Dict, Any, Optional, Tuple
 
-APP_VERSION = "3.6.0"
-CURRENT_VERSION_TUPLE = (3, 6, 0)
+APP_VERSION = "3.7.0"
+CURRENT_VERSION_TUPLE = (3, 7, 0)
 
 DEFAULT_CONTROL_URL = (
     "https://gist.githubusercontent.com/Hero-Ghost/22bc7b324e2a5118384d3413490ef636/raw/app_control.json"

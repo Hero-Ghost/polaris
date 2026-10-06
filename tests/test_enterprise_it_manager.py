@@ -12,6 +12,8 @@ from backend.enterprise_it_manager import (
     reset_group_policy,
     purge_domain_credentials,
     reset_entra_id_broker,
+    reset_teams_cache_and_auth,
+    reset_outlook_cache_and_auth,
     reset_outlook_profile_cache,
     reset_network_drives,
     reset_proxy_winhttp,
@@ -26,10 +28,13 @@ from backend.enterprise_it_manager import (
 
 class TestEnterpriseITManager(unittest.TestCase):
 
-    def test_registry_has_10_tools(self):
+    def test_registry_has_tools(self):
         tools = get_enterprise_tools_list()
-        self.assertEqual(len(tools), 10)
-        self.assertEqual(len(ENTERPRISE_TOOLS), 10)
+        self.assertEqual(len(tools), 12)
+        self.assertEqual(len(ENTERPRISE_TOOLS), 12)
+        tool_ids = [t['id'] for t in tools]
+        self.assertIn("teams_reset", tool_ids)
+        self.assertIn("outlook_reset", tool_ids)
 
     @patch('backend.enterprise_it_manager.IS_WINDOWS', True)
     @patch('backend.enterprise_it_manager.run_hidden')
@@ -88,6 +93,57 @@ Currently stored credentials:
         res = reset_entra_id_broker()
         self.assertTrue(res['success'])
         self.assertIn("Entra ID", res['message'])
+
+    @patch('backend.enterprise_it_manager.IS_WINDOWS', True)
+    @patch('backend.enterprise_it_manager.run_hidden')
+    def test_reset_teams_cache_and_auth(self, mock_run):
+        import tempfile
+        mock_proc = MagicMock()
+        mock_proc.returncode = 0
+        mock_proc.stdout = "Target: msteams_token_123\nTarget: other_key\n"
+        mock_run.return_value = mock_proc
+
+        with tempfile.TemporaryDirectory() as tmpdir:
+            # Create simulated Teams cache dirs
+            teams_cache = os.path.join(tmpdir, 'Packages', 'MSTeams_8wekyb3d8bbwe', 'LocalCache')
+            os.makedirs(teams_cache, exist_ok=True)
+            dummy_file = os.path.join(teams_cache, 'cache.dat')
+            with open(dummy_file, 'w') as f:
+                f.write('data')
+
+            with patch('os.environ.get', return_value=tmpdir):
+                res = reset_teams_cache_and_auth()
+                self.assertTrue(res['success'])
+                self.assertTrue(res.get('restart_recommended'))
+                self.assertIn("Teams", res['message'])
+                self.assertFalse(os.path.exists(teams_cache))
+
+    @patch('backend.enterprise_it_manager.IS_WINDOWS', True)
+    @patch('backend.enterprise_it_manager.run_hidden')
+    def test_reset_outlook_cache_and_auth(self, mock_run):
+        import tempfile
+        mock_proc = MagicMock()
+        mock_proc.returncode = 0
+        mock_proc.stdout = "Target: MicrosoftOffice16_Data:token\n"
+        mock_run.return_value = mock_proc
+
+        with tempfile.TemporaryDirectory() as tmpdir:
+            outlook_srs_dir = os.path.join(tmpdir, 'Microsoft', 'Outlook')
+            os.makedirs(outlook_srs_dir, exist_ok=True)
+            srs_file = os.path.join(outlook_srs_dir, 'outlook.srs')
+            with open(srs_file, 'w') as f:
+                f.write('srs')
+
+            roam_cache = os.path.join(tmpdir, 'Microsoft', 'Outlook', 'RoamCache')
+            os.makedirs(roam_cache, exist_ok=True)
+
+            with patch('os.environ.get', return_value=tmpdir):
+                res = reset_outlook_cache_and_auth()
+                self.assertTrue(res['success'])
+                self.assertTrue(res.get('restart_recommended'))
+                self.assertIn("Outlook", res['message'])
+                self.assertFalse(os.path.exists(srs_file))
+                self.assertFalse(os.path.exists(roam_cache))
 
     @patch('backend.enterprise_it_manager.IS_WINDOWS', True)
     @patch('backend.enterprise_it_manager.run_hidden')

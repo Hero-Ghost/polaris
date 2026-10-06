@@ -1,5 +1,26 @@
 # CHANGELOG
 
+## v3.7 — כלי איפוס ייעודיים ל-Microsoft Teams ול-Outlook (שגיאה 894893981), התראות מרכז מסך והנחיית Restart
+
+### תכונות חדשות וארגז כלי IT
+- **כלי איפוס ייעודי ל-Microsoft Teams (`teams_reset`):**
+  - פתרון שורשי של שגיאה **894893981** (`0xCA00A003` / `NTE_KEYSET_NOT_DEF` - Keyset does not exist) וכשלי חיבור לחשבון מיקרוסופט.
+  - סגירה מסודרת ומאולצת של כל תהליכי Teams (`ms-teams.exe`, `Teams.exe`, `msteams.exe`).
+  - ניקוי מטמון מלא של New Teams (`MSTeams_8wekyb3d8bbwe` LocalCache, TempState, AC\INetCache) ואיפוס AppX מובנה.
+  - ניקוי מטמון של Classic Teams (`%APPDATA%\Microsoft\Teams`, `%LOCALAPPDATA%\Microsoft\Teams`).
+  - איפוס מטמון אסימוני אימות WAM Broker (`Microsoft.AAD.BrokerPlugin_cw5n1h2txyewy\AC\TokenBroker`), TokenBroker, OneAuth ו-IdentityCache.
+  - מחיקת אישורי Teams ישנים מ-Windows Credential Manager ואיפוס מפתחות רישום AAD Storage.
+- **כלי איפוס מקיף ל-Microsoft Outlook (`outlook_reset`):**
+  - פתרון שגיאה **894893981** ולולאות בקשת סיסמה חוזרות ונשנות באאוטלוק.
+  - מחיקת קובצי הגדרות שליחה/קבלה פגומים (`.srs`) ואיפוס מטמון Autodiscover ברישום.
+  - ניקוי מטמון מקומי פגום (`RoamCache`, `GlbSync`, `Offline Address Books` ומטמון New Outlook).
+  - איפוס אסימוני אימות WAM / TokenBroker / OneAuth של Microsoft 365.
+  - **הגנה מוחלטת על קובצי משתמש:** קובצי הנתונים, תיבות הדואר (`.pst`, `.ost`), המיילים ולוח השנה נשמרים בשלמותם ולעולם אינם נמחקים.
+- **הודעות תוצאה במרכז המסך (Center Screen Modal) והנחיית Restart:**
+  - הוספת מודאל מעוצב במרכז המסך (`#centerAlertModal`) עם אנימציה, טשטוש רקע וכפתור אישור.
+  - ציון והבלטה מפורשת של הצורך בביצוע הפעלה מחדש (Restart) למחשב כדי לאפשר ל-Windows לייצר מפתחות אימות והצפנה נקיים (DPAPI Keyset) עבור חשבון מיקרוסופט.
+  - תמיכה מלאה בסגירה באמצעות מקש `Escape` או לחיצה מחוץ למודאל.
+
 ## v3.6 — ייצוב מלא של מערך הבדיקות, הקשחת מנגנון עדכונים ושיפורי ממשק
 
 ### בדיקות ויציבות
